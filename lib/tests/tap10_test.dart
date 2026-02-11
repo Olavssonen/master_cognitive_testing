@@ -1,0 +1,63 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_master_app/models/test_definition.dart';
+import 'package:flutter_master_app/widgets/test_shell.dart';
+
+final tap10Test = TestDefinition(
+  id: 'tap10',
+  title: 'Tap 10 Times',
+  icon: Icons.touch_app,
+  build: (context, run) => Tap10TestScreen(run: run),
+);
+
+class Tap10TestScreen extends StatefulWidget {
+  final TestRunContext run;
+  const Tap10TestScreen({super.key, required this.run});
+
+  @override
+  State<Tap10TestScreen> createState() => _Tap10TestScreenState();
+}
+
+class _Tap10TestScreenState extends State<Tap10TestScreen> {
+  int taps = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    final done = taps >= 10;
+
+    return TestShell(
+      title: 'Tap 10 Times',
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Taps: $taps / 10',
+              style: Theme.of(context).textTheme.headlineMedium,
+            ),
+            const SizedBox(height: 16),
+            FilledButton(
+              onPressed: done ? null : () => setState(() => taps++),
+              child: const Text('Tap'),
+            ),
+            const SizedBox(height: 16),
+            OutlinedButton(
+              onPressed: done
+                  ? () {
+                      widget.run.complete(
+                        TestResult(testId: 'tap10', summary: {'taps': taps}),
+                      );
+                    }
+                  : null,
+              child: const Text('Finish'),
+            ),
+            const SizedBox(height: 16),
+            TextButton(
+              onPressed: () => widget.run.abort('User aborted'),
+              child: const Text('Abort'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
