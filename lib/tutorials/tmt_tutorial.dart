@@ -1,157 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_master_app/models/test_definition.dart';
 import 'package:flutter_master_app/widgets/test_shell.dart';
 import 'package:flutter_master_app/theme/app_theme.dart';
 import 'package:flutter_master_app/widgets/circles_painter.dart';
-import 'package:flutter_master_app/tutorials/tmt_tutorial.dart';
 
-final tmtTest = TestDefinition(
-  id: 'TMT',
-  title: 'Trail Making Test',
-  icon: Icons.draw,
-  build: (context, run) => TMTTestFlowProgression(run: run),
-);
-
-/// Manages the progression: Numbers Tutorial → Numbers Test → Mixed Tutorial → Mixed Test
-class TMTTestFlowProgression extends StatefulWidget {
-  final TestRunContext run;
-  const TMTTestFlowProgression({super.key, required this.run});
-
-  @override
-  State<TMTTestFlowProgression> createState() => _TMTTestFlowProgressionState();
-}
-
-class _TMTTestFlowProgressionState extends State<TMTTestFlowProgression> {
-  int stage = 0; // 0: Numbers tut, 1: Numbers test, 2: Mixed tut, 3: Mixed test
-  final Map<String, dynamic> stageResults = {}; // Store results from each stage
-
-  void _saveTestResult(
-      String stageName, List<String> circlesEntered, bool completed) {
-    stageResults[stageName] = {
-      'completed': completed,
-      'circlesOrder': circlesEntered,
-    };
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    switch (stage) {
-      case 0:
-        return TMTTutorial(
-          mode: CircleMode.numbersOnly,
-          onComplete: () {
-            setState(() => stage = 1);
-          },
-        );
-      case 1:
-        return TMTTest(
-          run: widget.run,
-          mode: CircleMode.numbersOnly,
-          stageName: 'numbers_test',
-          onTestResult: (circlesEntered, completed) {
-            _saveTestResult('numbers_test', circlesEntered, completed);
-          },
-          onNextStage: () {
-            setState(() => stage = 2);
-          },
-        );
-      case 2:
-        return TMTTutorial(
-          mode: CircleMode.mixed,
-          onComplete: () {
-            setState(() => stage = 3);
-          },
-        );
-      case 3:
-        return TMTTest(
-          run: widget.run,
-          mode: CircleMode.mixed,
-          stageName: 'mixed_test',
-          onTestResult: (circlesEntered, completed) {
-            _saveTestResult('mixed_test', circlesEntered, completed);
-          },
-          onCompletion: (circlesEntered, completed) {
-            // Final test complete - save its results and complete the entire progression
-            _saveTestResult('mixed_test', circlesEntered, completed);
-            
-            // Complete with combined results from all stages
-            widget.run.complete(
-              TestResult(
-                testId: 'tmt',
-                summary: {
-                  'progression_completed': true,
-                  'all_stages': stageResults,
-                  'final_mode': 'mixed',
-                },
-              ),
-            );
-          },
-        );
-      default:
-        return const SizedBox();
-    }
-  }
-}
-
-/// Manages single tutorial to test flow
-class TMTTestFlow extends StatefulWidget {
-  final TestRunContext run;
-  const TMTTestFlow({super.key, required this.run});
-
-  @override
-  State<TMTTestFlow> createState() => _TMTTestFlowState();
-}
-
-class _TMTTestFlowState extends State<TMTTestFlow> {
-  bool tutorialComplete = false;
-
-  @override
-  Widget build(BuildContext context) {
-    if (!tutorialComplete) {
-      return TMTTutorial(
-        mode: CircleMode.numbersOnly,
-        onComplete: () {
-          setState(() {
-            tutorialComplete = true;
-          });
-        },
-      );
-    }
-
-    return TMTTest(run: widget.run, mode: CircleMode.numbersOnly);
-  }
-}
-
-class TMTTest extends StatefulWidget {
-  final TestRunContext run;
+/// Tutorial screen for Trail Making Test (TMT)
+/// Uses 3 circles instead of 6 and provides detailed instructions
+class TMTTutorial extends StatefulWidget {
+  final VoidCallback onComplete;
   final CircleMode mode;
-  final String stageName;
-  final Function(List<String>, bool)? onTestResult; // Report results to parent
-  final VoidCallback? onNextStage; // Callback to move to next stage
-  final Function(List<String>, bool)? onCompletion; // Called when final test is done
-  const TMTTest({
+  const TMTTutorial({
     super.key,
-    required this.run,
+    required this.onComplete,
     this.mode = CircleMode.numbersOnly,
-    this.stageName = 'tmt_test',
-    this.onTestResult,
-    this.onNextStage,
-    this.onCompletion,
   });
 
   @override
-  State<TMTTest> createState() => _TMTTest();
+  State<TMTTutorial> createState() => _TMTTutorialState();
 }
 
-class _TMTTest extends State<TMTTest> {
+class _TMTTutorialState extends State<TMTTutorial> with TickerProviderStateMixin {
   late CirclesWithNumbers circlesGenerator;
   List<Offset> drawnPoints = [];
   List<String> circlesEntered = [];
   List<String> _lastFeedbackSequence = [];
   Set<String> _allTouchedCircles = {};
   String feedbackMessage = 'Draw through circles in order';
-  bool testComplete = false;
+  bool tutorialComplete = false;
   Function(String, bool)? _feedbackTrigger;
   VoidCallback? _clearDrawingCallback;
   String? lastCorrectCircle;
@@ -160,14 +35,12 @@ class _TMTTest extends State<TMTTest> {
   void initState() {
     super.initState();
     circlesGenerator = CirclesWithNumbers(
-      numberOfCircles: 6,
+      numberOfCircles: 3,
       mode: widget.mode,
     );
   }
 
   void onCircleEntered(String circleLabel, bool isCorrect) {
-    // This is called when parent detects a new circle
-    // Trigger feedback in the child widget
     _feedbackTrigger?.call(circleLabel, isCorrect);
   }
 
@@ -177,75 +50,65 @@ class _TMTTest extends State<TMTTest> {
       var result = _getCircleSequenceFromPath(points);
       List<String> newSequence = result['sequence'] as List<String>;
       bool isContinuous = result['isContinuous'] as bool;
-      
-      // Also detect ALL touched circles (including out-of-sequence ones) for wrong feedback
+
       Set<String> allTouched = _getAllTouchedCircles(points);
-      
-      // Trigger feedback for NEW circles in the valid sequence
+
       for (int i = _lastFeedbackSequence.length; i < newSequence.length; i++) {
         final circleLabel = newSequence[i];
-        final isCorrect = true; // These are from the valid sequence, so always correct
-        onCircleEntered(circleLabel, isCorrect);
+        onCircleEntered(circleLabel, true);
       }
-      
-      // Trigger feedback for NEW circles touched (but not in valid sequence) = WRONG/out-of-order
+
       for (String circleLabel in allTouched) {
         if (!_allTouchedCircles.contains(circleLabel)) {
-          // This circle was just touched
-          // Check if it's part of the valid sequence
           if (!newSequence.contains(circleLabel)) {
-            // Not in valid sequence = WRONG circle
             onCircleEntered(circleLabel, false);
           }
         }
       }
-      
+
       _lastFeedbackSequence = newSequence;
       _allTouchedCircles = allTouched;
-      circlesEntered = newSequence; // Update the authoritative valid sequence
-      // Update the last correct circle entered
+      circlesEntered = newSequence;
+
       if (circlesEntered.isNotEmpty) {
         lastCorrectCircle = circlesEntered.last;
       }
-      
+
       if (circlesEntered.isNotEmpty) {
-        // Check if sequence is correct and complete
         bool isCorrectSequence = _isCorrectSequence(circlesEntered);
-        
-        if (isCorrectSequence && circlesEntered.length == circlesGenerator.numberOfCircles && isContinuous) {
-          feedbackMessage = 'Perfect! Continuous line through all circles!';
-          testComplete = true;
+
+        if (isCorrectSequence && circlesEntered.length == 3 && isContinuous) {
+          feedbackMessage = 'Perfect! You completed the tutorial!';
+          tutorialComplete = true;
         } else if (!isContinuous && circlesEntered.isNotEmpty) {
           feedbackMessage = 'You must draw a continuous line!';
         } else if (!isCorrectSequence) {
-          // Wrong order
           String nextExpected = _getExpectedLabel(circlesEntered.length);
           feedbackMessage = 'Next, touch $nextExpected';
         } else {
-          // Correct sequence so far
           String nextExpected = _getExpectedLabel(circlesEntered.length);
           feedbackMessage = 'Next, touch $nextExpected';
         }
       } else {
         feedbackMessage = _getSequenceInstruction();
-      }      
+      }
     });
   }
 
   String _getSequenceInstruction() {
     if (widget.mode == CircleMode.numbersOnly) {
-      return 'Draw through circles in order: 1 → 2 → 3 → 4 → 5 → 6';
+      return 'Draw through circles in order: 1 → 2 → 3';
     } else {
-      return 'Draw through circles in order: 1 → A → 2 → B → 3 → C';
+      return 'Draw through circles in order: 1 → A → 2';
     }
   }
 
   String _getExpectedLabel(int index) {
-    // Index is 0-based, so 0 = first label, 1 = second label, etc
+    // Index is 0-based
     if (widget.mode == CircleMode.numbersOnly) {
       return (index + 1).toString();
     } else {
-      // Mixed mode: 1, A, 2, B, 3, C, 4, D, etc
+      // Mixed mode: 1, A, 2, B, 3, C
       if (index.isEven) {
         return ((index ~/ 2) + 1).toString();
       } else {
@@ -263,13 +126,12 @@ class _TMTTest extends State<TMTTest> {
     return true;
   }
 
-  /// Returns ALL circles touched in chronological order (including out-of-sequence)
   Set<String> _getAllTouchedCircles(List<Offset> points) {
     Set<String> touched = {};
-    
+
     for (final point in points) {
-      if (point.dx == -1) continue; // Skip stroke separators
-      
+      if (point.dx == -1) continue;
+
       for (final circle in circlesGenerator.circles) {
         if ((point - circle.center).distance <= circle.radius) {
           touched.add(circle.label);
@@ -277,17 +139,15 @@ class _TMTTest extends State<TMTTest> {
         }
       }
     }
-    
+
     return touched;
   }
 
-  /// Returns the sequence of circles entered in order, checking for continuity
   Map<String, dynamic> _getCircleSequenceFromPath(List<Offset> points) {
     List<String> sequence = [];
     String? currentCircle;
     int strokeCount = 0;
 
-    // Record all circle entry events in chronological order
     final List<Map<String, dynamic>> entries = [];
 
     for (int idx = 0; idx < points.length; idx++) {
@@ -312,12 +172,11 @@ class _TMTTest extends State<TMTTest> {
       }
     }
 
-    // Helper: check points between indices for at least one point outside both circles and no stroke separator
     bool betweenHasOutsideNoLift(int start, int end, Circle a, Circle b) {
       if (start >= end) return false;
       for (int k = start; k <= end && k < points.length; k++) {
         final p = points[k];
-        if (p.dx == -1) return false; // lift
+        if (p.dx == -1) return false;
         final outsideA = (p - a.center).distance > a.radius;
         final outsideB = (p - b.center).distance > b.radius;
         if (outsideA && outsideB) return true;
@@ -325,10 +184,8 @@ class _TMTTest extends State<TMTTest> {
       return false;
     }
 
-    // Now attempt to match sequence using entry events
     if (entries.isEmpty) return {'sequence': sequence, 'isContinuous': false};
 
-    // Find an entry for the first circle
     final firstLabel = circlesGenerator.circles[0].label;
     final firstEntry = entries.firstWhere((e) => e['label'] == firstLabel, orElse: () => {});
     if (firstEntry.isEmpty) return {'sequence': sequence, 'isContinuous': false};
@@ -341,27 +198,24 @@ class _TMTTest extends State<TMTTest> {
       final prevLabel = circlesGenerator.circles[targetIdx - 1].label;
       bool matched = false;
 
-      // try each possible entry for (targetIdx-1) that occurs >= prevMatchedIdx
       for (int i = 0; i < entries.length; i++) {
         final ea = entries[i];
         if (ea['label'] != prevLabel) continue;
         final idxA = ea['idx']!;
         if (idxA < prevMatchedIdx) continue;
 
-        // find a later entry for target
         for (int j = i + 1; j < entries.length; j++) {
           final eb = entries[j];
           if (eb['label'] != targetLabel) continue;
           final idxB = eb['idx']!;
           final strokeA = ea['stroke']!;
           final strokeB = eb['stroke']!;
-          if (strokeA != strokeB) continue; // require same stroke for this pair
+          if (strokeA != strokeB) continue;
 
           final circleA = circlesGenerator.circles[targetIdx - 1];
           final circleB = circlesGenerator.circles[targetIdx];
 
           if (betweenHasOutsideNoLift(idxA, idxB, circleA, circleB)) {
-            // matched this pair
             sequence.add(targetLabel);
             prevMatchedIdx = idxB;
             matched = true;
@@ -375,7 +229,6 @@ class _TMTTest extends State<TMTTest> {
       if (!matched) break;
     }
 
-    // isContinuous true if full sequence matched (each pair continuous as checked)
     final isContinuous = sequence.length == circlesGenerator.circles.length;
 
     return {'sequence': sequence, 'isContinuous': isContinuous};
@@ -389,25 +242,43 @@ class _TMTTest extends State<TMTTest> {
       _allTouchedCircles.clear();
       lastCorrectCircle = null;
       feedbackMessage = _getSequenceInstruction();
-      testComplete = false;
+      tutorialComplete = false;
     });
-    // Clear the drawn points in the child widget
     _clearDrawingCallback?.call();
   }
 
   @override
   Widget build(BuildContext context) {
     return TestShell(
-      title: 'Trail Making Test',
+      title: 'Trail Making Test - Tutorial',
       child: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                children: [
+                  Text(
+                    'How to Play',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
+                  const SizedBox(height: 12),
+                  const Text(
+                    'Draw a continuous line through the numbered circles in order (1 → 2 → 3). '
+                    'Do not lift your finger until you reach the final circle.',
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
             LayoutBuilder(builder: (context, constraints) {
               final width = constraints.maxWidth.isFinite ? constraints.maxWidth : 400.0;
               final height = (constraints.maxHeight.isFinite && constraints.maxHeight > 200)
-                  ? constraints.maxHeight
-                  : 400.0;
+                  ? constraints.maxHeight - 300
+                  : 300.0;
 
               if (circlesGenerator.circles.isEmpty) {
                 circlesGenerator.generateCircles(width, height);
@@ -427,7 +298,7 @@ class _TMTTest extends State<TMTTest> {
                 width: width,
                 height: height,
                 circlesEntered: circlesEntered,
-                testComplete: testComplete,
+                testComplete: tutorialComplete,
                 lastCorrectCircle: lastCorrectCircle,
               );
             }),
@@ -435,8 +306,8 @@ class _TMTTest extends State<TMTTest> {
             Text(
               feedbackMessage,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: testComplete ? AppColors.grey900 : AppColors.grey800,
-              ),
+                    color: tutorialComplete ? AppColors.grey900 : AppColors.grey800,
+                  ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
@@ -449,28 +320,10 @@ class _TMTTest extends State<TMTTest> {
                 ),
                 const SizedBox(width: 16),
                 OutlinedButton(
-                  onPressed: testComplete
-                      ? () {
-                          // Report results to parent progression
-                          widget.onTestResult?.call(circlesEntered, testComplete);
-
-                          if (widget.onNextStage != null) {
-                            // Move to next stage in progression
-                            widget.onNextStage!();
-                          } else {
-                            // Final test, notify parent to handle completion
-                            widget.onCompletion?.call(circlesEntered, testComplete);
-                          }
-                        }
-                      : null,
-                  child: const Text('Finish'),
+                  onPressed: tutorialComplete ? widget.onComplete : null,
+                  child: const Text('Continue'),
                 ),
               ],
-            ),
-            const SizedBox(height: 16),
-            TextButton(
-              onPressed: () => widget.run.abort('User aborted'),
-              child: const Text('Abort'),
             ),
           ],
         ),
@@ -481,16 +334,16 @@ class _TMTTest extends State<TMTTest> {
 
 class DrawAreaWithCircles extends StatefulWidget {
   final Function(List<Offset>) onDrawingUpdated;
-  final Function(String, bool)? onCircleEntered; // (circleLabel, isCorrect)
-  final Function(Function(String, bool))? setFeedbackCallback; // Pass state callback to parent
-  final Function(VoidCallback)? setClearCallback; // Pass clear callback to parent
+  final Function(String, bool)? onCircleEntered;
+  final Function(Function(String, bool))? setFeedbackCallback;
+  final Function(VoidCallback)? setClearCallback;
   final List<Circle> circles;
   final List<Offset> drawnPoints;
   final double width;
   final double height;
-  final List<String> circlesEntered; // Correctly entered circles
-  final bool testComplete; // Whether test is complete
-  final String? lastCorrectCircle; // Last correctly entered circle label
+  final List<String> circlesEntered;
+  final bool testComplete;
+  final String? lastCorrectCircle;
 
   const DrawAreaWithCircles({
     required this.onDrawingUpdated,
@@ -510,30 +363,26 @@ class DrawAreaWithCircles extends StatefulWidget {
   State<DrawAreaWithCircles> createState() => _DrawAreaWithCirclesState();
 }
 
-class _DrawAreaWithCirclesState extends State<DrawAreaWithCircles>
-    with TickerProviderStateMixin {
+class _DrawAreaWithCirclesState extends State<DrawAreaWithCircles> with TickerProviderStateMixin {
   late List<Offset> points;
   final Map<String, AnimationController> _feedbackControllers = {};
-  final Map<String, bool> _feedbackType = {}; // true = correct, false = wrong
+  final Map<String, bool> _feedbackType = {};
   final Set<String> _lastSeenCircles = {};
-  bool isDrawingAllowed = false; // Lock: only allow drawing after touching correct circle
-  late AnimationController _activePulseController; // Pulse animation for active circle
+  bool isDrawingAllowed = false;
+  late AnimationController _activePulseController;
 
   @override
   void initState() {
     super.initState();
     points = [];
-    // Pass the feedback trigger callback to parent
     widget.setFeedbackCallback?.call(_triggerFeedback);
-    // Pass the clear callback to parent
     widget.setClearCallback?.call(_clearPoints);
-    
-    // Create continuous pulse animation for the active circle
+
     _activePulseController = AnimationController(
       duration: const Duration(milliseconds: 1200),
       vsync: this,
     );
-    _activePulseController.repeat(); // Loop continuously
+    _activePulseController.repeat();
   }
 
   @override
@@ -547,36 +396,30 @@ class _DrawAreaWithCirclesState extends State<DrawAreaWithCircles>
 
   void _triggerFeedback(String circleLabel, bool isCorrect) {
     late final AnimationController controller;
-    
-    // Create animation controller if it doesn't exist
+
     if (!_feedbackControllers.containsKey(circleLabel)) {
       controller = AnimationController(
         duration: Duration(milliseconds: isCorrect ? 200 : 175),
         vsync: this,
       );
-      // Don't use setState listener - the CustomPaint.repaint parameter will handle efficient repainting
       _feedbackControllers[circleLabel] = controller;
     } else {
       controller = _feedbackControllers[circleLabel]!;
-      // Only reset if not currently animating - this prevents interrupting active animations
       if (!controller.isAnimating) {
         controller.reset();
       } else {
-        // If already animating, don't trigger again - let current animation complete
         return;
       }
     }
-    
+
     _feedbackType[circleLabel] = isCorrect;
-    
-    // Trigger animation - forward then reverse
+
     controller.forward().then((_) {
       if (mounted && _feedbackControllers.containsKey(circleLabel)) {
         controller.reverse();
       }
     });
-    
-    // Trigger haptic feedback
+
     if (isCorrect) {
       HapticFeedback.lightImpact();
     } else {
@@ -584,16 +427,10 @@ class _DrawAreaWithCirclesState extends State<DrawAreaWithCircles>
     }
   }
 
-  void _checkForNewCircles() {
-    // This will be called after parent widget's onDrawingUpdated
-    // The parent will call onCircleEntered to trigger feedback here
-  }
-
   void _clearPoints() {
     setState(() {
       points.clear();
       isDrawingAllowed = false;
-      // Reset all animation controllers to their initial state
       for (final controller in _feedbackControllers.values) {
         controller.stop();
         controller.reset();
@@ -604,7 +441,6 @@ class _DrawAreaWithCirclesState extends State<DrawAreaWithCircles>
     });
   }
 
-  /// Check if a point is within a specific circle
   bool _isPointInCircle(Offset point, String circleLabel) {
     Circle? circle;
     try {
@@ -615,62 +451,50 @@ class _DrawAreaWithCirclesState extends State<DrawAreaWithCircles>
     return (point - circle.center).distance <= circle.radius;
   }
 
-  /// Check if a point is within the canvas bounds
   bool _isPointInBounds(Offset point) {
-    return point.dx >= 0 && 
-           point.dx <= widget.width && 
-           point.dy >= 0 && 
-           point.dy <= widget.height;
+    return point.dx >= 0 && point.dx <= widget.width && point.dy >= 0 && point.dy <= widget.height;
   }
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onPanStart: widget.testComplete ? null : (details) {
-        setState(() {
-          final startPoint = details.localPosition;
-          
-          // Determine which circle the user needs to touch to enable drawing
-          String requiredCircle;
-          if (widget.circlesEntered.isEmpty) {
-            // No circles entered yet, user must start at the first circle
-            requiredCircle = widget.circles[0].label;
-          } else {
-            // User must restart from the last correct circle they reached
-            requiredCircle = widget.lastCorrectCircle ?? widget.circlesEntered.last;
-          }
-          
-          // Check if the touch is in the required circle
-          if (_isPointInCircle(startPoint, requiredCircle)) {
-            // Correct! Enable drawing and add the starting point
-            isDrawingAllowed = true;
-            _activePulseController.stop(); // Stop pulsing when drawing starts
-            points.add(startPoint);
-            widget.onDrawingUpdated(points);
-          } else {
-            // Wrong circle! Provide haptic feedback
-            HapticFeedback.heavyImpact();
-            // Don't enable drawing, don't add any points
-          }
-        });
-      },
-      onPanUpdate: widget.testComplete ? null : (details) {
-        setState(() {
-          // Only allow drawing if they started in the correct circle and point is within bounds
-          if (isDrawingAllowed && _isPointInBounds(details.localPosition)) {
-            points.add(details.localPosition);
-            widget.onDrawingUpdated(points);
-            _checkForNewCircles();
-          }
-        });
-      },
+      onPanStart: widget.testComplete
+          ? null
+          : (details) {
+              setState(() {
+                final startPoint = details.localPosition;
+
+                String requiredCircle;
+                if (widget.circlesEntered.isEmpty) {
+                  requiredCircle = '1';
+                } else {
+                  requiredCircle = widget.lastCorrectCircle ?? widget.circlesEntered.last;
+                }
+
+                if (_isPointInCircle(startPoint, requiredCircle)) {
+                  isDrawingAllowed = true;
+                  _activePulseController.stop();
+                  points.add(startPoint);
+                  widget.onDrawingUpdated(points);
+                } else {
+                  HapticFeedback.heavyImpact();
+                }
+              });
+            },
+      onPanUpdate: widget.testComplete
+          ? null
+          : (details) {
+              setState(() {
+                if (isDrawingAllowed && _isPointInBounds(details.localPosition)) {
+                  points.add(details.localPosition);
+                  widget.onDrawingUpdated(points);
+                }
+              });
+            },
       onPanEnd: (_) {
         setState(() {
-          // Disable drawing until they touch the correct circle again
           isDrawingAllowed = false;
-          // Add stroke separator to indicate a lift
           points.add(Offset(-1, -1));
-          // Resume pulsing animation when finger is lifted
           if (!_activePulseController.isAnimating) {
             _activePulseController.repeat();
           }
@@ -698,8 +522,8 @@ class _DrawAreaWithCirclesState extends State<DrawAreaWithCircles>
                   feedbackType: _feedbackType,
                   circlesEntered: widget.circlesEntered,
                   activePulseController: _activePulseController,
-                  requiredCircle: widget.circlesEntered.isEmpty 
-                      ? widget.circles[0].label
+                  requiredCircle: widget.circlesEntered.isEmpty
+                      ? '1'
                       : (widget.lastCorrectCircle ?? widget.circlesEntered.last),
                   testComplete: widget.testComplete,
                 ),
