@@ -619,35 +619,25 @@ class _DrawAreaWithCirclesState extends State<DrawAreaWithCircles>
             // Only touched circles already in sequence, no progress made
             isCheckpointCorrect = false;
           } else {
-            // Validate the sequence of new circles touched after the starting point
-            int numNewCircles = touchedCircles.length - touchedStartOffset;
-            int nextExpectedIndex = sequenceStartIndex;
+            // Only validate that the line ENDS at the next expected circle
+            // Allow crossing other circles in between
+            int nextExpectedIndex = sequenceStartIndex + 1;
             
-            // Validate each new circle matches the expected sequence
-            for (int i = touchedStartOffset; i < touchedCircles.length; i++) {
-              final expectedIndex = nextExpectedIndex + (i - touchedStartOffset);
-              
-              if (expectedIndex >= widget.circles.length) {
-                isCheckpointCorrect = false;
-                break;
-              }
-              
-              if (touchedCircles[i] != widget.circles[expectedIndex].label) {
-                isCheckpointCorrect = false;
-                break;
-              }
-            }
-            
-            // Must have touched at least one new circle beyond expected start
-            // (or if first checkpoint, must progress past the first circle)
-            if (isCheckpointCorrect && simulatedSequence.isEmpty && numNewCircles == 1) {
-              // First checkpoint only touched circle 1, didn't progress to circle 2
+            // Check if within bounds
+            if (nextExpectedIndex >= widget.circles.length) {
               isCheckpointCorrect = false;
-            }
-            
-            // If checkpoint is correct, add its circles to the simulated sequence
-            if (isCheckpointCorrect) {
-              simulatedSequence.addAll(touchedCircles.sublist(touchedStartOffset));
+            } else {
+              String nextExpectedCircle = widget.circles[nextExpectedIndex].label;
+              String lastTouchedCircle = touchedCircles.last;
+              
+              if (lastTouchedCircle == nextExpectedCircle) {
+                // Line ends correctly! Add this circle to the sequence
+                isCheckpointCorrect = true;
+                simulatedSequence.add(nextExpectedCircle);
+              } else {
+                // Line ended at wrong circle
+                isCheckpointCorrect = false;
+              }
             }
           }
         }
