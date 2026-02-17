@@ -25,7 +25,6 @@ class _TMTTutorialState extends State<TMTTutorial> with TickerProviderStateMixin
   List<String> circlesEntered = [];
   List<String> _lastFeedbackSequence = [];
   Set<String> _allTouchedCircles = {};
-  String feedbackMessage = 'Draw through circles in order';
   bool tutorialComplete = false;
   Function(String, bool)? _feedbackTrigger;
   VoidCallback? _clearDrawingCallback;
@@ -78,30 +77,12 @@ class _TMTTutorialState extends State<TMTTutorial> with TickerProviderStateMixin
         bool isCorrectSequence = _isCorrectSequence(circlesEntered);
 
         if (isCorrectSequence && circlesEntered.length == 3 && isContinuous) {
-          feedbackMessage = 'Perfect! You completed the tutorial!';
           tutorialComplete = true;
-        } else if (!isContinuous && circlesEntered.isNotEmpty) {
-          feedbackMessage = 'You must draw a continuous line!';
-        } else if (!isCorrectSequence) {
-          String nextExpected = _getExpectedLabel(circlesEntered.length);
-          feedbackMessage = 'Next, touch $nextExpected';
-        } else {
-          String nextExpected = _getExpectedLabel(circlesEntered.length);
-          feedbackMessage = 'Next, touch $nextExpected';
         }
-      } else {
-        feedbackMessage = _getSequenceInstruction();
       }
     });
   }
 
-  String _getSequenceInstruction() {
-    if (widget.mode == CircleMode.numbersOnly) {
-      return 'Draw through circles in order: 1 → 2 → 3';
-    } else {
-      return 'Draw through circles in order: 1 → A → 2';
-    }
-  }
 
   String _getExpectedLabel(int index) {
     // Index is 0-based
@@ -241,7 +222,6 @@ class _TMTTutorialState extends State<TMTTutorial> with TickerProviderStateMixin
       _lastFeedbackSequence.clear();
       _allTouchedCircles.clear();
       lastCorrectCircle = null;
-      feedbackMessage = _getSequenceInstruction();
       tutorialComplete = false;
     });
     _clearDrawingCallback?.call();
@@ -251,82 +231,72 @@ class _TMTTutorialState extends State<TMTTutorial> with TickerProviderStateMixin
   Widget build(BuildContext context) {
     return TestShell(
       title: 'Trail Making Test - Tutorial',
-      child: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  Text(
-                    'How to Play',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                  ),
-                  const SizedBox(height: 12),
-                  const Text(
-                    'Draw a continuous line through the numbered circles in order (1 → 2 → 3). '
-                    'Do not lift your finger until you reach the final circle.',
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
-            ),
-            LayoutBuilder(builder: (context, constraints) {
-              final width = constraints.maxWidth.isFinite ? constraints.maxWidth : 400.0;
-              final height = (constraints.maxHeight.isFinite && constraints.maxHeight > 200)
-                  ? constraints.maxHeight - 300
-                  : 300.0;
+      child: Column(
+        mainAxisSize: MainAxisSize.max,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            child: Center(
+              child: LayoutBuilder(builder: (context, constraints) {
+                final width = constraints.maxWidth.isFinite ? constraints.maxWidth : 400.0;
+                final height = (constraints.maxHeight.isFinite && constraints.maxHeight > 200)
+                    ? constraints.maxHeight
+                    : 300.0;
 
               if (circlesGenerator.circles.isEmpty) {
                 circlesGenerator.generateCircles(width, height);
               }
 
-              return DrawAreaWithCircles(
-                onDrawingUpdated: onDrawingUpdated,
-                onCircleEntered: onCircleEntered,
-                setFeedbackCallback: (callback) {
-                  _feedbackTrigger = callback;
-                },
-                setClearCallback: (callback) {
-                  _clearDrawingCallback = callback;
-                },
-                circles: circlesGenerator.circles,
-                drawnPoints: drawnPoints,
-                width: width,
-                height: height,
-                circlesEntered: circlesEntered,
-                testComplete: tutorialComplete,
-                lastCorrectCircle: lastCorrectCircle,
-              );
-            }),
-            const SizedBox(height: 16),
-            Text(
-              feedbackMessage,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: tutorialComplete ? AppColors.grey900 : AppColors.grey800,
-                  ),
-              textAlign: TextAlign.center,
+                return DrawAreaWithCircles(
+                  onDrawingUpdated: onDrawingUpdated,
+                  onCircleEntered: onCircleEntered,
+                  setFeedbackCallback: (callback) {
+                    _feedbackTrigger = callback;
+                  },
+                  setClearCallback: (callback) {
+                    _clearDrawingCallback = callback;
+                  },
+                  circles: circlesGenerator.circles,
+                  drawnPoints: drawnPoints,
+                  width: width,
+                  height: height,
+                  circlesEntered: circlesEntered,
+                  testComplete: tutorialComplete,
+                  lastCorrectCircle: lastCorrectCircle,
+                );
+              }),
             ),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
               children: [
-                OutlinedButton(
-                  onPressed: _clearDrawing,
-                  child: const Text('Clear'),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    OutlinedButton(
+                      onPressed: _clearDrawing,
+                      child: const Text('Clear'),
+                    ),
+                    const SizedBox(width: 16),
+                    OutlinedButton(
+                      onPressed: tutorialComplete ? widget.onComplete : null,
+                      child: const Text('Continue'),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 16),
-                OutlinedButton(
-                  onPressed: tutorialComplete ? widget.onComplete : null,
-                  child: const Text('Continue'),
+                const SizedBox(height: 12),
+                TextButton(
+                  onPressed: () {
+                    // Could optionally confirm abort, for now just go back
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('Abort'),
                 ),
               ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -392,6 +362,146 @@ class _DrawAreaWithCirclesState extends State<DrawAreaWithCircles> with TickerPr
     }
     _activePulseController.dispose();
     super.dispose();
+  }
+
+  /// Calculate which point indices are part of correct line segments
+  /// A checkpoint is from when user starts drawing to either:
+  /// - Correct sequence continuation: 100% alpha (black)
+  /// - Wrong or out-of-order circles: light grey
+  Set<int> _getCorrectLineSegmentIndices() {
+    Set<int> correctIndices = {};
+    
+    if (points.isEmpty) {
+      return correctIndices;
+    }
+
+    // Current line being drawn - keep it all black
+    int currentCheckpointStart = 0;
+    for (int i = points.length - 1; i >= 0; i--) {
+      if (points[i].dx == -1) {
+        currentCheckpointStart = i + 1;
+        break;
+      }
+    }
+    
+    if (currentCheckpointStart < points.length) {
+      for (int i = currentCheckpointStart; i < points.length; i++) {
+        correctIndices.add(i);
+      }
+    }
+
+    // For completed checkpoints (those that ended with a lift)
+    List<List<int>> completedCheckpoints = [];
+    List<int> currentCheckpoint = [];
+    
+    for (int i = 0; i < points.length; i++) {
+      if (points[i].dx == -1) {
+        if (currentCheckpoint.isNotEmpty) {
+          completedCheckpoints.add(currentCheckpoint);
+          currentCheckpoint = [];
+        }
+      } else {
+        currentCheckpoint.add(i);
+      }
+    }
+    
+    // Evaluate each completed checkpoint sequentially
+    // Build up the sequence as we evaluate, not using the final circlesEntered
+    List<String> simulatedSequence = [];
+    
+    for (final checkpoint in completedCheckpoints) {
+      if (checkpoint.isEmpty) continue;
+      
+      // Get the sequence of circles touched in this checkpoint (in order)
+      List<String> touchedCircles = [];
+      String? lastTouchedCircle;
+      
+      for (final idx in checkpoint) {
+        final point = points[idx];
+        
+        for (final circle in widget.circles) {
+          final distance = (point - circle.center).distance;
+          
+          if (distance <= circle.radius) {
+            // Only add if different from the last touched circle
+            if (circle.label != lastTouchedCircle) {
+              touchedCircles.add(circle.label);
+              lastTouchedCircle = circle.label;
+            }
+            break;
+          }
+        }
+      }
+      
+      // Check if this checkpoint is a valid next step
+      bool isCheckpointCorrect = false;
+      
+      if (touchedCircles.isNotEmpty) {
+        // Determine where the checkpoint should start
+        String expectedStart = simulatedSequence.isEmpty 
+            ? widget.circles[0].label  // First checkpoint starts at circle[0]
+            : simulatedSequence.last;  // Subsequent checkpoints start where we left off
+        
+        // Check if checkpoint starts correctly
+        if (touchedCircles[0] == expectedStart) {
+          // It starts correctly, now check if it continues in sequence
+          isCheckpointCorrect = true;
+          int sequenceStartIndex = simulatedSequence.length;
+          
+          // If the first circle in touchedCircles is already in the sequence, skip it
+          int touchedStartOffset = 0;
+          if (simulatedSequence.isNotEmpty && touchedCircles[0] == simulatedSequence.last) {
+            touchedStartOffset = 1; // Skip the overlap point
+          }
+          
+          // Check if checkpoint made any progress (touched new circles beyond the start)
+          if (touchedStartOffset >= touchedCircles.length) {
+            // Only touched circles already in sequence, no progress made
+            isCheckpointCorrect = false;
+          } else {
+            // Validate the sequence of new circles touched after the starting point
+            int numNewCircles = touchedCircles.length - touchedStartOffset;
+            int nextExpectedIndex = sequenceStartIndex;
+            
+            // Validate each new circle matches the expected sequence
+            for (int i = touchedStartOffset; i < touchedCircles.length; i++) {
+              final expectedIndex = nextExpectedIndex + (i - touchedStartOffset);
+              
+              if (expectedIndex >= widget.circles.length) {
+                isCheckpointCorrect = false;
+                break;
+              }
+              
+              if (touchedCircles[i] != widget.circles[expectedIndex].label) {
+                isCheckpointCorrect = false;
+                break;
+              }
+            }
+            
+            // Must have touched at least one new circle beyond expected start
+            // (or if first checkpoint, must progress past the first circle)
+            if (isCheckpointCorrect && simulatedSequence.isEmpty && numNewCircles == 1) {
+              // First checkpoint only touched circle 1, didn't progress to circle 2
+              isCheckpointCorrect = false;
+            }
+            
+            // If checkpoint is correct, add its circles to the simulated sequence
+            if (isCheckpointCorrect) {
+              simulatedSequence.addAll(touchedCircles.sublist(touchedStartOffset));
+            }
+          }
+        }
+      }
+      
+      // Mark entire checkpoint if it's correct
+      if (isCheckpointCorrect) {
+        for (final idx in checkpoint) {
+          correctIndices.add(idx);
+        }
+      }
+    }
+    
+    return correctIndices;
   }
 
   void _triggerFeedback(String circleLabel, bool isCorrect) {
@@ -514,6 +624,8 @@ class _DrawAreaWithCirclesState extends State<DrawAreaWithCircles> with TickerPr
               ..._feedbackControllers.values,
             ]),
             builder: (context, child) {
+              final correctLineSegments = _getCorrectLineSegmentIndices();
+              
               return CustomPaint(
                 painter: DrawAreaPainter(
                   points: points,
@@ -526,6 +638,7 @@ class _DrawAreaWithCirclesState extends State<DrawAreaWithCircles> with TickerPr
                       ? '1'
                       : (widget.lastCorrectCircle ?? widget.circlesEntered.last),
                   testComplete: widget.testComplete,
+                  correctLineSegments: correctLineSegments,
                 ),
                 size: Size.infinite,
               );

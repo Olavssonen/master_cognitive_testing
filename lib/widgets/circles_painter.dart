@@ -103,6 +103,7 @@ class DrawAreaPainter extends CustomPainter {
   final AnimationController? activePulseController;
   final String requiredCircle;
   final bool testComplete;
+  final Set<int> correctLineSegments; // Indices of points that are part of correct line segments
 
   DrawAreaPainter({
     required this.points,
@@ -113,6 +114,7 @@ class DrawAreaPainter extends CustomPainter {
     this.activePulseController,
     this.requiredCircle = '1',
     this.testComplete = false,
+    this.correctLineSegments = const {},
   });
 
   @override
@@ -203,14 +205,21 @@ class DrawAreaPainter extends CustomPainter {
     }
 
     // Draw the user's drawing
-    final paint = Paint()
-      ..color = AppColors.grey900
-      ..strokeWidth = 4
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round;
-
     for (int i = 0; i < points.length - 1; i++) {
       if (points[i].dx != -1 && points[i + 1].dx != -1) {
+        // Determine if this line segment is correct
+        final isCorrectSegment = correctLineSegments.contains(i) && correctLineSegments.contains(i + 1);
+        
+        final lineColor = isCorrectSegment 
+            ? AppColors.grey900  // Correct: black
+            : AppColors.grey300; // Incorrect: light grey
+        
+        final paint = Paint()
+          ..color = lineColor
+          ..strokeWidth = 4
+          ..strokeCap = StrokeCap.round
+          ..strokeJoin = StrokeJoin.round;
+        
         canvas.drawLine(points[i], points[i + 1], paint);
       }
     }
