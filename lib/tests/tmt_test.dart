@@ -43,6 +43,7 @@ class _TMTTestFlowProgressionState extends State<TMTTestFlowProgression> {
           onComplete: () {
             setState(() => stage = 1);
           },
+          onAbort: () => widget.run.abort('User aborted'),
         );
       case 1:
         return TMTTest(
@@ -62,6 +63,7 @@ class _TMTTestFlowProgressionState extends State<TMTTestFlowProgression> {
           onComplete: () {
             setState(() => stage = 3);
           },
+          onAbort: () => widget.run.abort('User aborted'),
         );
       case 3:
         return TMTTest(
@@ -116,6 +118,7 @@ class _TMTTestFlowState extends State<TMTTestFlow> {
             tutorialComplete = true;
           });
         },
+        onAbort: () => widget.run.abort('User aborted'),
       );
     }
 
@@ -159,7 +162,7 @@ class _TMTTest extends State<TMTTest> {
   void initState() {
     super.initState();
     circlesGenerator = CirclesWithNumbers(
-      numberOfCircles: 6,
+      numberOfCircles: 24,
       mode: widget.mode,
     );
   }
@@ -527,7 +530,9 @@ class _DrawAreaWithCirclesState extends State<DrawAreaWithCircles>
   /// Calculate which point indices are part of correct line segments
   /// A checkpoint is from when user starts drawing to either:
   /// - Correct sequence continuation: 100% alpha (black)
-  /// - Wrong or out-of-order circles: light grey
+  /// Returns indices of points that form correct line segments
+  /// - Black (correct): Lines that start at correct circle and end at next expected circle
+  /// - Grey (incorrect): All other lines
   Set<int> _getCorrectLineSegmentIndices() {
     Set<int> correctIndices = {};
     
@@ -628,9 +633,9 @@ class _DrawAreaWithCirclesState extends State<DrawAreaWithCircles>
               isCheckpointCorrect = false;
             } else {
               String nextExpectedCircle = widget.circles[nextExpectedIndex].label;
-              String lastTouchedCircle = touchedCircles.last;
+              String lastTouchedInCheckpoint = touchedCircles.last;
               
-              if (lastTouchedCircle == nextExpectedCircle) {
+              if (lastTouchedInCheckpoint == nextExpectedCircle) {
                 // Line ends correctly! Add this circle to the sequence
                 isCheckpointCorrect = true;
                 simulatedSequence.add(nextExpectedCircle);
@@ -732,6 +737,16 @@ class _DrawAreaWithCirclesState extends State<DrawAreaWithCircles>
            point.dy <= widget.height;
   }
 
+  /// Get the circle that a point is in, if any
+  Circle? _getPointCircle(Offset point) {
+    for (final circle in widget.circles) {
+      if ((point - circle.center).distance <= circle.radius) {
+        return circle;
+      }
+    }
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -768,6 +783,26 @@ class _DrawAreaWithCirclesState extends State<DrawAreaWithCircles>
           // Only allow drawing if they started in the correct circle and point is within bounds
           if (isDrawingAllowed && _isPointInBounds(details.localPosition)) {
             points.add(details.localPosition);
+            
+            // Check if we just entered a new circle
+            Circle? currentCircle = _getPointCircle(details.localPosition);
+            if (currentCircle != null && !_lastSeenCircles.contains(currentCircle.label)) {
+              // Entered a new circle for the first time in this stroke
+              _lastSeenCircles.add(currentCircle.label);
+              
+              // Check if this circle is the next expected one
+              // Current circlesEntered has length N, so next expected is at index N
+              int nextExpectedIndex = widget.circlesEntered.length;
+              
+              if (nextExpectedIndex < widget.circles.length &&
+                  currentCircle.label == widget.circles[nextExpectedIndex].label) {
+                // Correct circle! Auto-split: add lift marker and immediately start new stroke
+                points.add(Offset(-1, -1)); // End current stroke
+                points.add(details.localPosition); // Start new stroke from this circle
+                _lastSeenCircles.clear(); // Reset for next stroke
+              }
+            }
+            
             widget.onDrawingUpdated(points);
             _checkForNewCircles();
           }

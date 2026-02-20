@@ -8,10 +8,12 @@ import 'package:flutter_master_app/widgets/circles_painter.dart';
 /// Uses 3 circles instead of 6 and provides detailed instructions
 class TMTTutorial extends StatefulWidget {
   final VoidCallback onComplete;
+  final VoidCallback? onAbort;
   final CircleMode mode;
   const TMTTutorial({
     super.key,
     required this.onComplete,
+    this.onAbort,
     this.mode = CircleMode.numbersOnly,
   });
 
@@ -287,10 +289,7 @@ class _TMTTutorialState extends State<TMTTutorial> with TickerProviderStateMixin
                 ),
                 const SizedBox(height: 12),
                 TextButton(
-                  onPressed: () {
-                    // Could optionally confirm abort, for now just go back
-                    Navigator.of(context).pop();
-                  },
+                  onPressed: widget.onAbort,
                   child: const Text('Abort'),
                 ),
               ],
