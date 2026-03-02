@@ -91,6 +91,43 @@ class CirclesWithNumbers {
       }
     }
   }
+
+  /// Generate fixed circles in a diamond formation for tutorial testing.
+  /// For 4 circles, creates a diamond pattern centered on screen.
+  /// [horizontalSpacing] controls the horizontal distance from center (in pixels)
+  /// [verticalSpacing] controls the vertical distance from center (in pixels)
+  void generateFixedCircles4Tutorial(
+    double width,
+    double height, {
+    double horizontalSpacing = 200.0,
+    double verticalSpacing = 200.0,
+  }) {
+    circles = [];
+
+    if (numberOfCircles == 4) {
+      // Calculate center of the drawing area
+      final centerX = width / 2;
+      final centerY = height / 2;
+
+      // Diamond formation: top, right, bottom, left
+      final positions = [
+        Offset(centerX, centerY - verticalSpacing),        // Top
+        Offset(centerX + horizontalSpacing, centerY),      // Right
+        Offset(centerX, centerY + verticalSpacing),        // Bottom
+        Offset(centerX - horizontalSpacing, centerY),      // Left
+      ];
+
+      for (int i = 0; i < numberOfCircles && i < positions.length; i++) {
+        circles.add(
+          Circle(
+            center: positions[i],
+            radius: circleRadius,
+            label: _getLabel(i + 1),
+          ),
+        );
+      }
+    }
+  }
 }
 
 /// Custom painter for the circles and drawn lines
@@ -101,6 +138,7 @@ class DrawAreaPainter extends CustomPainter {
   final Map<String, bool> feedbackType; // true = correct, false = wrong
   final List<String> circlesEntered;
   final AnimationController? activePulseController;
+  final AnimationController? fingerAnimationController;
   final String requiredCircle;
   final bool testComplete;
   final Set<int> correctLineSegments; // Indices of points that are part of correct line segments
@@ -112,6 +150,7 @@ class DrawAreaPainter extends CustomPainter {
     this.feedbackType = const {},
     this.circlesEntered = const [],
     this.activePulseController,
+    this.fingerAnimationController,
     this.requiredCircle = '1',
     this.testComplete = false,
     this.correctLineSegments = const {},
@@ -223,12 +262,62 @@ class DrawAreaPainter extends CustomPainter {
         canvas.drawLine(points[i], points[i + 1], paint);
       }
     }
+
+    // Draw animated finger guide from circle 1 to circle 2
+    if (circles.isNotEmpty && circles.length >= 2 && fingerAnimationController != null && !testComplete && fingerAnimationController!.isAnimating) {
+      _drawAnimatedFinger(canvas, circles[0].center, circles[1].center, fingerAnimationController!.value);
+    }
+  }
+
+  /// Draw an animated icon (Icons.touch_app) moving along a path with fade out at end
+  void _drawAnimatedFinger(Canvas canvas, Offset start, Offset end, double progress) {
+    // Interpolate position along the path
+    final currentPos = Offset.lerp(start, end, progress)!;
+    
+    // Calculate fade out: starts at 1.0, fades to 0.0 as progress goes to 1.0
+    // Use a non-linear fade for smoother effect (start fading at 70% progress)
+    final fadeStart = 0.7;
+    double opacity = 1.0;
+    if (progress >= fadeStart) {
+      opacity = 1.0 - ((progress - fadeStart) / (1.0 - fadeStart));
+    }
+
+    // Draw the Icons.touch_app icon using TextPainter
+    final iconTextPainter = TextPainter(
+      text: TextSpan(
+        text: String.fromCharCode(Icons.touch_app.codePoint),
+        style: TextStyle(
+          color: AppColors.accent.withValues(alpha: opacity),
+          fontSize: 70,
+          fontFamily: Icons.touch_app.fontFamily,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    );
+    
+    iconTextPainter.layout();
+    
+    // Draw icon centered at currentPos with a slight shadow for visibility
+    final shadowPaint = Paint()
+      ..color = Colors.black.withValues(alpha: 0.2 * opacity)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
+    
+    canvas.drawCircle(currentPos, 24, shadowPaint);
+    
+    // Draw the icon
+    final iconOffset = currentPos - Offset(iconTextPainter.width / 2, iconTextPainter.height / 2);
+    iconTextPainter.paint(canvas, iconOffset);
   }
 
   @override
   bool shouldRepaint(DrawAreaPainter oldDelegate) {
     if (activePulseController != null && oldDelegate.activePulseController != null) {
       if (activePulseController!.value != oldDelegate.activePulseController!.value) {
+        return true;
+      }
+    }
+    if (fingerAnimationController != null && oldDelegate.fingerAnimationController != null) {
+      if (fingerAnimationController!.value != oldDelegate.fingerAnimationController!.value) {
         return true;
       }
     }

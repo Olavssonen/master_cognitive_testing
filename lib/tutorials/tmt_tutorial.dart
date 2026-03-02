@@ -28,17 +28,46 @@ class _TMTTutorialState extends State<TMTTutorial> with TickerProviderStateMixin
   List<String> _lastFeedbackSequence = [];
   Set<String> _allTouchedCircles = {};
   bool tutorialComplete = false;
+  bool _firstConnectionMade = false;
   Function(String, bool)? _feedbackTrigger;
   VoidCallback? _clearDrawingCallback;
   String? lastCorrectCircle;
+  late AnimationController _fingerAnimationController;
 
   @override
   void initState() {
     super.initState();
     circlesGenerator = CirclesWithNumbers(
-      numberOfCircles: 3,
+      numberOfCircles: 4,
       mode: widget.mode,
     );
+    _fingerAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 1800),
+      vsync: this,
+    );
+    
+    // Animate with a pause between loops
+    _animateWithPause();
+  }
+
+  void _animateWithPause() {
+    _fingerAnimationController.forward().then((_) {
+      if (mounted && !_firstConnectionMade) {
+        // Add 500ms pause after animation completes
+        Future.delayed(const Duration(milliseconds: 500), () {
+          if (mounted && !_firstConnectionMade) {
+            _fingerAnimationController.reset();
+            _animateWithPause();
+          }
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _fingerAnimationController.dispose();
+    super.dispose();
   }
 
   void onCircleEntered(String circleLabel, bool isCorrect) {
@@ -75,10 +104,16 @@ class _TMTTutorialState extends State<TMTTutorial> with TickerProviderStateMixin
         lastCorrectCircle = circlesEntered.last;
       }
 
+      // Stop animation once user has successfully connected circles 1 and 2
+      if (circlesEntered.length >= 2 && !_firstConnectionMade) {
+        _firstConnectionMade = true;
+        _fingerAnimationController.stop();
+      }
+
       if (circlesEntered.isNotEmpty) {
         bool isCorrectSequence = _isCorrectSequence(circlesEntered);
 
-        if (isCorrectSequence && circlesEntered.length == 3 && isContinuous) {
+        if (isCorrectSequence && circlesEntered.length == 4 && isContinuous) {
           tutorialComplete = true;
         }
       }
@@ -225,8 +260,12 @@ class _TMTTutorialState extends State<TMTTutorial> with TickerProviderStateMixin
       _allTouchedCircles.clear();
       lastCorrectCircle = null;
       tutorialComplete = false;
+      _firstConnectionMade = false;
     });
     _clearDrawingCallback?.call();
+    // Restart animation when drawing is cleared
+    _fingerAnimationController.reset();
+    _animateWithPause();
   }
 
   @override
@@ -246,7 +285,7 @@ class _TMTTutorialState extends State<TMTTutorial> with TickerProviderStateMixin
                     : 300.0;
 
               if (circlesGenerator.circles.isEmpty) {
-                circlesGenerator.generateCircles(width, height);
+                circlesGenerator.generateFixedCircles4Tutorial(width, height);
               }
 
                 return DrawAreaWithCircles(
@@ -265,6 +304,7 @@ class _TMTTutorialState extends State<TMTTutorial> with TickerProviderStateMixin
                   circlesEntered: circlesEntered,
                   testComplete: tutorialComplete,
                   lastCorrectCircle: lastCorrectCircle,
+                  fingerAnimationController: _fingerAnimationController,
                 );
               }),
             ),
@@ -313,6 +353,7 @@ class DrawAreaWithCircles extends StatefulWidget {
   final List<String> circlesEntered;
   final bool testComplete;
   final String? lastCorrectCircle;
+  final AnimationController? fingerAnimationController;
 
   const DrawAreaWithCircles({
     required this.onDrawingUpdated,
@@ -326,6 +367,7 @@ class DrawAreaWithCircles extends StatefulWidget {
     required this.circlesEntered,
     required this.testComplete,
     this.lastCorrectCircle,
+    this.fingerAnimationController,
   });
 
   @override
@@ -554,6 +596,16 @@ class _DrawAreaWithCirclesState extends State<DrawAreaWithCircles> with TickerPr
     return point.dx >= 0 && point.dx <= widget.width && point.dy >= 0 && point.dy <= widget.height;
   }
 
+  /// Get the circle that a point is in, if any
+  Circle? _getPointCircle(Offset point) {
+    for (final circle in widget.circles) {
+      if ((point - circle.center).distance <= circle.radius) {
+        return circle;
+      }
+    }
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -584,8 +636,29 @@ class _DrawAreaWithCirclesState extends State<DrawAreaWithCircles> with TickerPr
           ? null
           : (details) {
               setState(() {
+                // Only allow drawing if they started in the correct circle and point is within bounds
                 if (isDrawingAllowed && _isPointInBounds(details.localPosition)) {
                   points.add(details.localPosition);
+                  
+                  // Check if we just entered a new circle
+                  Circle? currentCircle = _getPointCircle(details.localPosition);
+                  if (currentCircle != null && !_lastSeenCircles.contains(currentCircle.label)) {
+                    // Entered a new circle for the first time in this stroke
+                    _lastSeenCircles.add(currentCircle.label);
+                    
+                    // Check if this circle is the next expected one
+                    // Current circlesEntered has length N, so next expected is at index N
+                    int nextExpectedIndex = widget.circlesEntered.length;
+                    
+                    if (nextExpectedIndex < widget.circles.length &&
+                        currentCircle.label == widget.circles[nextExpectedIndex].label) {
+                      // Correct circle! Auto-split: add lift marker and immediately start new stroke
+                      points.add(Offset(-1, -1)); // End current stroke
+                      points.add(details.localPosition); // Start new stroke from this circle
+                      _lastSeenCircles.clear(); // Reset for next stroke
+                    }
+                  }
+                  
                   widget.onDrawingUpdated(points);
                 }
               });
@@ -594,6 +667,7 @@ class _DrawAreaWithCirclesState extends State<DrawAreaWithCircles> with TickerPr
         setState(() {
           isDrawingAllowed = false;
           points.add(Offset(-1, -1));
+          _lastSeenCircles.clear(); // Reset circle tracking for next stroke
           if (!_activePulseController.isAnimating) {
             _activePulseController.repeat();
           }
@@ -611,6 +685,7 @@ class _DrawAreaWithCirclesState extends State<DrawAreaWithCircles> with TickerPr
             animation: Listenable.merge([
               _activePulseController,
               ..._feedbackControllers.values,
+              if (widget.fingerAnimationController != null) widget.fingerAnimationController!,
             ]),
             builder: (context, child) {
               final correctLineSegments = _getCorrectLineSegmentIndices();
@@ -623,6 +698,7 @@ class _DrawAreaWithCirclesState extends State<DrawAreaWithCircles> with TickerPr
                   feedbackType: _feedbackType,
                   circlesEntered: widget.circlesEntered,
                   activePulseController: _activePulseController,
+                  fingerAnimationController: widget.fingerAnimationController,
                   requiredCircle: widget.circlesEntered.isEmpty
                       ? '1'
                       : (widget.lastCorrectCircle ?? widget.circlesEntered.last),
