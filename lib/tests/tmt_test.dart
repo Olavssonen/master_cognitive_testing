@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/rendering.dart';
+import 'dart:typed_data';
+import 'dart:ui' as ui;
 import 'package:flutter_master_app/models/test_definition.dart';
 import 'package:flutter_master_app/widgets/test_shell.dart';
 import 'package:flutter_master_app/theme/app_theme.dart';
@@ -27,10 +30,11 @@ class _TMTTestFlowProgressionState extends State<TMTTestFlowProgression> {
   final Map<String, dynamic> stageResults = {}; // Store results from each stage
 
   void _saveTestResult(
-      String stageName, List<String> circlesEntered, bool completed) {
+      String stageName, Map<String, dynamic> resultData, bool completed) {
     stageResults[stageName] = {
       'completed': completed,
-      'circlesOrder': circlesEntered,
+      'circlesOrder': resultData['circlesEntered'] as List<String>? ?? [],
+      'image': resultData['image'] as Uint8List?,
     };
   }
 
@@ -50,8 +54,8 @@ class _TMTTestFlowProgressionState extends State<TMTTestFlowProgression> {
           run: widget.run,
           mode: CircleMode.numbersOnly,
           stageName: 'numbers_test',
-          onTestResult: (circlesEntered, completed) {
-            _saveTestResult('numbers_test', circlesEntered, completed);
+          onTestResult: (resultData, completed) {
+            _saveTestResult('numbers_test', resultData, completed);
           },
           onNextStage: () {
             setState(() => stage = 2);
@@ -70,17 +74,17 @@ class _TMTTestFlowProgressionState extends State<TMTTestFlowProgression> {
           run: widget.run,
           mode: CircleMode.mixed,
           stageName: 'mixed_test',
-          onTestResult: (circlesEntered, completed) {
-            _saveTestResult('mixed_test', circlesEntered, completed);
+          onTestResult: (resultData, completed) {
+            _saveTestResult('mixed_test', resultData, completed);
           },
-          onCompletion: (circlesEntered, completed) {
+          onCompletion: (resultData, completed) {
             // Final test complete - save its results and complete the entire progression
-            _saveTestResult('mixed_test', circlesEntered, completed);
+            _saveTestResult('mixed_test', resultData, completed);
             
             // Complete with combined results from all stages
             widget.run.complete(
               TestResult(
-                testId: 'tmt',
+                testId: 'TMT',
                 summary: {
                   'progression_completed': true,
                   'all_stages': stageResults,
@@ -130,9 +134,9 @@ class TMTTest extends StatefulWidget {
   final TestRunContext run;
   final CircleMode mode;
   final String stageName;
-  final Function(List<String>, bool)? onTestResult; // Report results to parent
+  final Function(Map<String, dynamic>, bool)? onTestResult; // Report results to parent
   final VoidCallback? onNextStage; // Callback to move to next stage
-  final Function(List<String>, bool)? onCompletion; // Called when final test is done
+  final Function(Map<String, dynamic>, bool)? onCompletion; // Called when final test is done
   const TMTTest({
     super.key,
     required this.run,
@@ -157,12 +161,14 @@ class _TMTTest extends State<TMTTest> {
   Function(String, bool)? _feedbackTrigger;
   VoidCallback? _clearDrawingCallback;
   String? lastCorrectCircle;
+  final GlobalKey _drawingAreaKey = GlobalKey();
+  Uint8List? _capturedImage;
 
   @override
   void initState() {
     super.initState();
     circlesGenerator = CirclesWithNumbers(
-      numberOfCircles: 10,
+      numberOfCircles: 2,
       mode: widget.mode,
     );
   }
@@ -376,6 +382,25 @@ class _TMTTest extends State<TMTTest> {
     _clearDrawingCallback?.call();
   }
 
+  Future<void> _captureDrawingArea() async {
+    try {
+      final boundary = _drawingAreaKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
+      if (boundary != null) {
+        final ui.Image image = await boundary.toImage(pixelRatio: 2.0);
+        final ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+        if (byteData != null) {
+          // Use sublist to properly convert to Uint8List
+          final bytes = byteData.buffer.asUint8List(byteData.offsetInBytes, byteData.lengthInBytes);
+          setState(() {
+            _capturedImage = bytes;
+          });
+        }
+      }
+    } catch (e) {
+      print('Error capturing drawing area: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return TestShell(
@@ -396,22 +421,25 @@ class _TMTTest extends State<TMTTest> {
                 circlesGenerator.generateCircles(width, height);
               }
 
-                return DrawAreaWithCircles(
-                  onDrawingUpdated: onDrawingUpdated,
-                  onCircleEntered: onCircleEntered,
-                  setFeedbackCallback: (callback) {
-                    _feedbackTrigger = callback;
-                  },
-                  setClearCallback: (callback) {
-                    _clearDrawingCallback = callback;
-                  },
-                  circles: circlesGenerator.circles,
-                  drawnPoints: drawnPoints,
-                  width: width,
-                  height: height,
-                  circlesEntered: circlesEntered,
-                  testComplete: testComplete,
-                  lastCorrectCircle: lastCorrectCircle,
+                return RepaintBoundary(
+                  key: _drawingAreaKey,
+                  child: DrawAreaWithCircles(
+                    onDrawingUpdated: onDrawingUpdated,
+                    onCircleEntered: onCircleEntered,
+                    setFeedbackCallback: (callback) {
+                      _feedbackTrigger = callback;
+                    },
+                    setClearCallback: (callback) {
+                      _clearDrawingCallback = callback;
+                    },
+                    circles: circlesGenerator.circles,
+                    drawnPoints: drawnPoints,
+                    width: width,
+                    height: height,
+                    circlesEntered: circlesEntered,
+                    testComplete: testComplete,
+                    lastCorrectCircle: lastCorrectCircle,
+                  ),
                 );
               }),
             ),
@@ -430,16 +458,24 @@ class _TMTTest extends State<TMTTest> {
                     const SizedBox(width: 16),
                     OutlinedButton(
                       onPressed: testComplete
-                          ? () {
+                          ? () async {
+                              // Capture the drawing area before reporting results
+                              await _captureDrawingArea();
+                              
+                              final resultData = {
+                                'circlesEntered': circlesEntered,
+                                'image': _capturedImage,
+                              };
+                              
                               // Report results to parent progression
-                              widget.onTestResult?.call(circlesEntered, testComplete);
+                              widget.onTestResult?.call(resultData, testComplete);
 
                               if (widget.onNextStage != null) {
                                 // Move to next stage in progression
                                 widget.onNextStage!();
                               } else {
                                 // Final test, notify parent to handle completion
-                                widget.onCompletion?.call(circlesEntered, testComplete);
+                                widget.onCompletion?.call(resultData, testComplete);
                               }
                             }
                           : null,

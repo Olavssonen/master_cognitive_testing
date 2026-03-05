@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_master_app/session/session_controller.dart';
 import 'package:flutter_master_app/session/session_state.dart';
+import 'package:flutter_master_app/models/test_definition.dart';
+import 'package:flutter_master_app/models/test_result_formatter.dart';
 
 class SummaryScreen extends ConsumerWidget {
   const SummaryScreen({super.key});
@@ -18,12 +20,7 @@ class SummaryScreen extends ConsumerWidget {
           Text('Completed ${s.results.length} tests'),
           const SizedBox(height: 12),
           for (final r in s.results)
-            Card(
-              child: ListTile(
-                title: Text(r.testId),
-                subtitle: Text('${r.summary}'),
-              ),
-            ),
+            _buildTestCard(r),
           const SizedBox(height: 12),
           FilledButton(
             onPressed: () => ref.read(sessionProvider.notifier).reset(),
@@ -31,6 +28,31 @@ class SummaryScreen extends ConsumerWidget {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildTestCard(TestResult r) {
+    final formatter = TestResultFormatterFactory.getFormatter(r.testId);
+    final detailedView = formatter.getDetailedView(r.summary);
+
+    return Column(
+      children: [
+        Card(
+          child: SizedBox(
+            width: double.infinity,
+            child: ListTile(
+              title: Text(r.testId),
+              subtitle: formatter.getTextSummary(r.summary),
+              dense: true,
+            ),
+          ),
+        ),
+        // Display detailed view if available (e.g., images for TMT) - in its own card
+        if (detailedView != null)
+          Card(
+            child: detailedView,
+          ),
+      ],
     );
   }
 }
