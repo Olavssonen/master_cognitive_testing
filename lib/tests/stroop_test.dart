@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_master_app/models/test_definition.dart';
 import 'package:flutter_master_app/widgets/test_shell.dart';
+import 'package:flutter_master_app/widgets/stroop_helpers.dart';
 import 'package:flutter_master_app/tutorials/stroop_tutorial.dart';
 
 final stroopTest = TestDefinition(
@@ -98,15 +99,9 @@ class _StroopTestState extends State<StroopTest> {
   }
 
   List<StroopItem> _generateStroopItems(int count) {
-    final List<Color> colors = [
-      const Color(0xFFD32F2F), // Red
-      const Color(0xFF1976D2), // Blue
-      const Color(0xFF388E3C), // Green
-      const Color(0xFFFBC02D), // Yellow
-    ];
-
-    final List<String> colorNames = ['rød', 'blå', 'grønt', 'gul'];
-    final List<String> colorLetters = ['Ø', 'L', 'R', 'U'];
+    final colors = StroopColorConstants.colors;
+    final colorNames = StroopColorConstants.colorNames;
+    final colorLetters = StroopColorConstants.colorLetters;
 
     final random = DateTime.now().millisecond;
     final List<StroopItem> items = [];
@@ -168,109 +163,52 @@ class _StroopTestState extends State<StroopTest> {
   Widget build(BuildContext context) {
     return TestShell(
       title: 'Stroop Test',
-      child: Column(
-        mainAxisSize: MainAxisSize.max,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(top: 16.0),
-            child: Text(
-              '${currentIndex + 1}/$numberOfWords',
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-          ),
-          Expanded(
-            child: Center(
-              child: !testComplete
-                  ? Text(
-                      stroopItems[currentIndex].displayWord,
-                      style: TextStyle(
-                        fontSize: 64,
-                        fontWeight: FontWeight.bold,
-                        color: stroopItems[currentIndex].textColor,
-                      ),
-                    )
-                  : Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          'Test Complete!',
-                          style: Theme.of(context).textTheme.headlineMedium,
-                        ),
-                        const SizedBox(height: 20),
-                        Text(
-                          'Correct: $correctCount\nWrong: $wrongCount',
-                          style: Theme.of(context).textTheme.bodyLarge,
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: !testComplete
-                ? Wrap(
-                    spacing: 16,
-                    runSpacing: 16,
-                    children: [
-                      _buildColorButton('Ø'),
-                      _buildColorButton('L'),
-                      _buildColorButton('R'),
-                      _buildColorButton('U'),
-                    ],
-                  )
-                : const SizedBox(),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: [
-                if (testComplete)
-                  OutlinedButton(
-                    onPressed: _finishTest,
-                    child: const Text('Submit Results'),
-                  )
-                else
-                  const SizedBox(),
-                const SizedBox(height: 12),
-                TextButton(
-                  onPressed: widget.onAbort,
-                  child: const Text('Abort'),
+      child: StroopScreen(
+        progressText: '${currentIndex + 1}/$numberOfWords',
+        middleContent: !testComplete
+            ? Text(
+                stroopItems[currentIndex].displayWord,
+                style: TextStyle(
+                  fontSize: StroopLayout.test.middleTextSize,
+                  fontWeight: FontWeight.bold,
+                  color: stroopItems[currentIndex].textColor,
                 ),
-              ],
-            ),
-          ),
-        ],
+              )
+            : Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Test Complete!',
+                    style: Theme.of(context).textTheme.headlineMedium,
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    'Correct: $correctCount\nWrong: $wrongCount',
+                    style: Theme.of(context).textTheme.bodyLarge,
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+        buttons: !testComplete
+            ? [
+                for (final letter in StroopColorConstants.colorLetters)
+                  StroopColorButton(
+                    letter: letter,
+                    backgroundColor: Colors.grey[700]!,
+                    onPressed: () => _onButtonPressed(letter),
+                    size: StroopLayout.tutorial.buttonSize,
+                  ),
+              ]
+            : [],
+        bottomButton: testComplete
+            ? OutlinedButton(
+                onPressed: _finishTest,
+                child: const Text('Submit Results'),
+              )
+            : null,
+        onAbort: widget.onAbort,
       ),
     );
   }
 
-  Widget _buildColorButton(String letter) {
-    return SizedBox(
-      width: 80,
-      height: 80,
-      child: FilledButton(
-        onPressed: () => _onButtonPressed(letter),
-        child: Text(
-          letter,
-          style: const TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class StroopItem {
-  final Color textColor;
-  final String displayWord;
-  final String correctLetter;
-
-  StroopItem({
-    required this.textColor,
-    required this.displayWord,
-    required this.correctLetter,
-  });
 }
