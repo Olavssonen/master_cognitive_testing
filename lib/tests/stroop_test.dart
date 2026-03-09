@@ -42,6 +42,18 @@ class _StroopTestScreenState extends State<StroopTestScreen> {
           onAbort: () => widget.run.abort('User aborted'),
         );
       case 1:
+        return TestShell(
+          title: 'Stroop Test',
+          child: StroopIntermediateScreen(
+            onReplay: () {
+              setState(() => stage = 0);
+            },
+            onStartTest: () {
+              setState(() => stage = 2);
+            },
+          ),
+        );
+      case 2:
         return StroopTest(
           run: widget.run,
           stageName: 'stroop_test',
@@ -83,7 +95,7 @@ class StroopTest extends StatefulWidget {
   State<StroopTest> createState() => _StroopTestState();
 }
 
-class _StroopTestState extends State<StroopTest> {
+class _StroopTestState extends State<StroopTest> with TickerProviderStateMixin {
   final int numberOfWords = 4; // Configurable number of trials
   
   late List<StroopItem> stroopItems;
@@ -92,10 +104,33 @@ class _StroopTestState extends State<StroopTest> {
   int wrongCount = 0;
   bool testComplete = false;
 
+  // Feedback state
+  String? feedbackLetter;
+  Color? feedbackColor;
+  late AnimationController _feedbackController;
+  late AnimationController _wordTransitionController;
+  bool _isProcessing = false;
+
   @override
   void initState() {
     super.initState();
+    _feedbackController = AnimationController(
+      duration: const Duration(milliseconds: 150),
+      vsync: this,
+    );
+    _wordTransitionController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _wordTransitionController.forward(); // Prime it so first word shows
     stroopItems = _generateStroopItems(numberOfWords);
+  }
+
+  @override
+  void dispose() {
+    _feedbackController.dispose();
+    _wordTransitionController.dispose();
+    super.dispose();
   }
 
   List<StroopItem> _generateStroopItems(int count) {
@@ -127,11 +162,22 @@ class _StroopTestState extends State<StroopTest> {
     return items;
   }
 
-  void _onButtonPressed(String letter) {
-    if (testComplete) return;
+  void _onButtonPressed(String letter) async {
+    if (testComplete || _isProcessing) return;
 
+    _isProcessing = true;
     final currentItem = stroopItems[currentIndex];
     final isCorrect = letter == currentItem.correctLetter;
+
+    setState(() {
+      feedbackLetter = letter;
+      feedbackColor = isCorrect ? Colors.green : Colors.red;
+    });
+
+    _feedbackController.reset();
+    await _feedbackController.forward();
+
+    if (!mounted) return;
 
     setState(() {
       if (isCorrect) {
@@ -141,11 +187,22 @@ class _StroopTestState extends State<StroopTest> {
       }
 
       if (currentIndex < stroopItems.length - 1) {
-        currentIndex++;
+        currentIndex++;  // Update item FIRST, before animation
+        _wordTransitionController.reset();
+        _wordTransitionController.forward();
+        _isProcessing = false;
       } else {
         testComplete = true;
+        _isProcessing = false;
       }
     });
+
+    if (mounted) {
+      setState(() {
+        feedbackLetter = null;
+        feedbackColor = null;
+      });
+    }
   }
 
   void _finishTest() {
@@ -166,13 +223,14 @@ class _StroopTestState extends State<StroopTest> {
       child: StroopScreen(
         progressText: '${currentIndex + 1}/$numberOfWords',
         middleContent: !testComplete
-            ? Text(
-                stroopItems[currentIndex].displayWord,
+            ? StroopWordDisplay(
+                word: stroopItems[currentIndex].displayWord,
                 style: TextStyle(
                   fontSize: StroopLayout.test.middleTextSize,
                   fontWeight: FontWeight.bold,
                   color: stroopItems[currentIndex].textColor,
                 ),
+                animationController: _wordTransitionController,
               )
             : Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -192,11 +250,14 @@ class _StroopTestState extends State<StroopTest> {
         buttons: !testComplete
             ? [
                 for (final letter in StroopColorConstants.colorLetters)
-                  StroopColorButton(
+                  FeedbackStroopButton(
                     letter: letter,
                     backgroundColor: Colors.grey[700]!,
                     onPressed: () => _onButtonPressed(letter),
-                    size: StroopLayout.tutorial.buttonSize,
+                    feedbackController: _feedbackController,
+                    feedbackLetter: feedbackLetter,
+                    feedbackColor: feedbackColor,
+                    size: StroopLayout.unifiedButtonSize,
                   ),
               ]
             : [],

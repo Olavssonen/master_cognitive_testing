@@ -13,17 +13,42 @@ class StroopTutorial extends StatefulWidget {
   State<StroopTutorial> createState() => _StroopTutorialState();
 }
 
-class _StroopTutorialState extends State<StroopTutorial> {
+class _StroopTutorialState extends State<StroopTutorial>
+    with TickerProviderStateMixin {
   int stage = 0;
   int correctAnswersInStage = 0;
-  final int answersNeededPerStage = 2;
+  final int answersNeededPerStage = 4;
   late List<StroopItem> currentItems;
   int currentItemIndex = 0;
+  bool showIntroduction = true;
+
+  // Feedback state
+  String? feedbackLetter;
+  Color? feedbackColor;
+  late AnimationController _feedbackController;
+  late AnimationController _wordTransitionController;
+  bool _isProcessing = false;
 
   @override
   void initState() {
     super.initState();
+    _feedbackController = AnimationController(
+      duration: const Duration(milliseconds: 150),
+      vsync: this,
+    );
+    _wordTransitionController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _wordTransitionController.forward(); // Prime it so first word shows
     _initializeStage();
+  }
+
+  @override
+  void dispose() {
+    _feedbackController.dispose();
+    _wordTransitionController.dispose();
+    super.dispose();
   }
 
   void _initializeStage() {
@@ -36,27 +61,75 @@ class _StroopTutorialState extends State<StroopTutorial> {
     final colors = StroopColorConstants.colors;
     final colorNames = StroopColorConstants.colorNames;
     final colorLetters = StroopColorConstants.colorLetters;
-
-    // Create simple items where word color and word name match for easier learning
     final items = <StroopItem>[];
-    for (int i = 0; i < answersNeededPerStage; i++) {
-      final colorIndex = i % colors.length;
-      items.add(
-        StroopItem(
-          textColor: colors[colorIndex],
-          displayWord: colorNames[colorIndex],
-          correctLetter: colorLetters[colorIndex],
-        ),
-      );
+
+    if (stage == 0) {
+      // Stage 0: All colors in order, word matches color
+      for (int i = 0; i < 4; i++) {
+        items.add(
+          StroopItem(
+            textColor: colors[i],
+            displayWord: colorNames[i],
+            correctLetter: colorLetters[i],
+          ),
+        );
+      }
+    } else if (stage == 1) {
+      // Stage 1: All colors in random order, word matches color
+      final indices = [0, 1, 2, 3];
+      indices.shuffle();
+      for (final i in indices) {
+        items.add(
+          StroopItem(
+            textColor: colors[i],
+            displayWord: colorNames[i],
+            correctLetter: colorLetters[i],
+          ),
+        );
+      }
+    } else {
+      // Stage 2: Random mismatched items (like real test)
+      final random = DateTime.now().millisecond;
+      for (int i = 0; i < 4; i++) {
+        int textColorIndex = (random + i) % colors.length;
+        int wordNameIndex = (random + i * 2) % colorNames.length;
+
+        // Ensure word doesn't match text color
+        while (wordNameIndex == textColorIndex) {
+          wordNameIndex = (wordNameIndex + 1) % colorNames.length;
+        }
+
+        items.add(
+          StroopItem(
+            textColor: colors[textColorIndex],
+            displayWord: colorNames[wordNameIndex],
+            correctLetter: colorLetters[textColorIndex],
+          ),
+        );
+      }
     }
+
     return items;
   }
 
-  void _onButtonPressed(String letter) {
-    if (currentItemIndex >= currentItems.length) return;
+  void _onButtonPressed(String letter) async {
+    if (currentItemIndex >= currentItems.length || _isProcessing) return;
 
+    _isProcessing = true;
     final currentItem = currentItems[currentItemIndex];
-    if (letter == currentItem.correctLetter) {
+    final isCorrect = letter == currentItem.correctLetter;
+
+    setState(() {
+      feedbackLetter = letter;
+      feedbackColor = isCorrect ? Colors.green : Colors.red;
+    });
+
+    _feedbackController.reset();
+    await _feedbackController.forward();
+
+    if (!mounted) return;
+
+    if (isCorrect) {
       setState(() {
         correctAnswersInStage++;
         if (correctAnswersInStage >= answersNeededPerStage) {
@@ -64,55 +137,81 @@ class _StroopTutorialState extends State<StroopTutorial> {
           if (stage < 2) {
             stage++;
             _initializeStage();
+            feedbackLetter = null;
+            feedbackColor = null;
+            _isProcessing = false;
           } else {
             // Tutorial complete
+            _isProcessing = false;
             widget.onComplete();
           }
         } else {
-          currentItemIndex++;
+          currentItemIndex++;  // Update item FIRST, before animation
+          _wordTransitionController.reset();
+          _wordTransitionController.forward();
+          _isProcessing = false;
         }
       });
-    }
-  }
-
-  Widget _buildButton(String letter, Color bgColor, String? label) {
-    return StroopColorButton(
-      letter: letter,
-      backgroundColor: bgColor,
-      label: label,
-      size: StroopLayout.tutorial.buttonSize,
-      onPressed: () => _onButtonPressed(letter),
-    );
-  }
-
-  String _getStageTitle() {
-    switch (stage) {
-      case 0:
-        return 'Stage 1: Learn the buttons';
-      case 1:
-        return 'Stage 2: Remember the colors';
-      case 2:
-        return 'Stage 3: Pure challenge';
-      default:
-        return '';
-    }
-  }
-
-  String _getStageInstruction() {
-    switch (stage) {
-      case 0:
-        return 'Press the button matching the COLOR of the word';
-      case 1:
-        return 'The colors are gone—do you remember which is which?';
-      case 2:
-        return 'Now press the button for the word\'s COLOR';
-      default:
-        return '';
+      
+      if (mounted) {
+        setState(() {
+          feedbackLetter = null;
+          feedbackColor = null;
+        });
+      }
+    } else {
+      // Wrong answer - show feedback but don't progress
+      setState(() {
+        _wordTransitionController.reset();
+        _wordTransitionController.forward();
+        _isProcessing = false;
+      });
+      
+      if (mounted) {
+        setState(() {
+          feedbackLetter = null;
+          feedbackColor = null;
+        });
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    // Show introduction screen first
+    if (showIntroduction) {
+      return TestShell(
+        title: 'Stroop Test - Tutorial',
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'Stroop Color Test',
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+              const SizedBox(height: 20),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                child: Text(
+                  'Se på fargen på teksten, ikke ordet som er skrevet.',
+                  style: Theme.of(context).textTheme.bodyLarge,
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              const SizedBox(height: 40),
+              OutlinedButton(
+                onPressed: () => setState(() => showIntroduction = false),
+                child: const Text('Start Tutorial'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     if (currentItemIndex >= currentItems.length) {
       return TestShell(
         title: 'Stroop Test - Tutorial',
@@ -153,20 +252,26 @@ class _StroopTutorialState extends State<StroopTutorial> {
       title: 'Stroop Test - Tutorial',
       child: StroopScreen(
         progressText: '${currentItemIndex + 1}/$answersNeededPerStage',
-        middleContent: Text(
-          currentItem.displayWord,
+        middleContent: StroopWordDisplay(
+          word: currentItem.displayWord,
           style: TextStyle(
             fontSize: StroopLayout.tutorial.middleTextSize,
             fontWeight: FontWeight.bold,
             color: currentItem.textColor,
           ),
+          animationController: _wordTransitionController,
         ),
         buttons: [
           for (int i = 0; i < colorLetters.length; i++)
-            _buildButton(
-              colorLetters[i],
-              stage == 0 ? colors[i] : Colors.grey[700]!,
-              stage == 0 ? colorNames[i] : null,
+            FeedbackStroopButton(
+              letter: colorLetters[i],
+              backgroundColor: stage == 0 ? colors[i] : Colors.grey[700]!,
+              label: stage == 0 ? colorNames[i] : null,
+              size: StroopLayout.unifiedButtonSize,
+              onPressed: () => _onButtonPressed(colorLetters[i]),
+              feedbackController: _feedbackController,
+              feedbackLetter: feedbackLetter,
+              feedbackColor: feedbackColor,
             ),
         ],
         onAbort: widget.onAbort,
