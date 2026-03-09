@@ -134,10 +134,12 @@ class _StroopTutorialState extends State<StroopTutorial>
       setState(() {
         correctAnswersInStage++;
         if (correctAnswersInStage >= answersNeededPerStage) {
-          // Move to next stage
+          // Progress to next stage
           if (stage < 2) {
             stage++;
             _initializeStage();
+            _wordTransitionController.reset();
+            _wordTransitionController.forward();
             feedbackLetter = null;
             feedbackColor = null;
             _isProcessing = false;
@@ -232,6 +234,8 @@ class _StroopTutorialState extends State<StroopTutorial>
                   if (stage < 2) {
                     stage++;
                     _initializeStage();
+                    _wordTransitionController.reset();
+                    _wordTransitionController.forward();
                   } else {
                     widget.onComplete();
                   }
@@ -266,7 +270,7 @@ class _StroopTutorialState extends State<StroopTutorial>
           for (int i = 0; i < colorLetters.length; i++)
             FeedbackStroopButton(
               letter: colorLetters[i],
-              backgroundColor: stage == 0 ? colors[i] : AppColors.grey700,
+              backgroundColor: stage == 2 ? AppColors.grey700 : colors[i],
               label: stage == 0 ? colorNames[i] : null,
               size: StroopLayout.unifiedButtonSize,
               onPressed: () => _onButtonPressed(colorLetters[i]),

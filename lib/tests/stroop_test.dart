@@ -97,7 +97,7 @@ class StroopTest extends StatefulWidget {
 }
 
 class _StroopTestState extends State<StroopTest> with TickerProviderStateMixin {
-  final int numberOfWords = 4; // Configurable number of trials
+  final int numberOfWords = 20; // Configurable number of trials
   
   late List<StroopItem> stroopItems;
   int currentIndex = 0;

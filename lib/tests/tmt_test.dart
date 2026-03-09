@@ -168,7 +168,7 @@ class _TMTTest extends State<TMTTest> {
   void initState() {
     super.initState();
     circlesGenerator = CirclesWithNumbers(
-      numberOfCircles: 2,
+      numberOfCircles: 10,
       mode: widget.mode,
     );
   }
