@@ -9,7 +9,16 @@ class SessionController extends Notifier<SessionState> {
   final List<TestResult> _results = [];
 
   @override
-  SessionState build() => const SessionIdle();
+  SessionState build() => const MainMenuIdle();
+
+  void enterLibrary() {
+    state = const SessionIdle();
+  }
+
+  void returnToMenu() {
+    _results.clear();
+    state = const MainMenuIdle();
+  }
 
   void start(List<String> plan) {
     _results.clear();
@@ -44,11 +53,11 @@ class SessionController extends Notifier<SessionState> {
 
   void abortSession(String reason) {
     _results.clear();
-    state = const SessionIdle();
+    state = const MainMenuIdle();
   }
 
   void reset() {
     _results.clear();
-    state = const SessionIdle();
+    state = const MainMenuIdle();
   }
 }

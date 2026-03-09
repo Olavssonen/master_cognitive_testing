@@ -4,6 +4,10 @@ sealed class SessionState {
   const SessionState();
 }
 
+class MainMenuIdle extends SessionState {
+  const MainMenuIdle();
+}
+
 class SessionIdle extends SessionState {
   const SessionIdle();
 }

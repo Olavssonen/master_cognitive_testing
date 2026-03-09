@@ -24,6 +24,12 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            ref.read(sessionProvider.notifier).returnToMenu();
+          },
+        ),
         title: const Text(
           'Velg tester',
           style: TextStyle(color: AppColors.white),
