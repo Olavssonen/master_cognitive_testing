@@ -2,12 +2,176 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_master_app/session/session_controller.dart';
 import 'package:flutter_master_app/theme/app_theme.dart';
+import 'dart:math';
+import 'dart:async';
 
-class MenuScreen extends ConsumerWidget {
+class Particle {
+  late Offset position;
+  late Offset velocity;
+  late double opacity;
+  late double age;
+  late double size;
+  final double lifetime;
+  final double maxDistance;
+
+  Particle({
+    required Offset startPosition,
+    required double minLifetime,
+    required double maxLifetime,
+    required double minSpeed,
+    required double maxSpeed,
+    required double minSize,
+    required double maxSize,
+    this.maxDistance = 150,
+    required double outwardAngle, // Angle pointing away from center
+  }) : lifetime = minLifetime + Random().nextDouble() * (maxLifetime - minLifetime) {
+    position = startPosition;
+    // Add some randomness around the outward direction (±45 degrees)
+    final angleVariation = (Random().nextDouble() - 0.5) * (pi / 2);
+    final angle = outwardAngle + angleVariation;
+    final speed = minSpeed + Random().nextDouble() * (maxSpeed - minSpeed);
+    size = minSize + Random().nextDouble() * (maxSize - minSize);
+    velocity = Offset(cos(angle) * speed, sin(angle) * speed);
+    opacity = 1.0;
+    age = 0;
+  }
+
+  void update(double deltaTime) {
+    age += deltaTime;
+    position += velocity * deltaTime;
+    opacity = max(0, 1 - (age / lifetime));
+  }
+
+  bool get isAlive => age < lifetime;
+}
+
+class ParticlePainter extends CustomPainter {
+  final List<Particle> particles;
+
+  ParticlePainter(this.particles);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = AppColors.platinum
+      ..style = PaintingStyle.fill;
+
+    for (var particle in particles) {
+      paint.color = AppColors.platinum.withValues(alpha: particle.opacity);
+      canvas.drawCircle(particle.position, particle.size, paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(ParticlePainter oldDelegate) => true;
+}
+
+class MenuScreen extends ConsumerStatefulWidget {
   const MenuScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<MenuScreen> createState() => _MenuScreenState();
+}
+
+class _MenuScreenState extends ConsumerState<MenuScreen> {
+  List<Particle> particles = [];
+  late Timer _updateTimer;
+  Offset? particleCenter;
+  
+  // Estimated text dimensions (72px font, 2 lines) with extra padding for spawn zone
+  static const double titleWidth = 650;
+  static const double titleHeight = 220;
+
+  Map<String, dynamic> getRandomEdgeSpawnPoint(Offset center) {
+    final halfWidth = titleWidth / 2;
+    final halfHeight = titleHeight / 2;
+    
+    Offset spawnPoint;
+    
+    // Weight edge selection by perimeter length to balance spawn distribution
+    // Top and bottom edges: titleWidth each
+    // Left and right edges: titleHeight each
+    final topBottomLength = titleWidth;
+    final leftRightLength = titleHeight;
+    final totalPerimeter = 2 * (topBottomLength + leftRightLength);
+    
+    final random = Random().nextDouble() * totalPerimeter;
+    
+    if (random < topBottomLength) {
+      // Top edge
+      spawnPoint = Offset(
+        center.dx + (Random().nextDouble() - 0.5) * titleWidth,
+        center.dy - halfHeight,
+      );
+    } else if (random < 2 * topBottomLength) {
+      // Bottom edge
+      spawnPoint = Offset(
+        center.dx + (Random().nextDouble() - 0.5) * titleWidth,
+        center.dy + halfHeight,
+      );
+    } else if (random < 2 * topBottomLength + leftRightLength) {
+      // Left edge
+      spawnPoint = Offset(
+        center.dx - halfWidth,
+        center.dy + (Random().nextDouble() - 0.5) * titleHeight,
+      );
+    } else {
+      // Right edge
+      spawnPoint = Offset(
+        center.dx + halfWidth,
+        center.dy + (Random().nextDouble() - 0.5) * titleHeight,
+      );
+    }
+    
+    // Calculate outward angle from center to spawn point
+    final dx = spawnPoint.dx - center.dx;
+    final dy = spawnPoint.dy - center.dy;
+    final outwardAngle = atan2(dy, dx);
+    
+    return {'point': spawnPoint, 'angle': outwardAngle};
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Update particles frequently
+    _updateTimer = Timer.periodic(const Duration(milliseconds: 16), (_) {
+      if (particleCenter == null) return;
+      
+      setState(() {
+        // Spawn new particles every frame
+        if (Random().nextDouble() < 0.3) {
+          final spawnData = getRandomEdgeSpawnPoint(particleCenter!);
+          particles.add(Particle(
+            startPosition: spawnData['point'],
+            outwardAngle: spawnData['angle'],
+            minLifetime: 1.5,
+            maxLifetime: 3.5,
+            minSpeed: 20,
+            maxSpeed: 80,
+            minSize: 3,
+            maxSize: 10,
+          ));
+        }
+
+        // Update existing particles
+        particles.removeWhere((p) => !p.isAlive);
+        for (var particle in particles) {
+          particle.update(0.016);
+        }
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _updateTimer.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.crayolaBlue,
       body: SafeArea(
@@ -15,107 +179,143 @@ class MenuScreen extends ConsumerWidget {
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24.0),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // Title
-                const Text(
-                  'Krister Tester \ndine Kognitive Evner',
-                  style: TextStyle(
-                    fontSize: 48,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.platinum,
+                // Top 2/3 - Title section
+                Expanded(
+                  flex: 2,
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        // Title with particle effect
+                        LayoutBuilder(
+                          builder: (context, constraints) {
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              particleCenter = Offset(constraints.maxWidth / 2, 100);
+                            });
+                            
+                            return Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                CustomPaint(
+                                  painter: ParticlePainter(particles),
+                                  size: Size(constraints.maxWidth, 200),
+                                ),
+                                const Text(
+                                  'Krister Tester \nKognitive Evner',
+                                  style: TextStyle(
+                                    fontSize: 72,
+                                    fontWeight: FontWeight.w900,
+                                    color: AppColors.platinum,
+                                    height: 1.2,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
+                            );
+                          },
+                        ),
+                      ],
+                    ),
                   ),
-                  textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 12),
-                const SizedBox(height: 60),
                 
-                // Buttons column with constrained width
-                SizedBox(
-                  width: 250,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Start Test Button
-                      SizedBox(
-                        width: double.infinity,
-                        height: 56,
-                        child: FilledButton(
-                          style: FilledButton.styleFrom(
-                            backgroundColor: AppColors.platinum,
-                            foregroundColor: AppColors.crayolaBlue,
-                          ),
-                          onPressed: () {
-                            ref.read(sessionProvider.notifier).enterLibrary();
-                          },
-                          child: const Text(
-                            'Start Test',
-                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-                          ),
+                // Bottom 1/3 - Buttons section
+                Expanded(
+                  flex: 1,
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                    // Start Test Button - Large
+                    SizedBox(
+                      width: 350,
+                      height: 75,
+                      child: FilledButton(
+                        style: FilledButton.styleFrom(
+                          backgroundColor: AppColors.platinum,
+                          foregroundColor: AppColors.crayolaBlue,
+                        ),
+                        onPressed: () {
+                          ref.read(sessionProvider.notifier).enterLibrary();
+                        },
+                        child: const Text(
+                          'Start Test',
+                          style: TextStyle(fontSize: 34, fontWeight: FontWeight.w600),
                         ),
                       ),
-                      const SizedBox(height: 16),
-                      
-                      // Settings Button
-                      SizedBox(
-                        width: double.infinity,
-                        height: 50,
-                        child: FilledButton(
-                          style: FilledButton.styleFrom(
-                            backgroundColor: AppColors.platinum,
-                            foregroundColor: AppColors.crayolaBlue,
-                          ),
-                          onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Settings coming soon')),
-                            );
-                          },
-                          child: const Text(
-                            'Settings',
-                            style: TextStyle(fontSize: 16),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      
-                      // Quit Button
-                      SizedBox(
-                        width: double.infinity,
-                        height: 50,
-                        child: FilledButton(
-                          style: FilledButton.styleFrom(
-                            backgroundColor: AppColors.platinum,
-                            foregroundColor: AppColors.crayolaBlue,
-                          ),
-                          onPressed: () {
-                            showDialog(
-                              context: context,
-                              builder: (context) => AlertDialog(
-                                title: const Text('Quit Application?'),
-                                content: const Text('Are you sure you want to quit?'),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () => Navigator.pop(context),
-                                    child: const Text('Cancel'),
-                                  ),
-                                  TextButton(
-                                    onPressed: () {
-                                      Navigator.pop(context);
-                                    },
-                                    child: const Text('Quit', style: TextStyle(color: AppColors.errorRed)),
-                                  ),
-                                ],
+                    ),
+                    const SizedBox(height: 24),
+                    
+                    // Other buttons - Normal width
+                    SizedBox(
+                      width: 250,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Settings Button
+                          SizedBox(
+                            width: double.infinity,
+                            height: 50,
+                            child: FilledButton(
+                              style: FilledButton.styleFrom(
+                                backgroundColor: AppColors.platinum,
+                                foregroundColor: AppColors.crayolaBlue,
                               ),
-                            );
-                          },
-                          child: const Text(
-                            'Quit',
-                            style: TextStyle(fontSize: 16),
+                              onPressed: () {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Settings coming soon')),
+                                );
+                              },
+                              child: const Text(
+                                'Settings',
+                                style: TextStyle(fontSize: 16),
+                              ),
+                            ),
                           ),
-                        ),
+                          const SizedBox(height: 16),
+                          
+                          // Quit Button
+                          SizedBox(
+                            width: double.infinity,
+                            height: 50,
+                            child: FilledButton(
+                              style: FilledButton.styleFrom(
+                                backgroundColor: AppColors.platinum,
+                                foregroundColor: AppColors.crayolaBlue,
+                              ),
+                              onPressed: () {
+                                showDialog(
+                                  context: context,
+                                  builder: (context) => AlertDialog(
+                                    title: const Text('Vil du avslutte?'),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () => Navigator.pop(context),
+                                        child: const Text('Tilbake'),
+                                      ),
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.pop(context);
+                                        },
+                                        child: const Text('Avslutt', style: TextStyle(color: AppColors.errorRed)),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                              child: const Text(
+                                'Avslutt',
+                                style: TextStyle(fontSize: 16),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
+                  ],
+                    ),
                   ),
                 ),
               ],
