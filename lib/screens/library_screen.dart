@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_master_app/models/test_definition.dart';
 import 'package:flutter_master_app/session/session_controller.dart';
+import 'package:flutter_master_app/theme/app_theme.dart';
 
 class LibraryScreen extends ConsumerStatefulWidget {
   final List<TestDefinition> registry;
@@ -22,22 +23,69 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
         .toList();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Choose tests')),
+      appBar: AppBar(
+        title: const Text(
+          'Velg tester',
+          style: TextStyle(color: AppColors.white),
+        ),
+        backgroundColor: AppColors.crayolaBlue,
+        elevation: 4,
+      ),
       body: ListView(
         children: [
-          ListTile(
-            title: const Text('Selected plan'),
-            subtitle: Text(plan.isEmpty ? 'No tests selected' : plan.join(', ')),
-          ),
           for (final t in widget.registry)
-            Card(
-              child: ListTile(
-                leading: Icon(t.icon),
-                title: Text(t.title),
-                subtitle: Text('id: ${t.id}'),
-                trailing: Checkbox(
-                  value: selectedIds.contains(t.id),
-                  onChanged: (_) {
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              child: Card(
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: BorderSide(
+                    color: selectedIds.contains(t.id)
+                        ? AppColors.crayolaBlue
+                        : AppColors.lavender,
+                    width: selectedIds.contains(t.id) ? 3 : 1,
+                  ),
+                ),
+                color: selectedIds.contains(t.id)
+                    ? AppColors.lavender.withValues(alpha: 0.3)
+                    : AppColors.white,
+                child: ListTile(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  leading: Container(
+                    width: 50,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color: AppColors.lavender,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(
+                      t.icon,
+                      color: AppColors.crayolaBlue,
+                      size: 28,
+                    ),
+                  ),
+                  title: Text(
+                    t.title,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          color: AppColors.charcoalBlue,
+                          fontWeight: FontWeight.w600,
+                        ),
+                  ),
+                  trailing: Checkbox(
+                    activeColor: AppColors.crayolaBlue,
+                    value: selectedIds.contains(t.id),
+                    onChanged: (_) {
+                      setState(() {
+                        if (selectedIds.contains(t.id)) {
+                          selectedIds.remove(t.id);
+                        } else {
+                          selectedIds.add(t.id);
+                        }
+                      });
+                    },
+                  ),
+                  onTap: () {
                     setState(() {
                       if (selectedIds.contains(t.id)) {
                         selectedIds.remove(t.id);
@@ -47,15 +95,6 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                     });
                   },
                 ),
-                onTap: () {
-                  setState(() {
-                    if (selectedIds.contains(t.id)) {
-                      selectedIds.remove(t.id);
-                    } else {
-                      selectedIds.add(t.id);
-                    }
-                  });
-                },
               ),
             ),
           Padding(

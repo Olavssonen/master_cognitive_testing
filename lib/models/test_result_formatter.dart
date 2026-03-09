@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:flutter_master_app/theme/app_theme.dart';
 
 /// Abstract formatter for displaying test results
 /// Each test type implements this to define how its data is displayed
@@ -156,7 +157,7 @@ class TMTTestFormatter implements TestResultFormatter {
                           const SizedBox(height: 8),
                           Container(
                             decoration: BoxDecoration(
-                              border: Border.all(color: Colors.grey),
+                              border: Border.all(color: AppColors.grey500),
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Image.memory(

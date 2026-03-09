@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_master_app/widgets/test_shell.dart';
 import 'package:flutter_master_app/widgets/stroop_helpers.dart';
+import 'package:flutter_master_app/theme/app_theme.dart';
 
 /// Tutorial screen for Stroop Test
 class StroopTutorial extends StatefulWidget {
@@ -121,7 +122,7 @@ class _StroopTutorialState extends State<StroopTutorial>
 
     setState(() {
       feedbackLetter = letter;
-      feedbackColor = isCorrect ? Colors.green : Colors.red;
+      feedbackColor = isCorrect ? AppColors.successGreen : AppColors.errorRed;
     });
 
     _feedbackController.reset();
@@ -265,7 +266,7 @@ class _StroopTutorialState extends State<StroopTutorial>
           for (int i = 0; i < colorLetters.length; i++)
             FeedbackStroopButton(
               letter: colorLetters[i],
-              backgroundColor: stage == 0 ? colors[i] : Colors.grey[700]!,
+              backgroundColor: stage == 0 ? colors[i] : AppColors.grey700,
               label: stage == 0 ? colorNames[i] : null,
               size: StroopLayout.unifiedButtonSize,
               onPressed: () => _onButtonPressed(colorLetters[i]),

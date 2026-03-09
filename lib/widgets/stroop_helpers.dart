@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../theme/app_theme.dart';
+
 /// Centralized constants for Stroop test
 class StroopColorConstants {
   static const List<Color> colors = [
@@ -87,7 +89,7 @@ class StroopColorButton extends StatelessWidget {
               style: TextStyle(
                 fontSize: size * 0.32,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: AppColors.white,
               ),
             ),
             if (label != null) ...[
@@ -96,7 +98,7 @@ class StroopColorButton extends StatelessWidget {
                 label!,
                 style: TextStyle(
                   fontSize: size * 0.15,
-                  color: Colors.white,
+                  color: AppColors.white,
                 ),
                 textAlign: TextAlign.center,
               ),

@@ -3,6 +3,7 @@ import 'package:flutter_master_app/models/test_definition.dart';
 import 'package:flutter_master_app/widgets/test_shell.dart';
 import 'package:flutter_master_app/widgets/stroop_helpers.dart';
 import 'package:flutter_master_app/tutorials/stroop_tutorial.dart';
+import 'package:flutter_master_app/theme/app_theme.dart';
 
 final stroopTest = TestDefinition(
   id: 'stroop',
@@ -171,7 +172,7 @@ class _StroopTestState extends State<StroopTest> with TickerProviderStateMixin {
 
     setState(() {
       feedbackLetter = letter;
-      feedbackColor = isCorrect ? Colors.green : Colors.red;
+      feedbackColor = isCorrect ? AppColors.successGreen : AppColors.errorRed;
     });
 
     _feedbackController.reset();
@@ -252,7 +253,7 @@ class _StroopTestState extends State<StroopTest> with TickerProviderStateMixin {
                 for (final letter in StroopColorConstants.colorLetters)
                   FeedbackStroopButton(
                     letter: letter,
-                    backgroundColor: Colors.grey[700]!,
+                    backgroundColor: AppColors.grey700,
                     onPressed: () => _onButtonPressed(letter),
                     feedbackController: _feedbackController,
                     feedbackLetter: feedbackLetter,

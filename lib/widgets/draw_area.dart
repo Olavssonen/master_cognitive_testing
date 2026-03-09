@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/app_theme.dart';
 
 class DrawArea extends StatefulWidget {
   const DrawArea({super.key});
@@ -15,7 +16,7 @@ class _DrawAreaState extends State<DrawArea> {
     return Container(
       width: double.infinity,
       height: 300,
-      color: Colors.grey[100],
+      color: AppColors.grey100,
       child: GestureDetector(
         onPanStart: (details) {
           setState(() {
