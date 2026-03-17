@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'dart:math';
 import 'package:flutter_master_app/models/test_definition.dart';
 import 'package:flutter_master_app/widgets/test_shell.dart';
 
@@ -54,72 +53,96 @@ class ClockTestWidget extends StatefulWidget {
 }
 
 class _ClockTestWidgetState extends State<ClockTestWidget> {
-  // Track positions for scoring - updated during drag
-  final Map<int, Offset> draggedPositions = {};
-  final Map<int, Offset> finalPositions = {};
-  final Map<int, Offset> dragStartPositions = {};
-  final GlobalKey _stackKey = GlobalKey();
-
-  late Offset clockCenter;
-  late double clockRadius;
-  late double screenWidth;
-  late double screenHeight;
+  // Track position of numbers on the overlay
+  final Map<int, Offset> numberPositions = {};
+  
+  // Track drag state to calculate deltas properly
+  final Map<int, Offset> dragStartGlobalPos = {};
+  final Map<int, Offset> dragStartNumberPos = {};
+  
+  // Track which number is currently being dragged
+  int? currentlyDraggingNumber;
+  
+  final GlobalKey<State> _stackKey = GlobalKey();
 
   @override
   void initState() {
     super.initState();
-  }
-
-  void _updateNumberPosition(int number, Offset globalPosition) {
-    setState(() {
-      draggedPositions[number] = globalPosition;
-    });
-  }
-
-  double _calculateAngle(Offset position) {
-    final angle = atan2(position.dy, position.dx) * 180 / pi + 90;
-    return (angle + 360) % 360;
+    // Initialize all numbers at bottom (not on overlay)
+    for (int i = 1; i <= 12; i++) {
+      numberPositions[i] = const Offset(-1000, -1000); // Offscreen
+    }
   }
 
   Widget _buildNumberCircle(int number) {
     const circleSizePixels = 70.0;
-    final isDragging = draggedPositions.containsKey(number);
-    final isPlaced = finalPositions.containsKey(number);
-
-    return GestureDetector(
-      onPanStart: (details) {
-        setState(() {
-          dragStartPositions[number] = details.globalPosition;
-        });
-      },
-      onPanUpdate: (details) {
-        _updateNumberPosition(number, details.globalPosition);
-      },
-      onPanEnd: (details) {
-        setState(() {
-          if (draggedPositions.containsKey(number)) {
-            finalPositions[number] = draggedPositions[number]!;
-          }
-          draggedPositions.remove(number);
-          dragStartPositions.remove(number);
-        });
-      },
-      child: Opacity(
-        opacity: (isDragging || isPlaced) ? 0 : 1,
-        child: Container(
-          width: circleSizePixels,
-          height: circleSizePixels,
-          decoration: const BoxDecoration(
-            color: Colors.blue,
-            shape: BoxShape.circle,
-          ),
-          alignment: Alignment.center,
-          child: Text(
-            '$number',
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              fontSize: 18,
+    final position = numberPositions[number]!;
+    
+    // Hide the original number if it's on the overlay (not offscreen)
+    final isOnOverlay = position.dx > -100 && position.dy > -100;
+    
+    return Opacity(
+      opacity: isOnOverlay ? 0 : 1,
+      child: IgnorePointer(
+        ignoring: isOnOverlay,
+        child: GestureDetector(
+          onPanStart: (details) {
+            if (currentlyDraggingNumber != null) return;
+            
+            final stackBox = _stackKey.currentContext?.findRenderObject() as RenderBox?;
+            if (stackBox == null) return;
+            
+            final localPos = stackBox.globalToLocal(details.globalPosition);
+            
+            setState(() {
+              currentlyDraggingNumber = number;
+              dragStartGlobalPos[number] = details.globalPosition;
+              dragStartNumberPos[number] = Offset(
+                localPos.dx - circleSizePixels / 2,
+                localPos.dy - circleSizePixels / 2,
+              );
+              numberPositions[number] = dragStartNumberPos[number]!;
+            });
+          },
+          onPanUpdate: (details) {
+            if (currentlyDraggingNumber != number) return;
+            
+            final delta = Offset(
+              details.globalPosition.dx - dragStartGlobalPos[number]!.dx,
+              details.globalPosition.dy - dragStartGlobalPos[number]!.dy,
+            );
+            
+            setState(() {
+              numberPositions[number] = Offset(
+                dragStartNumberPos[number]!.dx + delta.dx,
+                dragStartNumberPos[number]!.dy + delta.dy,
+              );
+            });
+          },
+          onPanEnd: (details) {
+            if (currentlyDraggingNumber != number) return;
+            
+            setState(() {
+              currentlyDraggingNumber = null;
+              dragStartGlobalPos.remove(number);
+              dragStartNumberPos.remove(number);
+            });
+          },
+          child: Container(
+            width: circleSizePixels,
+            height: circleSizePixels,
+            decoration: const BoxDecoration(
+              color: Colors.blue,
+              shape: BoxShape.circle,
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              '$number',
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
             ),
           ),
         ),
@@ -180,31 +203,31 @@ class _ClockTestWidgetState extends State<ClockTestWidget> {
                 child: SingleChildScrollView(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // First row of 6 numbers
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(6, (index) {
-                        final number = index + 1;
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
-                          child: _buildNumberCircle(number),
-                        );
-                      }),
-                    ),
-                    const SizedBox(height: 25),
-                    // Second row of 6 numbers
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(6, (index) {
-                        final number = index + 7;
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
-                          child: _buildNumberCircle(number),
-                        );
-                      }),
-                    ),
-                  ],
+                    children: [
+                      // First row of 6 numbers
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: List.generate(6, (index) {
+                          final number = index + 1;
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            child: _buildNumberCircle(number),
+                          );
+                        }),
+                      ),
+                      const SizedBox(height: 25),
+                      // Second row of 6 numbers
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: List.generate(6, (index) {
+                          final number = index + 7;
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            child: _buildNumberCircle(number),
+                          );
+                        }),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -230,107 +253,41 @@ class _ClockTestWidgetState extends State<ClockTestWidget> {
             ),
           ],
         ),
-        // Overlay for dragged numbers
+        // Overlay for dragged/placed numbers
         ..._buildDraggedOverlay(),
       ],
     );
   }
 
   List<Widget> _buildDraggedOverlay() {
-    final stackRenderBox = _stackKey.currentContext?.findRenderObject() as RenderBox?;
-    if (stackRenderBox == null) return [];
-
+    const circleSizePixels = 70.0;
     final widgets = <Widget>[];
-    final stackHeight = stackRenderBox.size.height;
-    // Calculate approximate clock bottom position (60% of first 5 flex + 2 flex spacer)
-    // Rough constraint: numbers shouldn't go above 65% of screen height
-    final maxTopConstraint = stackHeight * 0.65;
-    
-    // Render currently dragging numbers
-    for (var entry in draggedPositions.entries) {
-      final localPos = stackRenderBox.globalToLocal(entry.value);
-      
-      widgets.add(
-        Positioned(
-          left: localPos.dx - 35,
-          top: localPos.dy - 35,
-          child: IgnorePointer(
-            child: Container(
-              width: 70,
-              height: 70,
-              decoration: const BoxDecoration(
-                color: Colors.blue,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black26,
-                    blurRadius: 4,
-                  ),
-                ],
-              ),
-              alignment: Alignment.center,
-              child: Text(
-                '${entry.key}',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                ),
-              ),
-            ),
-          ),
-        ),
-      );
-    }
 
-    // Render finally placed numbers
-    for (var entry in finalPositions.entries) {
-      final localPos = stackRenderBox.globalToLocal(entry.value);
+    for (var entry in numberPositions.entries) {
+      final number = entry.key;
+      final position = entry.value;
       
+      // Only show if position is not offscreen
+      if (position.dx < -100 || position.dy < -100) continue;
+
       widgets.add(
         Positioned(
-          left: localPos.dx - 35,
-          top: localPos.dy - 35,
-          child: GestureDetector(
-            onPanStart: (details) {
-              setState(() {
-                dragStartPositions[entry.key] = details.globalPosition;
-                finalPositions.remove(entry.key);
-              });
-            },
-            onPanUpdate: (details) {
-              _updateNumberPosition(entry.key, details.globalPosition);
-            },
-            onPanEnd: (details) {
-              setState(() {
-                if (draggedPositions.containsKey(entry.key)) {
-                  finalPositions[entry.key] = draggedPositions[entry.key]!;
-                }
-                draggedPositions.remove(entry.key);
-                dragStartPositions.remove(entry.key);
-              });
-            },
-            child: Container(
-              width: 70,
-              height: 70,
-              decoration: const BoxDecoration(
-                color: Colors.blue,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black26,
-                    blurRadius: 4,
-                  ),
-                ],
-              ),
-              alignment: Alignment.center,
-              child: Text(
-                '${entry.key}',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                ),
+          left: position.dx,
+          top: position.dy,
+          child: Container(
+            width: circleSizePixels,
+            height: circleSizePixels,
+            decoration: const BoxDecoration(
+              color: Colors.blue,
+              shape: BoxShape.circle,
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              '$number',
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
               ),
             ),
           ),
