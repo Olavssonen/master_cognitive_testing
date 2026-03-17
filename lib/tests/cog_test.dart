@@ -322,6 +322,7 @@ class _ClockTestWidgetState extends State<ClockTestWidget> {
                           strokeColor: Theme.of(context).colorScheme.primary,
                           centerColor: Theme.of(context).colorScheme.primary,
                           boundaryColor: AppColors.errorRed,
+                          fillColor: Theme.of(context).colorScheme.primary,
                         ),
                       ),
                     );
@@ -503,6 +504,7 @@ class ClockPainter extends CustomPainter {
   final Color strokeColor;
   final Color centerColor;
   final Color boundaryColor;
+  final Color fillColor;
 
   ClockPainter({
     required this.clockRadius,
@@ -511,6 +513,7 @@ class ClockPainter extends CustomPainter {
     required this.strokeColor,
     required this.centerColor,
     required this.boundaryColor,
+    required this.fillColor,
   });
 
   @override
@@ -525,11 +528,15 @@ class ClockPainter extends CustomPainter {
       // Draw tolerance area bands
       _drawToleranceAreas(canvas, center);
     }
-    
-    // Draw the main clock circle outline
+        // Fill the inside of the clock circle with primary color at 50% opacity
+    final fillPaint = Paint()
+      ..color = fillColor.withOpacity(0.1)
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(center, clockRadius, fillPaint);
+        // Draw the main clock circle outline
     final circlePaint = Paint()
       ..color = strokeColor
-      ..strokeWidth = 4
+      ..strokeWidth = 6
       ..style = PaintingStyle.stroke;
     canvas.drawCircle(center, clockRadius, circlePaint);
     
@@ -537,7 +544,7 @@ class ClockPainter extends CustomPainter {
     final centerPaint = Paint()
       ..color = centerColor
       ..style = PaintingStyle.fill;
-    canvas.drawCircle(center, 11, centerPaint);
+    canvas.drawCircle(center, 16, centerPaint);
   }
 
   void _drawPizzaSlices(Canvas canvas, Offset center) {
@@ -633,7 +640,8 @@ class ClockPainter extends CustomPainter {
         oldDelegate.debugMode != debugMode ||
         oldDelegate.strokeColor != strokeColor ||
         oldDelegate.centerColor != centerColor ||
-        oldDelegate.boundaryColor != boundaryColor;
+        oldDelegate.boundaryColor != boundaryColor ||
+        oldDelegate.fillColor != fillColor;
   }
 }
 
