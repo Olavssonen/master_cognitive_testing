@@ -190,12 +190,31 @@ class TMTTestFormatter implements TestResultFormatter {
   }
 }
 
+/// Clock Test (Mini-Cog) Formatter
+class CogTestFormatter implements TestResultFormatter {
+  @override
+  Text getTextSummary(Map<String, dynamic> summary) {
+    final correctNumbers = summary['correct_numbers'] as int? ?? 0;
+    final totalNumbers = summary['total_numbers'] as int? ?? 12;
+    final totalScore = summary['total_score'] as int? ?? 0;
+
+    return Text(
+      'Numbers placed correctly: $correctNumbers/$totalNumbers\n'
+      'Score: $totalScore/12',
+    );
+  }
+
+  @override
+  Widget? getDetailedView(Map<String, dynamic> summary) => null;
+}
+
 /// Factory to get the appropriate formatter for a test type
 class TestResultFormatterFactory {
   static TestResultFormatter getFormatter(String testId) {
     return switch (testId) {
       'counter' => CounterTestFormatter(),
       'tap10' => Tap10TestFormatter(),
+      'cog' => CogTestFormatter(),
       'stroop' => StroopTestFormatter(),
       'TMT' => TMTTestFormatter(),
       _ => _DefaultFormatter(),
