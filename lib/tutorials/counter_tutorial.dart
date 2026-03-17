@@ -16,7 +16,6 @@ class _CounterTutorialState extends State<CounterTutorial> {
   @override
   Widget build(BuildContext context) {
     return TestShell(
-      title: 'Counter Test - Tutorial',
       child: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,

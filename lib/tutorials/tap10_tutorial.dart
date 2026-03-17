@@ -32,7 +32,6 @@ class _Tap10TutorialState extends State<Tap10Tutorial> {
     final progress = (taps / maxTaps * 100).toStringAsFixed(0);
 
     return TestShell(
-      title: 'Tap 10 Times - Tutorial',
       child: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,

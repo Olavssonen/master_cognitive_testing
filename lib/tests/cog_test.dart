@@ -34,7 +34,6 @@ class _CogTestScreenState extends State<CogTestScreen> {
   @override
   Widget build(BuildContext context) {
     return TestShell(
-      title: 'Clock Test',
       child: clockTest,
     );
   }
@@ -320,8 +319,8 @@ class _ClockTestWidgetState extends State<ClockTestWidget> {
                           clockRadius: radius,
                           toleranceMargin: toleranceMargin,
                           debugMode: debugMode,
-                          strokeColor: Theme.of(context).colorScheme.onSurface,
-                          centerColor: Theme.of(context).colorScheme.onSurface,
+                          strokeColor: Theme.of(context).colorScheme.primary,
+                          centerColor: Theme.of(context).colorScheme.primary,
                           boundaryColor: AppColors.errorRed,
                         ),
                       ),
@@ -530,7 +529,7 @@ class ClockPainter extends CustomPainter {
     // Draw the main clock circle outline
     final circlePaint = Paint()
       ..color = strokeColor
-      ..strokeWidth = 3
+      ..strokeWidth = 4
       ..style = PaintingStyle.stroke;
     canvas.drawCircle(center, clockRadius, circlePaint);
     
@@ -538,7 +537,7 @@ class ClockPainter extends CustomPainter {
     final centerPaint = Paint()
       ..color = centerColor
       ..style = PaintingStyle.fill;
-    canvas.drawCircle(center, 4, centerPaint);
+    canvas.drawCircle(center, 11, centerPaint);
   }
 
   void _drawPizzaSlices(Canvas canvas, Offset center) {

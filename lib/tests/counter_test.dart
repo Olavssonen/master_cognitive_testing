@@ -23,7 +23,6 @@ class _CounterTestScreenState extends State<CounterTestScreen> {
   @override
   Widget build(BuildContext context) {
     return TestShell(
-      title: 'Counter Test',
       child: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,

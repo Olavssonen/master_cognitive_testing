@@ -404,7 +404,6 @@ class _TMTTest extends State<TMTTest> {
   @override
   Widget build(BuildContext context) {
     return TestShell(
-      title: 'Trail Making Test',
       child: Column(
         mainAxisSize: MainAxisSize.max,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,

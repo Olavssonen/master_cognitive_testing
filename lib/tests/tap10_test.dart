@@ -25,7 +25,6 @@ class _Tap10TestScreenState extends State<Tap10TestScreen> {
     final done = taps >= 10;
 
     return TestShell(
-      title: 'Tap 10 Times',
       child: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,

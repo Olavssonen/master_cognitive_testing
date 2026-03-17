@@ -44,7 +44,6 @@ class _StroopTestScreenState extends State<StroopTestScreen> {
         );
       case 1:
         return TestShell(
-          title: 'Stroop Test',
           child: StroopIntermediateScreen(
             onReplay: () {
               setState(() => stage = 0);
@@ -220,7 +219,6 @@ class _StroopTestState extends State<StroopTest> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return TestShell(
-      title: 'Stroop Test',
       child: StroopScreen(
         progressText: '${currentIndex + 1}/$numberOfWords',
         middleContent: !testComplete

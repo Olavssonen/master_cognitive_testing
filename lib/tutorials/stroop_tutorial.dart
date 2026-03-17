@@ -184,7 +184,6 @@ class _StroopTutorialState extends State<StroopTutorial>
     // Show introduction screen first
     if (showIntroduction) {
       return TestShell(
-        title: 'Stroop Test - Tutorial',
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -217,7 +216,6 @@ class _StroopTutorialState extends State<StroopTutorial>
 
     if (currentItemIndex >= currentItems.length) {
       return TestShell(
-        title: 'Stroop Test - Tutorial',
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -254,7 +252,6 @@ class _StroopTutorialState extends State<StroopTutorial>
     final colorNames = StroopColorConstants.colorNames;
 
     return TestShell(
-      title: 'Stroop Test - Tutorial',
       child: StroopScreen(
         progressText: '${currentItemIndex + 1}/$answersNeededPerStage',
         middleContent: StroopWordDisplay(

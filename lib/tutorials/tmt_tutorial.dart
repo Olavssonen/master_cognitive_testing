@@ -271,7 +271,6 @@ class _TMTTutorialState extends State<TMTTutorial> with TickerProviderStateMixin
   @override
   Widget build(BuildContext context) {
     return TestShell(
-      title: 'Trail Making Test - Tutorial',
       child: Column(
         mainAxisSize: MainAxisSize.max,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
