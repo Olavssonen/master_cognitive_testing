@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_master_app/models/test_definition.dart';
 import 'package:flutter_master_app/widgets/test_shell.dart';
+import 'package:flutter_master_app/theme/app_theme.dart';
 import 'dart:math' as Math;
 
 final cogTest = TestDefinition(
@@ -228,15 +229,15 @@ class _ClockTestWidgetState extends State<ClockTestWidget> {
           child: Container(
             width: circleSizePixels,
             height: circleSizePixels,
-            decoration: const BoxDecoration(
-              color: Colors.blue,
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primary,
               shape: BoxShape.circle,
             ),
             alignment: Alignment.center,
             child: Text(
               '$number',
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onPrimary,
                 fontWeight: FontWeight.bold,
                 fontSize: 18,
               ),
@@ -273,9 +274,9 @@ class _ClockTestWidgetState extends State<ClockTestWidget> {
               flex: 1,
               child: Container(
                 alignment: Alignment.center,
-                child: const Text(
-                  'Arrange the numbers around the clock',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                child: Text(
+                  'Lag en klokke ved å dra tallene til riktig posisjon',
+                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.w500, color: Theme.of(context).colorScheme.primary),
                 ),
               ),
             ),
@@ -319,6 +320,9 @@ class _ClockTestWidgetState extends State<ClockTestWidget> {
                           clockRadius: radius,
                           toleranceMargin: toleranceMargin,
                           debugMode: debugMode,
+                          strokeColor: Theme.of(context).colorScheme.onSurface,
+                          centerColor: Theme.of(context).colorScheme.onSurface,
+                          boundaryColor: AppColors.errorRed,
                         ),
                       ),
                     );
@@ -361,22 +365,32 @@ class _ClockTestWidgetState extends State<ClockTestWidget> {
                 ),
               ),
             ),
-            // Buttons - fixed at bottom
+            // Submit button - prominent, half width
             Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  FilledButton(
-                    onPressed: _submitTest,
-                    child: const Text('Submit'),
+              padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+              child: SizedBox(
+                width: 200,
+                child: FilledButton(
+                  onPressed: _submitTest,
+                  child: const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 12.0),
+                    child: Text(
+                      'Ferdig',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
                   ),
-                  const SizedBox(width: 16),
-                  TextButton(
-                    onPressed: widget.onAbort,
-                    child: const Text('Abort'),
-                  ),
-                ],
+                ),
+              ),
+            ),
+            // Abort button - at bottom
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+              child: SizedBox(
+                width: 200,
+                child: TextButton(
+                  onPressed: widget.onAbort,
+                  child: const Text('Avbryt'),
+                ),
               ),
             ),
           ],
@@ -450,7 +464,7 @@ class _ClockTestWidgetState extends State<ClockTestWidget> {
               height: circleSizePixels,
               decoration: BoxDecoration(
                 color: () {
-                  if (!debugMode) return Colors.blue;
+                  if (!debugMode) return Theme.of(context).colorScheme.primary;
                   // Calculate the center of this number circle
                   final numberCenter = Offset(
                     position.dx + circleSizePixels / 2,
@@ -459,16 +473,16 @@ class _ClockTestWidgetState extends State<ClockTestWidget> {
                   const numberCircleRadius = circleSizePixels / 2; // 35 pixels
                   // Check if any part of the circle overlaps with valid zone
                   return _circleOverlapsValidZone(numberCenter, numberCircleRadius, number) 
-                    ? Colors.green 
-                    : Colors.blue;
+                    ? AppColors.successGreen 
+                    : Theme.of(context).colorScheme.primary;
                 }(),
                 shape: BoxShape.circle,
               ),
               alignment: Alignment.center,
               child: Text(
                 '$number',
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onPrimary,
                   fontWeight: FontWeight.bold,
                   fontSize: 18,
                 ),
@@ -487,11 +501,17 @@ class ClockPainter extends CustomPainter {
   final double clockRadius;
   final double toleranceMargin;
   final bool debugMode;
+  final Color strokeColor;
+  final Color centerColor;
+  final Color boundaryColor;
 
   ClockPainter({
     required this.clockRadius,
     required this.toleranceMargin,
     required this.debugMode,
+    required this.strokeColor,
+    required this.centerColor,
+    required this.boundaryColor,
   });
 
   @override
@@ -509,14 +529,14 @@ class ClockPainter extends CustomPainter {
     
     // Draw the main clock circle outline
     final circlePaint = Paint()
-      ..color = Colors.black
+      ..color = strokeColor
       ..strokeWidth = 3
       ..style = PaintingStyle.stroke;
     canvas.drawCircle(center, clockRadius, circlePaint);
     
     // Draw center point
     final centerPaint = Paint()
-      ..color = Colors.black
+      ..color = centerColor
       ..style = PaintingStyle.fill;
     canvas.drawCircle(center, 4, centerPaint);
   }
@@ -530,18 +550,18 @@ class ClockPainter extends CustomPainter {
     
     // Colors for different slices (for visual distinction)
     final colors = [
-      Colors.red.withOpacity(0.15),
-      Colors.orange.withOpacity(0.15),
-      Colors.yellow.withOpacity(0.15),
-      Colors.green.withOpacity(0.15),
-      Colors.blue.withOpacity(0.15),
-      Colors.indigo.withOpacity(0.15),
-      Colors.red.withOpacity(0.15),
-      Colors.orange.withOpacity(0.15),
-      Colors.yellow.withOpacity(0.15),
-      Colors.green.withOpacity(0.15),
-      Colors.blue.withOpacity(0.15),
-      Colors.indigo.withOpacity(0.15),
+      AppColors.errorRed.withOpacity(0.15),
+      AppColors.warningYellow.withOpacity(0.15),
+      AppColors.successGreen.withOpacity(0.15),
+      AppColors.crayolaBlue.withOpacity(0.15),
+      AppColors.tropicalTeal.withOpacity(0.15),
+      AppColors.lavender.withOpacity(0.15),
+      AppColors.errorRed.withOpacity(0.15),
+      AppColors.warningYellow.withOpacity(0.15),
+      AppColors.successGreen.withOpacity(0.15),
+      AppColors.crayolaBlue.withOpacity(0.15),
+      AppColors.tropicalTeal.withOpacity(0.15),
+      AppColors.lavender.withOpacity(0.15),
     ];
     
     for (int i = 0; i < sliceCount; i++) {
@@ -596,7 +616,7 @@ class ClockPainter extends CustomPainter {
     
     // Draw explicit boundary circles (these are the actual validation boundaries)
     final boundaryPaint = Paint()
-      ..color = Colors.red
+      ..color = boundaryColor
       ..strokeWidth = 2
       ..style = PaintingStyle.stroke;
     
@@ -611,7 +631,10 @@ class ClockPainter extends CustomPainter {
   bool shouldRepaint(ClockPainter oldDelegate) {
     return oldDelegate.clockRadius != clockRadius ||
         oldDelegate.toleranceMargin != toleranceMargin ||
-        oldDelegate.debugMode != debugMode;
+        oldDelegate.debugMode != debugMode ||
+        oldDelegate.strokeColor != strokeColor ||
+        oldDelegate.centerColor != centerColor ||
+        oldDelegate.boundaryColor != boundaryColor;
   }
 }
 
