@@ -265,18 +265,29 @@ class _ClockTestWidgetState extends State<ClockTestWidget> {
     return Stack(
       key: _stackKey,
       children: [
-        // Main layout
+        // Main layout - 3 dynamic sections using Expanded with flex proportions
         Column(
           children: [
-            Spacer(flex: 2),
-            // Clock section
+            // Top section - instructions (takes 1/7 of screen)
             Expanded(
-              flex: 5,
+              flex: 1,
+              child: Container(
+                alignment: Alignment.center,
+                child: const Text(
+                  'Arrange the numbers around the clock',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                ),
+              ),
+            ),
+            // Middle section - clock (takes 4/7 of screen)
+            Expanded(
+              flex: 4,
               child: Center(
                 child: LayoutBuilder(
                   builder: (context, constraints) {
-                    // Make clock responsive - use 80% of available width
-                    final screenSize = constraints.maxWidth * 0.80;
+                    // Make clock responsive - use 80% of available width or height, whichever is smaller
+                    final maxSize = (constraints.maxWidth * 0.80).clamp(0.0, constraints.maxHeight);
+                    final screenSize = maxSize;
                     final radius = screenSize / 2;
                     
                     // Store clock geometry for validation calculations
@@ -315,47 +326,42 @@ class _ClockTestWidgetState extends State<ClockTestWidget> {
                 ),
               ),
             ),
-            // Spacing between clock and numbers
-            Expanded(flex: 1, child: SizedBox.expand()),
-            // Number grid section
+            // Bottom section - numbers (takes 2/7 of screen)
             Expanded(
-              flex: 4,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 75),
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      // First row of 6 numbers
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: List.generate(6, (index) {
-                          final number = index + 1;
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 12),
-                            child: _buildNumberCircle(number),
-                          );
-                        }),
-                      ),
-                      const SizedBox(height: 25),
-                      // Second row of 6 numbers
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: List.generate(6, (index) {
-                          final number = index + 7;
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 12),
-                            child: _buildNumberCircle(number),
-                          );
-                        }),
-                      ),
-                    ],
-                  ),
+              flex: 2,
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // First row of 6 numbers
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(6, (index) {
+                        final number = index + 1;
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          child: _buildNumberCircle(number),
+                        );
+                      }),
+                    ),
+                    const SizedBox(height: 25),
+                    // Second row of 6 numbers
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(6, (index) {
+                        final number = index + 7;
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          child: _buildNumberCircle(number),
+                        );
+                      }),
+                    ),
+                  ],
                 ),
               ),
             ),
-            Spacer(flex: 1),
-            // Buttons
+            // Buttons - fixed at bottom
             Padding(
               padding: const EdgeInsets.all(12.0),
               child: Row(
