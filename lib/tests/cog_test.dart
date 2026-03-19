@@ -14,7 +14,7 @@ final cogTest = TestDefinition(
 
 // Words for the word recall test
 const List<String> targetWords = ['Banan', 'Soloppgang', 'Stol'];
-const List<String> distractorWords = ['Hus', 'Bil', 'Blomst', 'Berg', 'Sjøen', 'Fugel'];
+const List<String> distractorWords = ['Leder', 'Årstid', 'Bord', 'Landsby', 'Kjøkken', 'Baby', 'Elv'];
 
 class CogTestScreen extends StatefulWidget {
   final TestRunContext run;
@@ -113,7 +113,8 @@ class _MiniCogTestWidgetState extends State<MiniCogTestWidget> {
       'clock_numbers_total': 12,
       'hour_hand_correct': _correctHourHand,
       'minute_hand_correct': _correctMinuteHand,
-      'clock_hands_total': 2,
+      'hands_correct': _correctHourHand + _correctMinuteHand,
+      'hands_total': 2,
       'total_score': _correctWords + _correctClockNumbers + _correctHourHand + _correctMinuteHand,
     };
 
@@ -290,18 +291,22 @@ class _WordRecallPhase2State extends State<WordRecallPhase2> {
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: SizedBox(
-                    width: 400,
+                    width: 700,
                     child: Column(
                       children: [
                         // Display words as buttons in a grid
-                        GridView.count(
-                          crossAxisCount: 3,
+                        GridView.builder(
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
-                          childAspectRatio: 1.2,
-                          crossAxisSpacing: 8,
-                          mainAxisSpacing: 8,
-                          children: allWords.map((word) {
+                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            crossAxisSpacing: 16,
+                            mainAxisSpacing: 16,
+                            mainAxisExtent: 150,
+                          ),
+                          itemCount: allWords.length,
+                          itemBuilder: (context, index) {
+                            final word = allWords[index];
                             final isSelected = selectedWords.contains(word);
                             return GestureDetector(
                               onTap: () => _toggleWord(word),
@@ -312,28 +317,28 @@ class _WordRecallPhase2State extends State<WordRecallPhase2> {
                                       : Theme.of(context).colorScheme.surface,
                                   border: Border.all(
                                     color: Theme.of(context).colorScheme.primary,
-                                    width: 2,
+                                    width: 3,
                                   ),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 alignment: Alignment.center,
                                 child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
+                                  padding: const EdgeInsets.all(24.0),
                                   child: Text(
                                     word,
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
-                                      fontSize: 14,
+                                      fontSize: 45,
                                       fontWeight: FontWeight.w600,
                                       color: isSelected
                                           ? Theme.of(context).colorScheme.onPrimary
-                                          : Theme.of(context).colorScheme.onSurface,
+                                          : Theme.of(context).colorScheme.primary,
                                     ),
                                   ),
                                 ),
                               ),
                             );
-                          }).toList(),
+                          },
                         ),
                       ],
                     ),

@@ -116,23 +116,27 @@ class _FullScreenOverlayState extends State<FullScreenOverlay> with SingleTicker
             child: FadeTransition(
               opacity: _fadeAnimation,
               child: Container(
-                color: Colors.white,
+                width: double.infinity,
+                height: double.infinity,
+                color: Theme.of(context).scaffoldBackgroundColor,
                 child: widget.text != null
                     ? SlideTransition(
                         position: _positionAnimation,
-                        child: Align(
-                          alignment: Alignment.center,
-                          child: ConstrainedBox(
-                            constraints: BoxConstraints(
-                              maxWidth: widget.maxTextWidth ?? MediaQuery.of(context).size.width * 0.85,
-                            ),
-                            child: Text(
-                              widget.text!,
-                              textAlign: TextAlign.center,
-                              style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                                    fontWeight: FontWeight.w600,
-                                    color: Theme.of(context).colorScheme.primary,
-                                  ),
+                        child: Transform.translate(
+                          offset: const Offset(0, -40),
+                          child: Center(
+                            child: ConstrainedBox(
+                              constraints: BoxConstraints(
+                                maxWidth: widget.maxTextWidth ?? MediaQuery.of(context).size.width * 0.85,
+                              ),
+                              child: Text(
+                                widget.text!,
+                                textAlign: TextAlign.center,
+                                style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                                      fontWeight: FontWeight.w600,
+                                      color: Theme.of(context).colorScheme.primary,
+                                    ),
+                              ),
                             ),
                           ),
                         ),
@@ -146,23 +150,27 @@ class _FullScreenOverlayState extends State<FullScreenOverlay> with SingleTicker
             child: FadeTransition(
               opacity: _fadeAnimation,
               child: Container(
-                color: Colors.white,
+                width: double.infinity,
+                height: double.infinity,
+                color: Theme.of(context).scaffoldBackgroundColor,
                 child: widget.text != null
                     ? SlideTransition(
                         position: _positionAnimation,
-                        child: Align(
-                          alignment: Alignment.center,
-                          child: ConstrainedBox(
-                            constraints: BoxConstraints(
-                              maxWidth: widget.maxTextWidth ?? MediaQuery.of(context).size.width * 0.85,
-                            ),
-                            child: Text(
-                              widget.text!,
-                              textAlign: TextAlign.center,
-                              style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                                    fontWeight: FontWeight.w600,
-                                    color: Theme.of(context).colorScheme.primary,
-                                  ),
+                        child: Transform.translate(
+                          offset: const Offset(0, -40),
+                          child: Center(
+                            child: ConstrainedBox(
+                              constraints: BoxConstraints(
+                                maxWidth: widget.maxTextWidth ?? MediaQuery.of(context).size.width * 0.85,
+                              ),
+                              child: Text(
+                                widget.text!,
+                                textAlign: TextAlign.center,
+                                style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                                      fontWeight: FontWeight.w600,
+                                      color: Theme.of(context).colorScheme.primary,
+                                    ),
+                              ),
                             ),
                           ),
                         ),

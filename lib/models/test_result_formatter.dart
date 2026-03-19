@@ -211,10 +211,20 @@ class CogTestFormatter implements TestResultFormatter {
     final hourHandStatus = hourHandCorrect == 1 ? '✓' : '✗';
     final minuteHandStatus = minuteHandCorrect == 1 ? '✓' : '✗';
     
+    // Calculate Mini-Cog Score (0-5 points)
+    // 1 point per correct word (up to 3) + 2 points if clock is perfect (all numbers + both hands)
+    int miniCogScore = wordRecallCorrect;
+    if (correctNumbers == totalNumbers && handsCorrect == handsTotal) {
+      miniCogScore += 2; // 2 points for perfect clock
+    }
+    // If clock has any mistakes, add 0 points for clock portion
+
     // Total score
     final totalScore = summary['total_score'] as int? ?? 0;
 
     return Text(
+      'Mini-Cog Score: $miniCogScore/5\n'
+      '\n'
       'Word Recall: $wordRecallCorrect/$wordRecallTotal\n'
       'Clock Numbers: $correctNumbers/$totalNumbers\n'
       'Hour hand (10): $hourHandStatus\n'
