@@ -81,6 +81,27 @@ class _ClockTestWidgetState extends State<ClockTestWidget> {
   
   // Tolerance area: pixels inside and outside the outer circle for valid zones
   static const double toleranceMargin = 50.0;
+  
+  // State tracking for the intermediate overlay
+  bool _showingIntermediateOverlay = false;
+  String _topText = 'Lag en klokke ved å dra tallene til riktig posisjon';
+  
+  // Two phases: 'numbers' or 'hands'
+  String _phase = 'numbers';
+  
+  // Hand angles in degrees (0 = 12 o'clock, 90 = 3 o'clock, etc.)
+  double _minuteHandAngle = 66; // langeviser (minute/long hand) - pointing to 11
+  double _hourHandAngle = 300; // korteviser (hour/short hand) - pointing to 10
+  
+  // Track which hand is currently being dragged (null, 0 for minute, 1 for hour)
+  int? _draggingHandId;
+  
+  // Hand dimensions - easily adjustable
+  static const double minuteHandLength = 250.0; // longeviser
+  static const double minuteHandWidth = 32.0;
+  static const double hourHandLength = 175.0;   // korteviser
+  static const double hourHandWidth = 32.0;
+  
   @override
   void initState() {
     super.initState();
@@ -149,7 +170,7 @@ class _ClockTestWidgetState extends State<ClockTestWidget> {
 
   /// Calculate the score by checking each number's position
   /// Returns map with 'correct_numbers' and 'total_numbers'
-  Map<String, int> _calculateScore() {
+  Map<String, int> _calculateNumberScore() {
     int correctCount = 0;
     const numberCircleRadius = 35.0; // Half of circleSizePixels (70)
     
@@ -178,6 +199,43 @@ class _ClockTestWidgetState extends State<ClockTestWidget> {
     };
   }
 
+  /// Calculate hand scores by checking if hands point to correct positions
+  /// The minute hand (langeviser) should be in slice 2
+  /// The hour hand (korteviser) should be in slice 11
+  Map<String, bool> _calculateHandScore() {
+    // Get the pizza slice for each hand
+    final minuteHandSlice = _getPizzaSliceFromAngle(_minuteHandAngle);
+    final hourHandSlice = _getPizzaSliceFromAngle(_hourHandAngle);
+    
+    // Check if hands are in correct pizza slices
+    // Minute hand (langeviser/long) should be in slice 2 only
+    final minuteHandCorrect = minuteHandSlice == 2;
+    
+    // Hour hand (korteviser/short) should be in slice 11 only
+    final hourHandCorrect = hourHandSlice == 11;
+    
+    return {
+      'minute_hand_correct': minuteHandCorrect,
+      'hour_hand_correct': hourHandCorrect,
+    };
+  }
+
+  /// Convert hand angle to pizza slice number
+  /// angle: degrees where 0 = 12 o'clock, 90 = 3 o'clock, etc.
+  int _getPizzaSliceFromAngle(double angle) {
+    // Normalize angle to 0-360
+    double normalizedAngle = angle % 360;
+    if (normalizedAngle < 0) normalizedAngle += 360;
+    
+    // Each slice is 30 degrees, slice 12 is centered at 0°
+    // Add 15 degrees to shift so boundaries align at multiples of 30
+    var centerAngle = normalizedAngle + 15;
+    if (centerAngle >= 360) centerAngle -= 360;
+    
+    final sliceIndex = (centerAngle / 30).floor(); // 0-11
+    return sliceIndex == 0 ? 12 : sliceIndex;
+  }
+
   Widget _buildNumberCircle(int number) {
     const circleSizePixels = 70.0;
     final position = numberPositions[number]!;
@@ -191,6 +249,7 @@ class _ClockTestWidgetState extends State<ClockTestWidget> {
         ignoring: isOnOverlay,
         child: GestureDetector(
           onPanStart: (details) {
+            if (_phase != 'numbers') return; // Only drag in numbers phase
             if (currentlyDraggingNumber != null) return;
             
             final stackBox = _stackKey.currentContext?.findRenderObject() as RenderBox?;
@@ -209,6 +268,7 @@ class _ClockTestWidgetState extends State<ClockTestWidget> {
             });
           },
           onPanUpdate: (details) {
+            if (_phase != 'numbers') return; // Only drag in numbers phase
             if (currentlyDraggingNumber != number) return;
             
             final delta = Offset(
@@ -224,6 +284,7 @@ class _ClockTestWidgetState extends State<ClockTestWidget> {
             });
           },
           onPanEnd: (details) {
+            if (_phase != 'numbers') return; // Only drag in numbers phase
             if (currentlyDraggingNumber != number) return;
             
             setState(() {
@@ -255,21 +316,52 @@ class _ClockTestWidgetState extends State<ClockTestWidget> {
   }
 
   void _submitTest() {
-    final scoreData = _calculateScore();
-    final score = {
-      'correct_numbers': scoreData['correct_numbers'],
-      'total_numbers': scoreData['total_numbers'],
-      'total_score': scoreData['correct_numbers'],
-    };
+    if (_phase == 'numbers') {
+      // Transition to hands phase - show overlay
+      setState(() {
+        _showingIntermediateOverlay = true;
+        _topText = 'Still klokken til 10 over 11';
+        _phase = 'hands';
+      });
+      
+      // Hide overlay after it fades (duration + fade animation ~3.2 seconds)
+      Future.delayed(const Duration(milliseconds: 3200), () {
+        if (mounted) {
+          setState(() {
+            _showingIntermediateOverlay = false;
+          });
+        }
+      });
+    } else {
+      // Phase 'hands': submit the test with all scores
+      final numberScoreData = _calculateNumberScore();
+      final handScoreData = _calculateHandScore();
+      
+      // Extract hand score values to avoid nullable issues
+      final minuteHandCorrect = handScoreData['minute_hand_correct'] ?? false;
+      final hourHandCorrect = handScoreData['hour_hand_correct'] ?? false;
+      
+      final score = {
+        'correct_numbers': numberScoreData['correct_numbers'],
+        'total_numbers': 12,
+        // Separate scoring for clock hands (not part of 12 points)
+        'hour_hand_correct': hourHandCorrect ? 1 : 0,
+        'minute_hand_correct': minuteHandCorrect ? 1 : 0,
+        'hands_total': 2,
+        'hands_correct': (minuteHandCorrect && hourHandCorrect) ? 2 : (minuteHandCorrect || hourHandCorrect ? 1 : 0),
+        // Overall score
+        'total_score': numberScoreData['correct_numbers']! + (minuteHandCorrect ? 1 : 0) + (hourHandCorrect ? 1 : 0),
+      };
 
-    widget.run.complete(
-      TestResult(testId: 'cog', summary: score),
-    );
+      widget.run.complete(
+        TestResult(testId: 'cog', summary: score),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
+    final mainContent = Stack(
       key: _stackKey,
       children: [
         // Main layout - 3 dynamic sections using Expanded with flex proportions
@@ -281,7 +373,7 @@ class _ClockTestWidgetState extends State<ClockTestWidget> {
               child: Container(
                 alignment: Alignment.center,
                 child: Text(
-                  'Lag en klokke ved å dra tallene til riktig posisjon',
+                  _phase == 'hands' ? 'Still visere på klokken: 10 og 11' : _topText,
                   style: TextStyle(fontSize: 28, fontWeight: FontWeight.w500, color: Theme.of(context).colorScheme.primary),
                 ),
               ),
@@ -379,11 +471,11 @@ class _ClockTestWidgetState extends State<ClockTestWidget> {
                 width: 200,
                 child: FilledButton(
                   onPressed: _submitTest,
-                  child: const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 12.0),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 12.0),
                     child: Text(
-                      'Ferdig',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      _phase == 'numbers' ? 'Neste' : 'Ferdig',
+                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ),
@@ -404,8 +496,24 @@ class _ClockTestWidgetState extends State<ClockTestWidget> {
         ),
         // Overlay for dragged/placed numbers
         ..._buildDraggedOverlay(),
+        // Clock hands (visible in hands phase)
+        if (_phase == 'hands')
+          _buildClockHands(),
       ],
     );
+    
+    // Conditionally wrap with FullScreenOverlay when showing the intermediate overlay
+    if (_showingIntermediateOverlay) {
+      return FullScreenOverlay(
+        text: 'Still klokken til 10 0ver 11',
+        animateTo: const Offset(0, -0.35),
+        maxTextWidth: 800,
+        duration: const Duration(seconds: 2),
+        child: mainContent,
+      );
+    }
+    
+    return mainContent;
   }
 
   List<Widget> _buildDraggedOverlay() {
@@ -425,6 +533,7 @@ class _ClockTestWidgetState extends State<ClockTestWidget> {
           top: position.dy,
           child: GestureDetector(
             onPanStart: (details) {
+              if (_phase != 'numbers') return; // Only drag in numbers phase
               if (currentlyDraggingNumber != null) return;
               
               final stackBox = _stackKey.currentContext?.findRenderObject() as RenderBox?;
@@ -443,6 +552,7 @@ class _ClockTestWidgetState extends State<ClockTestWidget> {
               });
             },
             onPanUpdate: (details) {
+              if (_phase != 'numbers') return; // Only drag in numbers phase
               if (currentlyDraggingNumber != number) return;
               
               final delta = Offset(
@@ -458,6 +568,7 @@ class _ClockTestWidgetState extends State<ClockTestWidget> {
               });
             },
             onPanEnd: (details) {
+              if (_phase != 'numbers') return; // Only drag in numbers phase
               if (currentlyDraggingNumber != number) return;
               
               setState(() {
@@ -501,6 +612,244 @@ class _ClockTestWidgetState extends State<ClockTestWidget> {
     }
 
     return widgets;
+  }
+
+  /// Build the clock hands widget for the hands phase
+  Widget _buildClockHands() {
+    if (_phase != 'hands') {
+      return const SizedBox.shrink();
+    }
+    
+    if (clockCenter == null) {
+      return const SizedBox.shrink();
+    }
+
+    final clockCenterNotNull = clockCenter!;
+
+    return Stack(
+      children: [
+        // Render clock hands - ignore pointer so touches pass through
+        Positioned.fill(
+          child: IgnorePointer(
+            child: CustomPaint(
+              painter: ClockHandsPainter(
+                minuteHandAngle: _minuteHandAngle,
+                hourHandAngle: _hourHandAngle,
+                clockCenter: clockCenterNotNull,
+                minuteHandLength: minuteHandLength,
+                minuteHandWidth: minuteHandWidth,
+                hourHandLength: hourHandLength,
+                hourHandWidth: hourHandWidth,
+                strokeColor: Theme.of(context).colorScheme.primary,
+              ),
+              size: Size.infinite,
+            ),
+          ),
+        ),
+        // Gesture detection only inside the clock circle
+        Positioned(
+          left: clockCenterNotNull.dx - clockRadius,
+          top: clockCenterNotNull.dy - clockRadius,
+          width: clockRadius * 2,
+          height: clockRadius * 2,
+          child: GestureDetector(
+            onPanStart: (details) {
+              // Only start hand drag if touch is inside the clock circle
+              final stackBox = _stackKey.currentContext?.findRenderObject() as RenderBox?;
+              if (stackBox == null) return;
+
+              final localPos = stackBox.globalToLocal(details.globalPosition);
+              final dx = localPos.dx - clockCenterNotNull.dx;
+              final dy = localPos.dy - clockCenterNotNull.dy;
+              
+              // Check if touch is inside the clock circle
+              final distFromCenter = Offset(dx, dy).distance;
+              if (distFromCenter > clockRadius) {
+                return; // Outside clock - ignore
+              }
+
+              // Check if touch is close enough to a hand (anywhere along the line)
+              final minuteHandTip = _getHandTipOffset(_minuteHandAngle, minuteHandLength);
+              final hourHandTip = _getHandTipOffset(_hourHandAngle, hourHandLength);
+              
+              // Calculate distance to the hand line segments
+              final distToMinuteHand = _distanceToLineSegment(
+                Offset.zero, // Clock center in local coords
+                minuteHandTip,
+                Offset(dx, dy),
+              );
+              final distToHourHand = _distanceToLineSegment(
+                Offset.zero, // Clock center in local coords
+                hourHandTip,
+                Offset(dx, dy),
+              );
+
+              // Determine which hand to drag (closer one wins, within 20 pixels)
+              if (distToMinuteHand < 20 && distToMinuteHand < distToHourHand) {
+                setState(() {
+                  _draggingHandId = 0; // Minute hand
+                });
+              } else if (distToHourHand < 20) {
+                setState(() {
+                  _draggingHandId = 1; // Hour hand
+                });
+              }
+            },
+            onPanUpdate: (details) {
+              // Only update if a hand drag is in progress
+              if (_draggingHandId == null) return;
+
+              final stackBox = _stackKey.currentContext?.findRenderObject() as RenderBox?;
+              if (stackBox == null) return;
+
+              final localPos = stackBox.globalToLocal(details.globalPosition);
+              final dx = localPos.dx - clockCenterNotNull.dx;
+              final dy = localPos.dy - clockCenterNotNull.dy;
+
+              // Calculate angle in degrees (0 = 12 o'clock)
+              // No need to check if inside clock - allow dragging outside
+              var angle = (Math.atan2(dx, -dy) * 180 / Math.pi).toDouble();
+              if (angle < 0) angle += 360;
+
+              // Update the hand that's being dragged
+              if (_draggingHandId == 0) {
+                setState(() {
+                  _minuteHandAngle = angle;
+                });
+              } else if (_draggingHandId == 1) {
+                setState(() {
+                  _hourHandAngle = angle;
+                });
+              }
+            },
+            onPanEnd: (details) {
+              // Stop dragging any hand
+              setState(() {
+                _draggingHandId = null;
+              });
+            },
+            child: Container(
+              color: Colors.transparent,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Get the tip offset of a hand relative to clock center
+  Offset _getHandTipOffset(double angle, double length) {
+    final radians = (angle - 90) * Math.pi / 180; // Adjust so 0° is up
+    return Offset(
+      length * Math.cos(radians),
+      length * Math.sin(radians),
+    );
+  }
+
+  /// Calculate the shortest distance from a point to a line segment
+  /// lineStart: start of the line (clock center in local coords)
+  /// lineEnd: end of the line (hand tip in local coords)
+  /// point: the point to measure distance from
+  double _distanceToLineSegment(Offset lineStart, Offset lineEnd, Offset point) {
+    final dx = lineEnd.dx - lineStart.dx;
+    final dy = lineEnd.dy - lineStart.dy;
+    final lengthSq = dx * dx + dy * dy;
+
+    if (lengthSq == 0) {
+      // Line segment is actually a point
+      return (point - lineStart).distance;
+    }
+
+    // Calculate the projection of the point onto the line
+    var t = ((point.dx - lineStart.dx) * dx + (point.dy - lineStart.dy) * dy) / lengthSq;
+    t = (t < 0) ? 0 : (t > 1) ? 1 : t;
+
+    final projectionX = lineStart.dx + t * dx;
+    final projectionY = lineStart.dy + t * dy;
+    final projection = Offset(projectionX, projectionY);
+
+    return (point - projection).distance;
+  }
+}
+
+class ClockHandsPainter extends CustomPainter {
+  final double minuteHandAngle;
+  final double hourHandAngle;
+  final Offset clockCenter;
+  final double minuteHandLength;
+  final double minuteHandWidth;
+  final double hourHandLength;
+  final double hourHandWidth;
+  final Color strokeColor;
+
+  ClockHandsPainter({
+    required this.minuteHandAngle,
+    required this.hourHandAngle,
+    required this.clockCenter,
+    required this.minuteHandLength,
+    required this.minuteHandWidth,
+    required this.hourHandLength,
+    required this.hourHandWidth,
+    required this.strokeColor,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    // Draw minute hand (langeviser - longer)
+    _drawHand(
+      canvas,
+      minuteHandAngle,
+      minuteHandLength,
+      minuteHandWidth,
+      strokeColor,
+    );
+
+    // Draw hour hand (korteviser - shorter)
+    _drawHand(
+      canvas,
+      hourHandAngle,
+      hourHandLength,
+      hourHandWidth,
+      strokeColor.withOpacity(0.7),
+    );
+
+    // Draw center dot
+    final centerPaint = Paint()
+      ..color = strokeColor
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(clockCenter, 10, centerPaint);
+  }
+
+  void _drawHand(
+    Canvas canvas,
+    double angle,
+    double length,
+    double width,
+    Color color,
+  ) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = width
+      ..strokeCap = StrokeCap.round
+      ..style = PaintingStyle.stroke;
+
+    // Convert angle to radians (0° at top)
+    final radians = (angle - 90) * Math.pi / 180;
+
+    final endX = clockCenter.dx + length * Math.cos(radians);
+    final endY = clockCenter.dy + length * Math.sin(radians);
+
+    canvas.drawLine(
+      clockCenter,
+      Offset(endX, endY),
+      paint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(ClockHandsPainter oldDelegate) {
+    return oldDelegate.minuteHandAngle != minuteHandAngle ||
+        oldDelegate.hourHandAngle != hourHandAngle;
   }
 }
 

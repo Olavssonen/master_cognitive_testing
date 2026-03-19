@@ -196,11 +196,21 @@ class CogTestFormatter implements TestResultFormatter {
   Text getTextSummary(Map<String, dynamic> summary) {
     final correctNumbers = summary['correct_numbers'] as int? ?? 0;
     final totalNumbers = summary['total_numbers'] as int? ?? 12;
-    final totalScore = summary['total_score'] as int? ?? 0;
+    
+    // Clock hand scoring
+    final hourHandCorrect = summary['hour_hand_correct'] as int? ?? 0;
+    final minuteHandCorrect = summary['minute_hand_correct'] as int? ?? 0;
+    final handsCorrect = summary['hands_correct'] as int? ?? 0;
+    final handsTotal = summary['hands_total'] as int? ?? 2;
+    
+    final hourHandStatus = hourHandCorrect == 1 ? '✓' : '✗';
+    final minuteHandStatus = minuteHandCorrect == 1 ? '✓' : '✗';
 
     return Text(
-      'Numbers placed correctly: $correctNumbers/$totalNumbers\n'
-      'Score: $totalScore/12',
+      'Numbers: $correctNumbers/$totalNumbers\n'
+      'Hour hand (10): $hourHandStatus\n'
+      'Minute hand (11): $minuteHandStatus\n'
+      'Clock hands: $handsCorrect/$handsTotal',
     );
   }
 
