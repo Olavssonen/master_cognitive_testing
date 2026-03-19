@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_master_app/models/test_definition.dart';
 import 'package:flutter_master_app/widgets/test_shell.dart';
+import 'package:flutter_master_app/widgets/full_screen_overlay.dart';
 import 'package:flutter_master_app/theme/app_theme.dart';
 import 'dart:math' as Math;
 
@@ -33,8 +34,14 @@ class _CogTestScreenState extends State<CogTestScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return TestShell(
-      child: clockTest,
+    return FullScreenOverlay(
+      text: 'Lag en klokke ved å dra tallene til riktig posisjon',
+      animateTo: const Offset(0, -0.35),
+      maxTextWidth: 500,
+      duration: const Duration(seconds: 4),
+      child: TestShell(
+        child: clockTest,
+      ),
     );
   }
 }
