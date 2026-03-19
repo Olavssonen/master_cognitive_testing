@@ -109,8 +109,8 @@ class _MiniCogTestWidgetState extends State<MiniCogTestWidget> {
     final score = {
       'word_recall_correct': _correctWords,
       'word_recall_total': 3,
-      'clock_numbers_correct': _correctClockNumbers,
-      'clock_numbers_total': 12,
+      'correct_numbers': _correctClockNumbers,
+      'total_numbers': 12,
       'hour_hand_correct': _correctHourHand,
       'minute_hand_correct': _correctMinuteHand,
       'hands_correct': _correctHourHand + _correctMinuteHand,
