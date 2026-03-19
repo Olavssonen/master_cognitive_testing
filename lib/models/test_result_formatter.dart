@@ -194,6 +194,11 @@ class TMTTestFormatter implements TestResultFormatter {
 class CogTestFormatter implements TestResultFormatter {
   @override
   Text getTextSummary(Map<String, dynamic> summary) {
+    // Word recall scoring (from mini-cog implementation)
+    final wordRecallCorrect = summary['word_recall_correct'] as int? ?? 0;
+    final wordRecallTotal = summary['word_recall_total'] as int? ?? 3;
+    
+    // Clock numbers scoring
     final correctNumbers = summary['correct_numbers'] as int? ?? 0;
     final totalNumbers = summary['total_numbers'] as int? ?? 12;
     
@@ -205,12 +210,17 @@ class CogTestFormatter implements TestResultFormatter {
     
     final hourHandStatus = hourHandCorrect == 1 ? '✓' : '✗';
     final minuteHandStatus = minuteHandCorrect == 1 ? '✓' : '✗';
+    
+    // Total score
+    final totalScore = summary['total_score'] as int? ?? 0;
 
     return Text(
-      'Numbers: $correctNumbers/$totalNumbers\n'
+      'Word Recall: $wordRecallCorrect/$wordRecallTotal\n'
+      'Clock Numbers: $correctNumbers/$totalNumbers\n'
       'Hour hand (10): $hourHandStatus\n'
       'Minute hand (11): $minuteHandStatus\n'
-      'Clock hands: $handsCorrect/$handsTotal',
+      'Clock hands: $handsCorrect/$handsTotal\n'
+      'Total Score: $totalScore/17',
     );
   }
 

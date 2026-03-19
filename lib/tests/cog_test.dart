@@ -7,10 +7,14 @@ import 'dart:math' as Math;
 
 final cogTest = TestDefinition(
   id: 'cog',
-  title: 'Clock Test',
+  title: 'Mini-Cog Test',
   icon: Icons.schedule,
   build: (context, run) => CogTestScreen(run: run),
 );
+
+// Words for the word recall test
+const List<String> targetWords = ['Banan', 'Soloppgang', 'Stol'];
+const List<String> distractorWords = ['Hus', 'Bil', 'Blomst', 'Berg', 'Sjøen', 'Fugel'];
 
 class CogTestScreen extends StatefulWidget {
   final TestRunContext run;
@@ -21,12 +25,12 @@ class CogTestScreen extends StatefulWidget {
 }
 
 class _CogTestScreenState extends State<CogTestScreen> {
-  late ClockTestWidget clockTest;
+  late MiniCogTestWidget miniCogTest;
 
   @override
   void initState() {
     super.initState();
-    clockTest = ClockTestWidget(
+    miniCogTest = MiniCogTestWidget(
       run: widget.run,
       onAbort: () => widget.run.abort('User aborted'),
     );
@@ -34,13 +38,337 @@ class _CogTestScreenState extends State<CogTestScreen> {
 
   @override
   Widget build(BuildContext context) {
+    return TestShell(
+      child: miniCogTest,
+    );
+  }
+}
+
+class MiniCogTestWidget extends StatefulWidget {
+  final TestRunContext run;
+  final VoidCallback onAbort;
+
+  const MiniCogTestWidget({
+    super.key,
+    required this.run,
+    required this.onAbort,
+  });
+
+  @override
+  State<MiniCogTestWidget> createState() => _MiniCogTestWidgetState();
+}
+
+class _MiniCogTestWidgetState extends State<MiniCogTestWidget> {
+  // Phases: 'word_recall_1', 'clock_test', 'word_recall_2', 'completed'
+  String _currentPhase = 'word_recall_1';
+  
+  // Score tracking
+  int _correctWords = 0;
+  int _correctClockNumbers = 0;
+  int _correctHourHand = 0;
+  int _correctMinuteHand = 0;
+  
+  late ClockTestWidget clockTest;
+  
+  @override
+  void initState() {
+    super.initState();
+    clockTest = ClockTestWidget(
+      run: widget.run,
+      onAbort: widget.onAbort,
+      onClockComplete: _handleClockTestComplete,
+    );
+  }
+
+  void _handleClockTestComplete(Map<String, dynamic> clockScore) {
+    setState(() {
+      _correctClockNumbers = clockScore['correct_numbers'] as int? ?? 0;
+      _correctHourHand = clockScore['hour_hand_correct'] as int? ?? 0;
+      _correctMinuteHand = clockScore['minute_hand_correct'] as int? ?? 0;
+      _currentPhase = 'word_recall_2';
+    });
+  }
+
+  void _proceedToClockTest() {
+    setState(() {
+      _currentPhase = 'clock_test';
+    });
+  }
+
+  void _handleWordRecall2Complete(int correctCount) {
+    setState(() {
+      _correctWords = correctCount;
+      _currentPhase = 'completed';
+    });
+    
+    // Submit the test with all scores
+    _submitTest();
+  }
+
+  void _submitTest() {
+    final score = {
+      'word_recall_correct': _correctWords,
+      'word_recall_total': 3,
+      'clock_numbers_correct': _correctClockNumbers,
+      'clock_numbers_total': 12,
+      'hour_hand_correct': _correctHourHand,
+      'minute_hand_correct': _correctMinuteHand,
+      'clock_hands_total': 2,
+      'total_score': _correctWords + _correctClockNumbers + _correctHourHand + _correctMinuteHand,
+    };
+
+    widget.run.complete(
+      TestResult(testId: 'cog', summary: score),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_currentPhase == 'word_recall_1') {
+      return WordRecallPhase1(
+        onNext: _proceedToClockTest,
+        onAbort: widget.onAbort,
+      );
+    } else if (_currentPhase == 'clock_test') {
+      return FullScreenOverlay(
+        text: 'Lag en klokke ved å dra tallene til riktig posisjon',
+        animateTo: const Offset(0, -0.35),
+        maxTextWidth: 500,
+        duration: const Duration(seconds: 4),
+        child: clockTest,
+      );
+    } else if (_currentPhase == 'word_recall_2') {
+      return WordRecallPhase2(
+        onComplete: _handleWordRecall2Complete,
+        onAbort: widget.onAbort,
+      );
+    }
+    
+    return const SizedBox.shrink();
+  }
+}
+
+class WordRecallPhase1 extends StatefulWidget {
+  final VoidCallback onNext;
+  final VoidCallback onAbort;
+
+  const WordRecallPhase1({
+    super.key,
+    required this.onNext,
+    required this.onAbort,
+  });
+
+  @override
+  State<WordRecallPhase1> createState() => _WordRecallPhase1State();
+}
+
+class _WordRecallPhase1State extends State<WordRecallPhase1> {
+  @override
+  Widget build(BuildContext context) {
     return FullScreenOverlay(
-      text: 'Lag en klokke ved å dra tallene til riktig posisjon',
+      text: 'Husk disse ordene',
       animateTo: const Offset(0, -0.35),
       maxTextWidth: 500,
-      duration: const Duration(seconds: 4),
-      child: TestShell(
-        child: clockTest,
+      duration: const Duration(seconds: 3),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Expanded(
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ...targetWords.map((word) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 20.0),
+                      child: Text(
+                        word,
+                        style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                          color: Theme.of(context).colorScheme.primary,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ],
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 16.0),
+            child: SizedBox(
+              width: 200,
+              child: FilledButton(
+                onPressed: widget.onNext,
+                child: const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 12.0),
+                  child: Text(
+                    'Neste',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+            child: SizedBox(
+              width: 200,
+              child: TextButton(
+                onPressed: widget.onAbort,
+                child: const Text('Avbryt'),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class WordRecallPhase2 extends StatefulWidget {
+  final Function(int) onComplete;
+  final VoidCallback onAbort;
+
+  const WordRecallPhase2({
+    super.key,
+    required this.onComplete,
+    required this.onAbort,
+  });
+
+  @override
+  State<WordRecallPhase2> createState() => _WordRecallPhase2State();
+}
+
+class _WordRecallPhase2State extends State<WordRecallPhase2> {
+  late List<String> allWords;
+  Set<String> selectedWords = {};
+
+  @override
+  void initState() {
+    super.initState();
+    // Shuffle and prepare the word list
+    allWords = [...targetWords, ...distractorWords];
+    allWords.shuffle(Math.Random());
+  }
+
+  void _toggleWord(String word) {
+    setState(() {
+      if (selectedWords.contains(word)) {
+        selectedWords.remove(word);
+      } else {
+        selectedWords.add(word);
+      }
+    });
+  }
+
+  void _submitRecall() {
+    // Count how many correct words were selected
+    int correctCount = 0;
+    for (String word in selectedWords) {
+      if (targetWords.contains(word)) {
+        correctCount++;
+      }
+    }
+    
+    widget.onComplete(correctCount);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FullScreenOverlay(
+      text: 'Gjenta ordene du skulle huske',
+      animateTo: const Offset(0, -0.35),
+      maxTextWidth: 500,
+      duration: const Duration(seconds: 3),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Expanded(
+            child: Center(
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: SizedBox(
+                    width: 400,
+                    child: Column(
+                      children: [
+                        // Display words as buttons in a grid
+                        GridView.count(
+                          crossAxisCount: 3,
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          childAspectRatio: 1.2,
+                          crossAxisSpacing: 8,
+                          mainAxisSpacing: 8,
+                          children: allWords.map((word) {
+                            final isSelected = selectedWords.contains(word);
+                            return GestureDetector(
+                              onTap: () => _toggleWord(word),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: isSelected
+                                      ? Theme.of(context).colorScheme.primary
+                                      : Theme.of(context).colorScheme.surface,
+                                  border: Border.all(
+                                    color: Theme.of(context).colorScheme.primary,
+                                    width: 2,
+                                  ),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                alignment: Alignment.center,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text(
+                                    word,
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      color: isSelected
+                                          ? Theme.of(context).colorScheme.onPrimary
+                                          : Theme.of(context).colorScheme.onSurface,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 16.0),
+            child: SizedBox(
+              width: 200,
+              child: FilledButton(
+                onPressed: _submitRecall,
+                child: const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 12.0),
+                  child: Text(
+                    'Ferdig',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+            child: SizedBox(
+              width: 200,
+              child: TextButton(
+                onPressed: widget.onAbort,
+                child: const Text('Avbryt'),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -49,11 +377,13 @@ class _CogTestScreenState extends State<CogTestScreen> {
 class ClockTestWidget extends StatefulWidget {
   final TestRunContext run;
   final VoidCallback onAbort;
+  final Function(Map<String, dynamic>)? onClockComplete;
 
   const ClockTestWidget({
     super.key,
     required this.run,
     required this.onAbort,
+    this.onClockComplete,
   });
 
   @override
@@ -90,8 +420,8 @@ class _ClockTestWidgetState extends State<ClockTestWidget> {
   String _phase = 'numbers';
   
   // Hand angles in degrees (0 = 12 o'clock, 90 = 3 o'clock, etc.)
-  double _minuteHandAngle = 66; // langeviser (minute/long hand) - pointing to 11
-  double _hourHandAngle = 300; // korteviser (hour/short hand) - pointing to 10
+  double _minuteHandAngle = 246; // langeviser (minute/long hand) - pointing downwards
+  double _hourHandAngle = 120; // korteviser (hour/short hand) - pointing downwards
   
   // Track which hand is currently being dragged (null, 0 for minute, 1 for hour)
   int? _draggingHandId;
@@ -353,9 +683,15 @@ class _ClockTestWidgetState extends State<ClockTestWidget> {
         'total_score': numberScoreData['correct_numbers']! + (minuteHandCorrect ? 1 : 0) + (hourHandCorrect ? 1 : 0),
       };
 
-      widget.run.complete(
-        TestResult(testId: 'cog', summary: score),
-      );
+      // If onClockComplete callback is provided, use it (mini-cog flow)
+      if (widget.onClockComplete != null) {
+        widget.onClockComplete!(score);
+      } else {
+        // Fall back to direct completion (backwards compatibility)
+        widget.run.complete(
+          TestResult(testId: 'cog', summary: score),
+        );
+      }
     }
   }
 
@@ -373,7 +709,7 @@ class _ClockTestWidgetState extends State<ClockTestWidget> {
               child: Container(
                 alignment: Alignment.center,
                 child: Text(
-                  _phase == 'hands' ? 'Still visere på klokken: 10 og 11' : _topText,
+                  _phase == 'hands' ? 'Still klokken til 10 over 11' : _topText,
                   style: TextStyle(fontSize: 28, fontWeight: FontWeight.w500, color: Theme.of(context).colorScheme.primary),
                 ),
               ),
@@ -505,7 +841,7 @@ class _ClockTestWidgetState extends State<ClockTestWidget> {
     // Conditionally wrap with FullScreenOverlay when showing the intermediate overlay
     if (_showingIntermediateOverlay) {
       return FullScreenOverlay(
-        text: 'Still klokken til 10 0ver 11',
+        text: 'Still klokken til 10 over 11',
         animateTo: const Offset(0, -0.35),
         maxTextWidth: 800,
         duration: const Duration(seconds: 2),
