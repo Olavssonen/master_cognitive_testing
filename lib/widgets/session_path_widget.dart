@@ -39,6 +39,15 @@ class _SessionPathWidgetState extends State<SessionPathWidget>
   }
 
   @override
+  void didUpdateWidget(SessionPathWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // If currentIndex changed, trigger new animation
+    if (oldWidget.currentIndex != widget.currentIndex) {
+      _animationController.forward(from: 0);
+    }
+  }
+
+  @override
   void dispose() {
     _animationController.dispose();
     super.dispose();
@@ -121,22 +130,22 @@ class SessionPathPainter extends CustomPainter {
   }
 
   void _drawPointRings(Canvas canvas, List<Offset> positions, [double animationProgress = 0]) {
-    const double pointRadius = 40;
-    const double ringWidth = 6;
+    const double pointRadius = 38;
+    const double ringWidth = 8;
 
     for (int i = 0; i < positions.length; i++) {
-      final isCurrent = i == currentIndex + 1;
-      final isCompleted = i <= currentIndex;
-      final isAnimatedCurrent = animationProgress >= 1.0 && i == currentIndex + 2;
+      // Completed stops are teal, or animation target after it finishes
+      final isCompleted = i <= currentIndex + 1;
+      final isAnimationTarget = i == currentIndex + 2 && animationProgress >= 1.0;
 
       Color pointColor;
-      if (isCompleted || isAnimatedCurrent || isCurrent) {
+      if (isCompleted || isAnimationTarget) {
         pointColor = AppColors.tropicalTeal;
       } else {
         pointColor = AppColors.crayolaBlue;
       }
 
-      // Draw outer ring on top
+      // Draw outer ring on top with larger thickness
       final ringPaint = Paint()
         ..color = pointColor
         ..style = PaintingStyle.stroke
@@ -253,24 +262,35 @@ class SessionPathPainter extends CustomPainter {
 
   void _drawPoints(Canvas canvas, List<Offset> positions, [double animationProgress = 0]) {
     const double pointRadius = 40;
-    const double ringWidth = 3;
+    const double ringWidth = 8;
 
     for (int i = 0; i < positions.length; i++) {
-      final isCurrent = i == currentIndex + 1; // +1 because index 0 is start
-      
-      // During animation on transition screen:
-      // - Points with index <= currentIndex are always teal (completed)
-      // - Point at currentIndex+2 becomes teal when animation completes
-      final isCompleted = i <= currentIndex;
-      final isAnimatedCurrent = animationProgress >= 1.0 && i == currentIndex + 2;
+      // Completed stops are inverted, animation target is not inverted (only after animation finishes)
+      final isCompleted = i <= currentIndex + 1;
+      final isAnimationTarget = i == currentIndex + 2 && animationProgress >= 1.0;
 
-      // Determine color
-      Color pointColor;
-      if (isCompleted || isAnimatedCurrent || isCurrent) {
-        pointColor = AppColors.tropicalTeal;
+      Color bgColor;
+      Color iconColor;
+      
+      if (isCompleted) {
+        // Inverted: teal bg, white icon
+        bgColor = AppColors.tropicalTeal;
+        iconColor = Colors.white;
+      } else if (isAnimationTarget) {
+        // Not inverted: white bg, teal icon (and teal ring)
+        bgColor = Colors.white;
+        iconColor = AppColors.tropicalTeal;
       } else {
-        pointColor = AppColors.crayolaBlue;
+        bgColor = Colors.white;
+        iconColor = AppColors.crayolaBlue;
       }
+
+      // Draw background circle (slightly larger to integrate with ring)
+      final bgPaint = Paint()
+        ..color = bgColor
+        ..style = PaintingStyle.fill;
+
+      canvas.drawCircle(positions[i], pointRadius - ringWidth + 2, bgPaint);
       
       // Get the test icon for this position
       IconData? iconData;
@@ -286,27 +306,12 @@ class SessionPathPainter extends CustomPainter {
         }
       }
 
-      // Draw outer ring
-      final ringPaint = Paint()
-        ..color = pointColor
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = ringWidth;
-
-      canvas.drawCircle(positions[i], pointRadius, ringPaint);
-
-      // Draw inner background circle
-      final bgPaint = Paint()
-        ..color = Colors.white
-        ..style = PaintingStyle.fill;
-
-      canvas.drawCircle(positions[i], pointRadius - ringWidth, bgPaint);
-
-      // Draw icon if available
+      // Draw icon if available (increased size to fill space better)
       if (iconData != null) {
-        _drawIcon(canvas, positions[i], iconData, pointColor, pointRadius - ringWidth - 8);
+        _drawIcon(canvas, positions[i], iconData, iconColor, pointRadius - ringWidth + 4);
       } else if (isStartOrEnd) {
-        // Draw flag icon for start/end
-        _drawIcon(canvas, positions[i], Icons.flag_rounded, pointColor, pointRadius - ringWidth - 8);
+        // Draw flag icon for start/end (increased size)
+        _drawIcon(canvas, positions[i], Icons.flag_rounded, iconColor, pointRadius - ringWidth + 4);
       }
     }
   }
