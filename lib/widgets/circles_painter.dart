@@ -167,7 +167,7 @@ class DrawAreaPainter extends CustomPainter {
       double scale = 1.0;
       Color circleColor = isEntered
           ? AppColors.grey900.withValues(alpha: 0.2) // Nearly transparent for entered
-          : AppColors.grey900.withValues(alpha: 0.7);
+          : AppColors.accent.withValues(alpha: 0.7);
 
       if (feedbackControllers.containsKey(circle.label)) {
         final controller = feedbackControllers[circle.label]!;
