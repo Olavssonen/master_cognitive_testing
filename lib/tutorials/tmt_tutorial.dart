@@ -317,12 +317,12 @@ class _TMTTutorialState extends State<TMTTutorial> with TickerProviderStateMixin
                   children: [
                     OutlinedButton(
                       onPressed: _clearDrawing,
-                      child: const Text('Clear'),
+                      child: const Text('Prøv igjen'),
                     ),
                     const SizedBox(width: 16),
                     OutlinedButton(
                       onPressed: tutorialComplete ? widget.onComplete : null,
-                      child: const Text('Continue'),
+                      child: const Text('Ferdig å øve'),
                     ),
                   ],
                 ),

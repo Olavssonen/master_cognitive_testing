@@ -238,7 +238,7 @@ class _StroopTutorialState extends State<StroopTutorial>
                     widget.onComplete();
                   }
                 }),
-                child: const Text('Continue'),
+                child: const Text('Neste'),
               ),
             ],
           ),

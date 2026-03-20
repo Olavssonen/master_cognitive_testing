@@ -8,6 +8,10 @@ final sessionProvider =
 class SessionController extends Notifier<SessionState> {
   final List<TestResult> _results = [];
 
+  TestResult _createPlaceholderResult() {
+    return const TestResult(testId: '', summary: {});
+  }
+
   @override
   SessionState build() => const MainMenuIdle();
 
@@ -22,7 +26,8 @@ class SessionController extends Notifier<SessionState> {
 
   void start(List<String> plan) {
     _results.clear();
-    state = SessionRunning(plan, 0);
+    // Start with a transition screen showing first test info
+    state = SessionTransition(plan, -1, 0, _createPlaceholderResult());
   }
 
   void completeTest(TestResult result) {
@@ -33,7 +38,13 @@ class SessionController extends Notifier<SessionState> {
 
     final isLast = current.index == current.plan.length - 1;
     if (isLast) {
-      state = SessionDone(List.unmodifiable(_results));
+      // Show transition screen after last test before going to summary
+      state = SessionTransition(
+        current.plan,
+        current.index,
+        current.index,
+        result,
+      );
     } else {
       state = SessionTransition(
         current.plan,
@@ -48,7 +59,18 @@ class SessionController extends Notifier<SessionState> {
     final current = state;
     if (current is! SessionTransition) return;
 
-    state = SessionRunning(current.plan, current.toIndex);
+    // Check if this is the initial transition (fromIndex == -1)
+    if (current.fromIndex == -1) {
+      state = SessionRunning(current.plan, current.toIndex);
+    }
+    // Check if this is the final transition (toIndex == fromIndex)
+    else if (current.toIndex == current.fromIndex) {
+      state = SessionDone(List.unmodifiable(_results));
+    }
+    // Normal transition between tests
+    else {
+      state = SessionRunning(current.plan, current.toIndex);
+    }
   }
 
   void abortSession(String reason) {
