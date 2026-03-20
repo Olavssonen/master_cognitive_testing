@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_master_app/session/session_controller.dart';
 import 'package:flutter_master_app/session/session_state.dart';
+import 'package:flutter_master_app/widgets/session_path_widget.dart';
+import 'package:flutter_master_app/providers/test_providers.dart';
 
 class TransitionScreen extends ConsumerWidget {
   const TransitionScreen({super.key});
@@ -9,39 +11,43 @@ class TransitionScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final s = ref.watch(sessionProvider) as SessionTransition;
+    final registry = ref.watch(testRegistryProvider);
     final isInitial = s.fromIndex == -1;
     final isFinal = s.toIndex == s.fromIndex;
 
+    // Determine current index for the path widget
+    // Index -1 = start, 0 = after test 0, 1 = after test 1, etc.
+    final int currentIndex;
+    if (isInitial) {
+      currentIndex = -1; // At start
+    } else if (isFinal) {
+      currentIndex = s.plan.length; // At goal
+    } else {
+      currentIndex = s.toIndex - 1; // After completing previous test
+    }
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Session')),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            if (isInitial) ...[
-              const Text('Klar for å starte?'),
-              const SizedBox(height: 12),
-              Text('${s.plan.length} tester i alt'),
-            ] else if (isFinal) ...[
-              const Text('Gratulerer!'),
-              const SizedBox(height: 12),
-              const Text('Du har fullført alle testene'),
-            ] else ...[
-              Text('Ferdig: ${s.lastResult.testId}'),
-              const SizedBox(height: 12),
-              Text('Neste test: ${s.toIndex + 1}/${s.plan.length}'),
-            ],
-            const SizedBox(height: 16),
-            LinearProgressIndicator(
-              value: isFinal ? 1.0 : (s.toIndex) / (s.plan.length),
+      body: Stack(
+        children: [
+          // Session path widget
+          SessionPathWidget(
+            currentIndex: currentIndex,
+            totalTests: s.plan.length,
+            testRegistry: registry,
+            testPlan: s.plan,
+          ),
+          // Button at bottom
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Padding(
+              padding: const EdgeInsets.all(32.0),
+              child: FilledButton(
+                onPressed: () => ref.read(sessionProvider.notifier).continueAfterTransition(),
+                child: const Text('Fortsett'),
+              ),
             ),
-            const Spacer(),
-            FilledButton(
-              onPressed: () => ref.read(sessionProvider.notifier).continueAfterTransition(),
-              child: Text(isFinal ? 'Gå til sammendrag' : 'Fortsett'),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
