@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_master_app/widgets/test_shell.dart';
 import 'package:flutter_master_app/theme/app_theme.dart';
 import 'package:flutter_master_app/widgets/circles_painter.dart';
+import 'package:flutter_master_app/widgets/bottom_button_bar.dart';
 
 /// Tutorial screen for Trail Making Test (TMT)
 /// Uses 3 circles instead of 6 and provides detailed instructions
@@ -273,7 +274,6 @@ class _TMTTutorialState extends State<TMTTutorial> with TickerProviderStateMixin
     return TestShell(
       child: Column(
         mainAxisSize: MainAxisSize.max,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Expanded(
             child: Center(
@@ -308,34 +308,25 @@ class _TMTTutorialState extends State<TMTTutorial> with TickerProviderStateMixin
               }),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    OutlinedButton(
-                      onPressed: _clearDrawing,
-                      child: const Text('Prøv igjen'),
-                    ),
-                    const SizedBox(width: 16),
-                    OutlinedButton(
-                      onPressed: tutorialComplete ? widget.onComplete : null,
-                      child: const Text('Ferdig å øve'),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                TextButton(
-                  onPressed: widget.onAbort,
-                  style: TextButton.styleFrom(
-                    foregroundColor: AppColors.errorRed,
-                  ),
-                  child: const Text('Avbryt'),
-                ),
-              ],
-            ),
+          BottomButtonBar(
+            actionButtons: [
+              BottomButton(
+                label: 'Prøv igjen',
+                onPressed: _clearDrawing,
+                type: BottomButtonType.outlined,
+                icon: Icons.refresh,
+              ),
+              BottomButton(
+                label: 'Ferdig',
+                onPressed: tutorialComplete ? widget.onComplete : () {},
+                enabled: tutorialComplete,
+                type: BottomButtonType.filled,
+                icon: Icons.check_circle,
+              ),
+            ],
+            onAbort: widget.onAbort,
+            useRow: true,
+            debugMode: true,
           ),
         ],
       ),

@@ -8,6 +8,7 @@ import 'package:flutter_master_app/widgets/test_shell.dart';
 import 'package:flutter_master_app/theme/app_theme.dart';
 import 'package:flutter_master_app/widgets/circles_painter.dart';
 import 'package:flutter_master_app/tutorials/tmt_tutorial.dart';
+import 'package:flutter_master_app/widgets/bottom_button_bar.dart';
 
 final tmtTest = TestDefinition(
   id: 'TMT',
@@ -406,7 +407,6 @@ class _TMTTest extends State<TMTTest> {
     return TestShell(
       child: Column(
         mainAxisSize: MainAxisSize.max,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Expanded(
             child: Center(
@@ -443,55 +443,42 @@ class _TMTTest extends State<TMTTest> {
               }),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    OutlinedButton(
-                      onPressed: _clearDrawing,
-                      child: const Text('Clear'),
-                    ),
-                    const SizedBox(width: 16),
-                    OutlinedButton(
-                      onPressed: testComplete
-                          ? () async {
-                              // Capture the drawing area before reporting results
-                              await _captureDrawingArea();
-                              
-                              final resultData = {
-                                'circlesEntered': circlesEntered,
-                                'image': _capturedImage,
-                              };
-                              
-                              // Report results to parent progression
-                              widget.onTestResult?.call(resultData, testComplete);
+          BottomButtonBar(
+            actionButtons: [
+              BottomButton(
+                label: 'Slett',
+                onPressed: _clearDrawing,
+                type: BottomButtonType.outlined,
+                icon: Icons.clear,
+              ),
+              BottomButton(
+                label: 'Fullfør',
+                onPressed: () {
+                  if (testComplete) {
+                    _captureDrawingArea().then((_) {
+                      final resultData = {
+                        'circlesEntered': circlesEntered,
+                        'image': _capturedImage,
+                      };
+                      
+                      widget.onTestResult?.call(resultData, testComplete);
 
-                              if (widget.onNextStage != null) {
-                                // Move to next stage in progression
-                                widget.onNextStage!();
-                              } else {
-                                // Final test, notify parent to handle completion
-                                widget.onCompletion?.call(resultData, testComplete);
-                              }
-                            }
-                          : null,
-                      child: const Text('Fullf\u00f8r'),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                TextButton(
-                  onPressed: () => widget.run.abort('User aborted'),
-                  style: TextButton.styleFrom(
-                    foregroundColor: AppColors.errorRed,
-                  ),
-                  child: const Text('Avbryt'),
-                ),
-              ],
-            ),
+                      if (widget.onNextStage != null) {
+                        widget.onNextStage!();
+                      } else {
+                        widget.onCompletion?.call(resultData, testComplete);
+                      }
+                    });
+                  }
+                },
+                enabled: testComplete,
+                type: BottomButtonType.filled,
+                icon: Icons.check_circle,
+              ),
+            ],
+            onAbort: () => widget.run.abort('User aborted'),
+            useRow: true,
+            debugMode: true,
           ),
         ],
       ),

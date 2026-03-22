@@ -109,7 +109,7 @@ class BottomButtonBar extends StatelessWidget {
   final double barHeight;
 
   /// Minimum width for buttons to ensure consistent sizing (default: 120.0)
-  /// Prevents buttons from shrinking when text is short
+  /// Expands dynamically if text is longer than minimum width
   final double minButtonWidth;
 
   const BottomButtonBar({
@@ -126,7 +126,7 @@ class BottomButtonBar extends StatelessWidget {
     this.fontSize = 30.0,
     this.debugMode = true,
     this.barHeight = 150.0,
-    this.minButtonWidth = 200.0,
+    this.minButtonWidth = 120.0,
   });
 
   @override
@@ -225,9 +225,10 @@ class BottomButtonBar extends StatelessWidget {
   Widget _buildRowLayout(List<BottomButton> buttons, BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisSize: MainAxisSize.min,
       children: [
         for (int i = 0; i < buttons.length; i++) ...[
-          Expanded(child: _buildActionButton(buttons[i], context)),
+          _buildActionButton(buttons[i], context),
           if (i < buttons.length - 1) SizedBox(width: buttonSpacing),
         ],
       ],
@@ -247,7 +248,7 @@ class BottomButtonBar extends StatelessWidget {
     );
   }
 
-  /// Builds a single action button widget
+  /// Builds a single action button widget with dynamic width
   Widget _buildActionButton(BottomButton button, BuildContext context) {
     Widget buttonContent = button.icon != null
         ? Row(
@@ -266,46 +267,51 @@ class BottomButtonBar extends StatelessWidget {
             style: TextStyle(fontSize: fontSize, fontWeight: FontWeight.w600),
           );
 
+    // Build the button widget based on type
+    Widget buttonWidget;
     switch (button.type) {
       case BottomButtonType.filled:
-        return SizedBox(
-          height: buttonHeight,
-          width: minButtonWidth,
-          child: FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: AppColors.crayolaBlue,
-              foregroundColor: AppColors.white,
-            ),
-            onPressed: button.enabled ? button.onPressed : null,
-            child: buttonContent,
+        buttonWidget = FilledButton(
+          style: FilledButton.styleFrom(
+            backgroundColor: AppColors.crayolaBlue,
+            foregroundColor: AppColors.white,
           ),
+          onPressed: button.enabled ? button.onPressed : null,
+          child: buttonContent,
         );
+        break;
       case BottomButtonType.outlined:
-        return SizedBox(
-          height: buttonHeight,
-          width: minButtonWidth,
-          child: OutlinedButton(
-            style: OutlinedButton.styleFrom(
-              side: const BorderSide(color: AppColors.crayolaBlue, width: 2),
-              foregroundColor: AppColors.crayolaBlue,
-            ),
-            onPressed: button.enabled ? button.onPressed : null,
-            child: buttonContent,
+        buttonWidget = OutlinedButton(
+          style: OutlinedButton.styleFrom(
+            side: const BorderSide(color: AppColors.crayolaBlue, width: 2),
+            foregroundColor: AppColors.white,
+            backgroundColor: AppColors.crayolaBlue,
           ),
+          onPressed: button.enabled ? button.onPressed : null,
+          child: buttonContent,
         );
+        break;
       case BottomButtonType.abort:
-        return SizedBox(
-          height: buttonHeight,
-          width: minButtonWidth,
-          child: TextButton(
-            onPressed: button.enabled ? button.onPressed : null,
-            style: TextButton.styleFrom(
-              foregroundColor: AppColors.errorRed,
-            ),
-            child: buttonContent,
+        buttonWidget = TextButton(
+          onPressed: button.enabled ? button.onPressed : null,
+          style: TextButton.styleFrom(
+            foregroundColor: AppColors.errorRed,
           ),
+          child: buttonContent,
         );
+        break;
     }
+
+    // Use ConstrainedBox with IntrinsicWidth for dynamic sizing
+    return SizedBox(
+      height: buttonHeight,
+      child: IntrinsicWidth(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minWidth: minButtonWidth),
+          child: buttonWidget,
+        ),
+      ),
+    );
   }
 
   /// Builds the abort button with red styling
