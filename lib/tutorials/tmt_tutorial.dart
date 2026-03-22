@@ -409,7 +409,7 @@ class _DrawAreaWithCirclesState extends State<DrawAreaWithCircles> with TickerPr
       return correctIndices;
     }
 
-    // Current line being drawn - keep it all black
+    // Current line being drawn - only mark as correct if it's touching circles or making progress
     int currentCheckpointStart = 0;
     for (int i = points.length - 1; i >= 0; i--) {
       if (points[i].dx == -1) {
@@ -418,7 +418,23 @@ class _DrawAreaWithCirclesState extends State<DrawAreaWithCircles> with TickerPr
       }
     }
     
+    // Check if current line touches any circles
+    bool currentLineTouchesCircles = false;
     if (currentCheckpointStart < points.length) {
+      for (int i = currentCheckpointStart; i < points.length; i++) {
+        final point = points[i];
+        for (final circle in widget.circles) {
+          if ((point - circle.center).distance <= circle.radius) {
+            currentLineTouchesCircles = true;
+            break;
+          }
+        }
+        if (currentLineTouchesCircles) break;
+      }
+    }
+    
+    // Only mark current line as correct if it's touching circles (visual feedback while drawing within valid range)
+    if (currentLineTouchesCircles && currentCheckpointStart < points.length) {
       for (int i = currentCheckpointStart; i < points.length; i++) {
         correctIndices.add(i);
       }
@@ -443,7 +459,8 @@ class _DrawAreaWithCirclesState extends State<DrawAreaWithCircles> with TickerPr
     // Build up the sequence as we evaluate, not using the final circlesEntered
     List<String> simulatedSequence = [];
     
-    for (final checkpoint in completedCheckpoints) {
+    for (int checkpointIdx = 0; checkpointIdx < completedCheckpoints.length; checkpointIdx++) {
+      final checkpoint = completedCheckpoints[checkpointIdx];
       if (checkpoint.isEmpty) continue;
       
       // Get the sequence of circles touched in this checkpoint (in order)
@@ -464,6 +481,15 @@ class _DrawAreaWithCirclesState extends State<DrawAreaWithCircles> with TickerPr
             }
             break;
           }
+        }
+      }
+      
+      // Check if this checkpoint starts right after a lift (look back to see if there's a -1 marker before this checkpoint)
+      bool startsAfterLift = false;
+      if (checkpoint.isNotEmpty && checkpoint[0] > 0) {
+        // Check if there's a -1 marker immediately before this checkpoint
+        if (points[checkpoint[0] - 1].dx == -1) {
+          startsAfterLift = true;
         }
       }
       
@@ -491,8 +517,11 @@ class _DrawAreaWithCirclesState extends State<DrawAreaWithCircles> with TickerPr
           // Check if checkpoint made any progress (touched new circles beyond the start)
           if (touchedStartOffset >= touchedCircles.length) {
             // Only touched circles already in sequence, no progress made
-            // But if we're already in a valid sequence, continuing within that circle is correct
-            isCheckpointCorrect = simulatedSequence.isNotEmpty;
+            // This is OK if: 
+            // 1. Checkpoint is very short (auto-split re-entry), OR
+            // 2. It's a valid re-entry to the same circle without a real lift
+            bool isVeryShortCheckpoint = checkpoint.length <= 5;
+            isCheckpointCorrect = touchedCircles.isNotEmpty && !simulatedSequence.isEmpty && touchedCircles[0] == expectedStart && (isVeryShortCheckpoint || !startsAfterLift);
           } else {
             // Only validate that the line ENDS at the next expected circle
             // Allow crossing other circles in between
