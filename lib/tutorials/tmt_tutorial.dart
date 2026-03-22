@@ -491,7 +491,8 @@ class _DrawAreaWithCirclesState extends State<DrawAreaWithCircles> with TickerPr
           // Check if checkpoint made any progress (touched new circles beyond the start)
           if (touchedStartOffset >= touchedCircles.length) {
             // Only touched circles already in sequence, no progress made
-            isCheckpointCorrect = false;
+            // But if we're already in a valid sequence, continuing within that circle is correct
+            isCheckpointCorrect = simulatedSequence.isNotEmpty;
           } else {
             // Only validate that the line ENDS at the next expected circle
             // Allow crossing other circles in between
