@@ -34,25 +34,48 @@ class SummaryScreen extends ConsumerWidget {
   Widget _buildTestCard(TestResult r) {
     final formatter = TestResultFormatterFactory.getFormatter(r.testId);
     final detailedView = formatter.getDetailedView(r.summary);
+    final textSummary = formatter.getTextSummary(r.summary);
 
-    return Column(
-      children: [
-        Card(
-          child: SizedBox(
-            width: double.infinity,
-            child: ListTile(
-              title: Text(r.testId),
-              subtitle: formatter.getTextSummary(r.summary),
-              dense: true,
-            ),
+    // For TMT tests with detailed view, combine text and image in one card
+    if (r.testId == 'TMT' && detailedView != null) {
+      return Card(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                r.testId,
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+              const SizedBox(height: 16),
+              detailedView,
+            ],
           ),
         ),
-        // Display detailed view if available (e.g., images for TMT) - in its own card
-        if (detailedView != null)
-          Card(
-            child: detailedView,
-          ),
-      ],
+      );
+    }
+
+    // For other tests, use consistent layout with bold title
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              r.testId,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+            const SizedBox(height: 8),
+            textSummary,
+            if (detailedView != null) ...[
+              const SizedBox(height: 16),
+              detailedView,
+            ],
+          ],
+        ),
+      ),
     );
   }
 }

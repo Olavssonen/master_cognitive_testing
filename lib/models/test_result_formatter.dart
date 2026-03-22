@@ -19,7 +19,7 @@ class CounterTestFormatter implements TestResultFormatter {
   @override
   Text getTextSummary(Map<String, dynamic> summary) {
     final counter = summary['counter'] as int? ?? 0;
-    return Text('Counter: $counter');
+    return Text('Teller: $counter');
   }
 
   @override
@@ -31,7 +31,7 @@ class Tap10TestFormatter implements TestResultFormatter {
   @override
   Text getTextSummary(Map<String, dynamic> summary) {
     final taps = summary['taps'] as int? ?? 0;
-    return Text('Taps: $taps / 10');
+    return Text('Trykk: $taps / 10');
   }
 
   @override
@@ -48,7 +48,7 @@ class StroopTestFormatter implements TestResultFormatter {
     for (final entry in allStages.entries) {
       final stageData = entry.value as Map<String, dynamic>? ?? {};
       final completed = stageData['completed'] as bool? ?? false;
-      final statusText = completed ? '✓ Complete' : '✗ Incomplete';
+      final statusText = completed ? '✓ Fullført' : '✗ Ufullstendig';
 
       // Extract correct/wrong counts if available
       final result = stageData['result'] as Map<String, dynamic>?;
@@ -58,14 +58,14 @@ class StroopTestFormatter implements TestResultFormatter {
         final accuracy = result['accuracy'] as String? ?? '0.0';
         stageInfo.add(
           '${entry.key}: $statusText\n'
-          '  ✓ $correct correct | ✗ $wrong wrong | Accuracy: $accuracy%',
+          '  ✓ $correct riktig | ✗ $wrong galt | Nøyaktighet: $accuracy%',
         );
       } else {
         stageInfo.add('${entry.key}: $statusText');
       }
     }
 
-    return Text(stageInfo.isNotEmpty ? stageInfo.join('\n') : 'Test completed');
+    return Text(stageInfo.isNotEmpty ? stageInfo.join('\n') : 'Test fullført');
   }
 
   @override
@@ -74,6 +74,14 @@ class StroopTestFormatter implements TestResultFormatter {
 
 /// TMT Test Formatter
 class TMTTestFormatter implements TestResultFormatter {
+  String _translateStageName(String stageName) {
+    return switch (stageName) {
+      'numbers_test' => 'Tall',
+      'mixed_test' => 'Bokstaver',
+      _ => stageName.replaceAll('_', ' ').toUpperCase(),
+    };
+  }
+
   @override
   Text getTextSummary(Map<String, dynamic> summary) {
     final allStages = summary['all_stages'] as Map<String, dynamic>? ?? {};
@@ -82,26 +90,26 @@ class TMTTestFormatter implements TestResultFormatter {
     for (final entry in allStages.entries) {
       final stageData = entry.value as Map<String, dynamic>? ?? {};
       final completed = stageData['completed'] as bool? ?? false;
-      final statusText = completed ? '✓ Complete' : '✗ Incomplete';
+      final statusText = completed ? '✓ Fullført' : '✗ Ufullstendig';
 
       // Show circle count for TMT tests
       final circlesOrder = stageData['circlesOrder'] as List<dynamic>?;
       if (circlesOrder != null && circlesOrder.isNotEmpty) {
-        stageInfo.add('${entry.key}: $statusText (${circlesOrder.length} circles)');
+        stageInfo.add('${_translateStageName(entry.key)}: $statusText (${circlesOrder.length} sirkler)');
       } else {
-        stageInfo.add('${entry.key}: $statusText');
+        stageInfo.add('${_translateStageName(entry.key)}: $statusText');
       }
     }
 
-    return Text(stageInfo.isNotEmpty ? stageInfo.join('\n') : 'Test completed');
+    return Text(stageInfo.isNotEmpty ? stageInfo.join('\n') : 'Test fullført');
   }
 
   @override
   Widget? getDetailedView(Map<String, dynamic> summary) {
-    return _buildTMTImages(summary);
+    return _buildCombinedTMTView(summary);
   }
 
-  Widget _buildTMTImages(Map<String, dynamic> summary) {
+  Widget _buildCombinedTMTView(Map<String, dynamic> summary) {
     final allStages = summary['all_stages'] as Map<String, dynamic>? ?? {};
 
     final images = <String, Uint8List>{};
@@ -122,22 +130,38 @@ class TMTTestFormatter implements TestResultFormatter {
     if (images.isEmpty) {
       return const Padding(
         padding: EdgeInsets.all(16.0),
-        child: Text('No drawing images captured'),
+        child: Text('Ingen tegningsbilder fanget'),
       );
+    }
+
+    // Build text summary
+    final stageInfo = <String>[];
+    for (final entry in allStages.entries) {
+      final stageData = entry.value as Map<String, dynamic>? ?? {};
+      final completed = stageData['completed'] as bool? ?? false;
+      final statusText = completed ? '✓ Fullført' : '✗ Ufullstendig';
+
+      // Show circle count for TMT tests
+      final circlesOrder = stageData['circlesOrder'] as List<dynamic>?;
+      if (circlesOrder != null && circlesOrder.isNotEmpty) {
+        stageInfo.add('${_translateStageName(entry.key)}: $statusText (${circlesOrder.length} sirkler)');
+      } else {
+        stageInfo.add('${_translateStageName(entry.key)}: $statusText');
+      }
     }
 
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Drawing Results',
-            textAlign: TextAlign.center,
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+          // Top: Text results (left-aligned)
+          Text(
+            stageInfo.isNotEmpty ? stageInfo.join('\n') : 'Test fullført',
+            style: const TextStyle(fontSize: 14),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 24),
+          // Bottom: Drawing results (centered)
           Center(
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
@@ -151,7 +175,7 @@ class TMTTestFormatter implements TestResultFormatter {
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           Text(
-                            entry.key.replaceAll('_', ' ').toUpperCase(),
+                            _translateStageName(entry.key),
                             style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
                           const SizedBox(height: 8),
@@ -171,7 +195,7 @@ class TMTTestFormatter implements TestResultFormatter {
                                   width: 300,
                                   color: Colors.red[100],
                                   child: Center(
-                                    child: Text('Error: $error'),
+                                    child: Text('Feil: $error'),
                                   ),
                                 );
                               },
@@ -223,14 +247,14 @@ class CogTestFormatter implements TestResultFormatter {
     final totalScore = summary['total_score'] as int? ?? 0;
 
     return Text(
-      'Mini-Cog Score: $miniCogScore/5\n'
+      'Mini-Cog poengsum: $miniCogScore/5\n'
       '\n'
-      'Word Recall: $wordRecallCorrect/$wordRecallTotal\n'
-      'Clock Numbers: $correctNumbers/$totalNumbers\n'
-      'Hour hand (10): $hourHandStatus\n'
-      'Minute hand (11): $minuteHandStatus\n'
-      'Clock hands: $handsCorrect/$handsTotal\n'
-      'Total Score: $totalScore/17',
+      'Ordgjenkjenning: $wordRecallCorrect/$wordRecallTotal\n'
+      'Klokkesifre: $correctNumbers/$totalNumbers\n'
+      'Timeviser (10): $hourHandStatus\n'
+      'Minuttviser (11): $minuteHandStatus\n'
+      'Klokkeviser: $handsCorrect/$handsTotal\n'
+      'Totalpoeng: $totalScore/17',
     );
   }
 
@@ -256,7 +280,7 @@ class TestResultFormatterFactory {
 class _DefaultFormatter implements TestResultFormatter {
   @override
   Text getTextSummary(Map<String, dynamic> summary) {
-    return const Text('Test completed');
+    return const Text('Test fullført');
   }
 
   @override
