@@ -7,7 +7,7 @@ import 'dart:math' as Math;
 
 final cogTest = TestDefinition(
   id: 'cog',
-  title: 'Mini-Cog Test',
+  title: 'Mini-Cog-test',
   icon: Icons.schedule,
   build: (context, run) => CogTestScreen(run: run),
 );

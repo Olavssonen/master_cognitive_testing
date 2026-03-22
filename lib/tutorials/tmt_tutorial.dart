@@ -329,7 +329,10 @@ class _TMTTutorialState extends State<TMTTutorial> with TickerProviderStateMixin
                 const SizedBox(height: 12),
                 TextButton(
                   onPressed: widget.onAbort,
-                  child: const Text('Abort'),
+                  style: TextButton.styleFrom(
+                    foregroundColor: AppColors.errorRed,
+                  ),
+                  child: const Text('Avbryt'),
                 ),
               ],
             ),

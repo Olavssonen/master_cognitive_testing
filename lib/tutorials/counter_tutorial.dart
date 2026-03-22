@@ -27,15 +27,15 @@ class _CounterTutorialState extends State<CounterTutorial> {
                 child: Column(
                   children: [
                     Text(
-                      'How to Play',
+                      'Slik spiller du',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                             fontWeight: FontWeight.bold,
                           ),
                     ),
                     const SizedBox(height: 12),
                     const Text(
-                      'Simply tap the "+" button as many times as you can. '
-                      'This test measures your tapping speed and coordination.',
+                      'Trykk enkelt på "+"-knappen så mange ganger du kan. '
+                      'Denne testen måler tappingshastigheten og koordinasjonen din.',
                       textAlign: TextAlign.center,
                     ),
                   ],
@@ -44,7 +44,7 @@ class _CounterTutorialState extends State<CounterTutorial> {
             ),
             const SizedBox(height: 40),
             Text(
-              'Current Count: $counter',
+              'Gjeldende telling: $counter',
               style: Theme.of(context).textTheme.displaySmall?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -54,19 +54,19 @@ class _CounterTutorialState extends State<CounterTutorial> {
               onPressed: () {
                 setState(() => counter++);
               },
-              label: const Text('Tap'),
+              label: const Text('Trykk'),
               icon: const Icon(Icons.add),
             ),
             const SizedBox(height: 40),
             Text(
-              'Tap the button above to increment the counter.\nWhen ready, click "Continue".',
+              'Trykk på knappen ovenfor for å øke telleren.\nNår du er klar, klikk "Fortsett".',
               style: Theme.of(context).textTheme.bodyMedium,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 20),
             OutlinedButton(
               onPressed: widget.onComplete,
-              child: const Text('Continue'),
+              child: const Text('Fortsett'),
             ),
           ],
         ),

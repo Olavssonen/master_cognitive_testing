@@ -189,7 +189,7 @@ class _StroopTutorialState extends State<StroopTutorial>
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                'Stroop Color Test',
+                'Stroop Fargetest',
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -206,7 +206,7 @@ class _StroopTutorialState extends State<StroopTutorial>
               const SizedBox(height: 40),
               OutlinedButton(
                 onPressed: () => setState(() => showIntroduction = false),
-                child: const Text('Start Tutorial'),
+                child: const Text('Start veiledning'),
               ),
             ],
           ),
@@ -221,7 +221,7 @@ class _StroopTutorialState extends State<StroopTutorial>
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                stage < 2 ? 'Great! Moving on...' : 'You\'ve got it!',
+                stage < 2 ? 'Bra! Går videre...' : 'Du skjønner det!',
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -238,7 +238,7 @@ class _StroopTutorialState extends State<StroopTutorial>
                     widget.onComplete();
                   }
                 }),
-                child: const Text('Neste'),
+                child: const Text('Fortsett'),
               ),
             ],
           ),

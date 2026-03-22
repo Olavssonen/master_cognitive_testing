@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_master_app/models/test_definition.dart';
 import 'package:flutter_master_app/widgets/test_shell.dart';
+import 'package:flutter_master_app/theme/app_theme.dart';
 
 final counterTest = TestDefinition(
   id: 'counter',
-  title: 'Counter Test',
+  title: 'Test-teller',
   icon: Icons.exposure_plus_1,
   build: (context, run) => CounterTestScreen(run: run),
 );
@@ -28,13 +29,13 @@ class _CounterTestScreenState extends State<CounterTestScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Counter: $counter',
+              'Teller: $counter',
               style: Theme.of(context).textTheme.headlineMedium,
             ),
             const SizedBox(height: 16),
             FilledButton(
               onPressed: () => setState(() => counter++),
-              child: const Text('Increment'),
+              child: const Text('Øk'),
             ),
             const SizedBox(height: 16),
             OutlinedButton(
@@ -43,12 +44,15 @@ class _CounterTestScreenState extends State<CounterTestScreen> {
                   TestResult(testId: 'counter', summary: {'counter': counter}),
                 );
               },
-              child: const Text('Finish'),
+              child: const Text('Fullfør'),
             ),
             const SizedBox(height: 16),
             TextButton(
               onPressed: () => widget.run.abort('User aborted'),
-              child: const Text('Abort'),
+              style: TextButton.styleFrom(
+                foregroundColor: AppColors.errorRed,
+              ),
+              child: const Text('Avbryt'),
             ),
           ],
         ),

@@ -11,7 +11,7 @@ class StroopColorConstants {
     Color(0xFFFBC02D), // Yellow
   ];
 
-  static const List<String> colorNames = ['rød', 'blå', 'grønt', 'gul'];
+  static const List<String> colorNames = ['rød', 'blå', 'grønn', 'gul'];
   static const List<String> colorLetters = ['Ø', 'L', 'R', 'U'];
 }
 
@@ -166,7 +166,10 @@ class StroopScreen extends StatelessWidget {
               if (bottomButton != null) const SizedBox(height: 12) else const SizedBox(),
               TextButton(
                 onPressed: onAbort,
-                child: const Text('Abort'),
+                style: TextButton.styleFrom(
+                  foregroundColor: AppColors.errorRed,
+                ),
+                child: const Text('Avbryt'),
               ),
             ],
           ),
@@ -292,7 +295,7 @@ class StroopIntermediateScreen extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
-            'Ready for the test?',
+            'Klar for testen?',
             style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -310,7 +313,7 @@ class StroopIntermediateScreen extends StatelessWidget {
                     onPressed: onReplay,
                   ),
                   const SizedBox(height: 8),
-                  const Text('Replay'),
+                  const Text('Spill igjen'),
                 ],
               ),
               const SizedBox(width: 80),
@@ -323,7 +326,7 @@ class StroopIntermediateScreen extends StatelessWidget {
                     onPressed: onStartTest,
                   ),
                   const SizedBox(height: 8),
-                  const Text('Start Test'),
+                  const Text('Start test'),
                 ],
               ),
             ],

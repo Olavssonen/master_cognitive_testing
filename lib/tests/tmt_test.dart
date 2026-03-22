@@ -11,7 +11,7 @@ import 'package:flutter_master_app/tutorials/tmt_tutorial.dart';
 
 final tmtTest = TestDefinition(
   id: 'TMT',
-  title: 'Trail Making Test',
+  title: 'Spor-test',
   icon: Icons.draw,
   build: (context, run) => TMTTestFlowProgression(run: run),
 );
@@ -478,14 +478,17 @@ class _TMTTest extends State<TMTTest> {
                               }
                             }
                           : null,
-                      child: const Text('Finish'),
+                      child: const Text('Fullf\u00f8r'),
                     ),
                   ],
                 ),
                 const SizedBox(height: 12),
                 TextButton(
                   onPressed: () => widget.run.abort('User aborted'),
-                  child: const Text('Abort'),
+                  style: TextButton.styleFrom(
+                    foregroundColor: AppColors.errorRed,
+                  ),
+                  child: const Text('Avbryt'),
                 ),
               ],
             ),

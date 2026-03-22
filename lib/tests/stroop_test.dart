@@ -7,7 +7,7 @@ import 'package:flutter_master_app/theme/app_theme.dart';
 
 final stroopTest = TestDefinition(
   id: 'stroop',
-  title: 'Stroop Test',
+  title: 'Stroop-test',
   icon: Icons.color_lens,
   build: (context, run) => StroopTestScreen(run: run),
 );
@@ -263,7 +263,7 @@ class _StroopTestState extends State<StroopTest> with TickerProviderStateMixin {
         bottomButton: testComplete
             ? OutlinedButton(
                 onPressed: _finishTest,
-                child: const Text('Submit Results'),
+                child: const Text('Lever resultater'),
               )
             : null,
         onAbort: widget.onAbort,

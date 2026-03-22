@@ -43,15 +43,15 @@ class _Tap10TutorialState extends State<Tap10Tutorial> {
                 child: Column(
                   children: [
                     Text(
-                      'How to Play',
+                      'Slik spiller du',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                             fontWeight: FontWeight.bold,
                           ),
                     ),
                     const SizedBox(height: 12),
                     const Text(
-                      'Tap the button 10 times as quickly as you can. '
-                      'This test measures your finger strength and control.',
+                      'Trykk på knappen 10 ganger så raskt du kan. '
+                      'Denne testen måler fingerkraften og kontrollen din.',
                       textAlign: TextAlign.center,
                     ),
                   ],
@@ -65,7 +65,7 @@ class _Tap10TutorialState extends State<Tap10Tutorial> {
             ),
             const SizedBox(height: 20),
             Text(
-              '$taps / $maxTaps taps ($progress%)',
+              '$taps / $maxTaps trykk ($progress%)',
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: completed ? AppColors.accent : AppColors.grey800,
@@ -84,7 +84,7 @@ class _Tap10TutorialState extends State<Tap10Tutorial> {
             const SizedBox(height: 40),
             if (!completed)
               Text(
-                'Tap ${maxTaps - taps} more times to complete the tutorial.',
+                'Trykk ${maxTaps - taps} ganger til for å fullføre veiledningen.',
                 style: Theme.of(context).textTheme.bodyMedium,
                 textAlign: TextAlign.center,
               )
@@ -92,7 +92,7 @@ class _Tap10TutorialState extends State<Tap10Tutorial> {
               Column(
                 children: [
                   Text(
-                    'Tutorial Completed!',
+                    'Veiledning fullført!',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.bold,
                           color: AppColors.accent,
@@ -101,7 +101,7 @@ class _Tap10TutorialState extends State<Tap10Tutorial> {
                   const SizedBox(height: 20),
                   OutlinedButton(
                     onPressed: widget.onComplete,
-                    child: const Text('Continue'),
+                    child: const Text('Fortsett'),
                   ),
                 ],
               ),

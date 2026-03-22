@@ -265,11 +265,11 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
                               ),
                               onPressed: () {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Settings coming soon')),
+                                  const SnackBar(content: Text('Innstillinger kommer snart')),
                                 );
                               },
                               child: const Text(
-                                'Settings',
+                                'Innstillinger',
                                 style: TextStyle(fontSize: 16),
                               ),
                             ),

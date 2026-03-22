@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_master_app/models/test_definition.dart';
 import 'package:flutter_master_app/widgets/test_shell.dart';
+import 'package:flutter_master_app/theme/app_theme.dart';
 
 final tap10Test = TestDefinition(
   id: 'tap10',
-  title: 'Tap 10 Times',
+  title: 'Trykk 10 ganger',
   icon: Icons.touch_app,
   build: (context, run) => Tap10TestScreen(run: run),
 );
@@ -30,13 +31,13 @@ class _Tap10TestScreenState extends State<Tap10TestScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Taps: $taps / 10',
+              'Trykk: $taps / 10',
               style: Theme.of(context).textTheme.headlineMedium,
             ),
             const SizedBox(height: 16),
             FilledButton(
               onPressed: done ? null : () => setState(() => taps++),
-              child: const Text('Tap'),
+              child: const Text('Trykk'),
             ),
             const SizedBox(height: 16),
             OutlinedButton(
@@ -47,12 +48,15 @@ class _Tap10TestScreenState extends State<Tap10TestScreen> {
                       );
                     }
                   : null,
-              child: const Text('Finish'),
+              child: const Text('Fullfør'),
             ),
             const SizedBox(height: 16),
             TextButton(
               onPressed: () => widget.run.abort('User aborted'),
-              child: const Text('Abort'),
+              style: TextButton.styleFrom(
+                foregroundColor: AppColors.errorRed,
+              ),
+              child: const Text('Avbryt'),
             ),
           ],
         ),

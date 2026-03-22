@@ -13,18 +13,18 @@ class SummaryScreen extends ConsumerWidget {
     final s = ref.watch(sessionProvider) as SessionDone;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Session summary')),
+      appBar: AppBar(title: const Text('Sesjonssammendrag')),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          Text('Completed ${s.results.length} tests'),
+          Text('Fullførte ${s.results.length} tester'),
           const SizedBox(height: 12),
           for (final r in s.results)
             _buildTestCard(r),
           const SizedBox(height: 12),
           FilledButton(
             onPressed: () => ref.read(sessionProvider.notifier).reset(),
-            child: const Text('Back to start'),
+            child: const Text('Tilbake til start'),
           ),
         ],
       ),

@@ -8,7 +8,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Modular Tests Demo',
+      title: 'Krister Tester - Kognitive Evner',
       theme: AppTheme.light(),
       home: const RootScreen(),
     );
