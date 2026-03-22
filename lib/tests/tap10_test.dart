@@ -5,8 +5,8 @@ import 'package:flutter_master_app/theme/app_theme.dart';
 import 'package:flutter_master_app/widgets/bottom_button_bar.dart';
 
 final tap10Test = TestDefinition(
-  id: 'tap10',
-  title: 'Trykk 10 ganger',
+  id: 'Trykk 10 Test',
+  title: 'Trykking',
   icon: Icons.touch_app,
   build: (context, run) => Tap10TestScreen(run: run),
 );

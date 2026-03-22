@@ -6,8 +6,8 @@ import 'package:flutter_master_app/tutorials/stroop_tutorial.dart';
 import 'package:flutter_master_app/theme/app_theme.dart';
 
 final stroopTest = TestDefinition(
-  id: 'stroop',
-  title: 'Stroop-test',
+  id: 'Stroop Test',
+  title: 'Farger',
   icon: Icons.color_lens,
   build: (context, run) => StroopTestScreen(run: run),
 );

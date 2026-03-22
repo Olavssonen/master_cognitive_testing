@@ -7,8 +7,8 @@ import 'package:flutter_master_app/widgets/bottom_button_bar.dart';
 import 'dart:math' as Math;
 
 final cogTest = TestDefinition(
-  id: 'cog',
-  title: 'Mini-Cog-test',
+  id: 'Mini-Cog Test',
+  title: 'Hukommelse',
   icon: Icons.schedule,
   build: (context, run) => CogTestScreen(run: run),
 );

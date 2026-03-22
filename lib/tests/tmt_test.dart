@@ -11,8 +11,8 @@ import 'package:flutter_master_app/tutorials/tmt_tutorial.dart';
 import 'package:flutter_master_app/widgets/bottom_button_bar.dart';
 
 final tmtTest = TestDefinition(
-  id: 'TMT',
-  title: 'Spor-test',
+  id: 'Trail Making Test',
+  title: 'Tegning',
   icon: Icons.draw,
   build: (context, run) => TMTTestFlowProgression(run: run),
 );

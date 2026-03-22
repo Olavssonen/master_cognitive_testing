@@ -5,8 +5,8 @@ import 'package:flutter_master_app/theme/app_theme.dart';
 import 'package:flutter_master_app/widgets/bottom_button_bar.dart';
 
 final counterTest = TestDefinition(
-  id: 'counter',
-  title: 'Test-teller',
+  id: 'Counter Test',
+  title: 'Telling',
   icon: Icons.exposure_plus_1,
   build: (context, run) => CounterTestScreen(run: run),
 );

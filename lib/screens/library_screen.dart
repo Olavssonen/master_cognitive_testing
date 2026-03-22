@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_master_app/models/test_definition.dart';
 import 'package:flutter_master_app/session/session_controller.dart';
 import 'package:flutter_master_app/theme/app_theme.dart';
+import 'package:flutter_master_app/widgets/bottom_button_bar.dart';
 
 class LibraryScreen extends ConsumerStatefulWidget {
   final List<TestDefinition> registry;
@@ -23,96 +24,127 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
         .toList();
 
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            ref.read(sessionProvider.notifier).returnToMenu();
-          },
-        ),
-        title: const Text(
-          'Velg tester',
-          style: TextStyle(color: AppColors.white),
-        ),
-        backgroundColor: AppColors.crayolaBlue,
-        elevation: 4,
-      ),
-      body: ListView(
+      body: Column(
         children: [
-          for (final t in widget.registry)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              child: Card(
-                elevation: 2,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  side: BorderSide(
-                    color: selectedIds.contains(t.id)
-                        ? AppColors.crayolaBlue
-                        : AppColors.lavender,
-                    width: selectedIds.contains(t.id) ? 3 : 1,
-                  ),
-                ),
-                color: selectedIds.contains(t.id)
-                    ? AppColors.lavender.withValues(alpha: 0.3)
-                    : AppColors.white,
-                child: ListTile(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  leading: Container(
-                    width: 50,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      color: AppColors.lavender,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Icon(
-                      t.icon,
-                      color: AppColors.crayolaBlue,
-                      size: 28,
-                    ),
-                  ),
-                  title: Text(
-                    t.title,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: AppColors.charcoalBlue,
-                          fontWeight: FontWeight.w600,
-                        ),
-                  ),
-                  trailing: Checkbox(
-                    activeColor: AppColors.crayolaBlue,
-                    value: selectedIds.contains(t.id),
-                    onChanged: (_) {
-                      setState(() {
-                        if (selectedIds.contains(t.id)) {
-                          selectedIds.remove(t.id);
-                        } else {
-                          selectedIds.add(t.id);
-                        }
-                      });
-                    },
-                  ),
-                  onTap: () {
-                    setState(() {
-                      if (selectedIds.contains(t.id)) {
-                        selectedIds.remove(t.id);
-                      } else {
-                        selectedIds.add(t.id);
-                      }
-                    });
-                  },
-                ),
-              ),
-            ),
+          const SizedBox(height: 60),
           Padding(
             padding: const EdgeInsets.all(16),
-            child: FilledButton(
-              onPressed: plan.isEmpty
-                  ? null
-                  : () => ref.read(sessionProvider.notifier).start(plan),
-              child: const Text('Start session'),
+            child: Text(
+              'Velg oppgaver',
+              style: TextStyle(
+                fontSize: 48,
+                fontWeight: FontWeight.bold,
+                color: AppColors.crayolaBlue,
+              ),
+            ),
+          ),
+          const SizedBox(height: 40),
+          Expanded(
+            child: ListView(
+              children: [
+                for (final t in widget.registry)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    child: Card(
+                      elevation: 2,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: BorderSide(
+                          color: selectedIds.contains(t.id)
+                              ? AppColors.crayolaBlue
+                              : AppColors.lavender,
+                          width: selectedIds.contains(t.id) ? 3 : 1,
+                        ),
+                      ),
+                      color: selectedIds.contains(t.id)
+                          ? AppColors.crayolaBlue
+                          : AppColors.white,
+                      child: ListTile(
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                        leading: Container(
+                          width: 60,
+                          height: 60,
+                          decoration: BoxDecoration(
+                            color: selectedIds.contains(t.id)
+                                ? AppColors.white
+                                : AppColors.lavender,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Icon(
+                            t.icon,
+                            color: selectedIds.contains(t.id)
+                                ? AppColors.crayolaBlue
+                                : AppColors.crayolaBlue,
+                            size: 32,
+                          ),
+                        ),
+                        title: Text(
+                          t.title,
+                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                color: selectedIds.contains(t.id)
+                                    ? AppColors.white
+                                    : AppColors.crayolaBlue,
+                                fontWeight: FontWeight.w600,
+                              ),
+                        ),
+                        trailing: Material(
+                          color: Colors.transparent,
+                          child: Checkbox(
+                            activeColor: selectedIds.contains(t.id)
+                                ? AppColors.white
+                                : AppColors.crayolaBlue,
+                            checkColor: selectedIds.contains(t.id)
+                                ? AppColors.crayolaBlue
+                                : AppColors.white,
+                            side: !selectedIds.contains(t.id)
+                                ? const BorderSide(
+                                    color: AppColors.crayolaBlue,
+                                    width: 2,
+                                  )
+                                : BorderSide.none,
+                            value: selectedIds.contains(t.id),
+                            onChanged: (_) {
+                              setState(() {
+                                if (selectedIds.contains(t.id)) {
+                                  selectedIds.remove(t.id);
+                                } else {
+                                  selectedIds.add(t.id);
+                                }
+                              });
+                            },
+                          ),
+                        ),
+                        onTap: () {
+                          setState(() {
+                            if (selectedIds.contains(t.id)) {
+                              selectedIds.remove(t.id);
+                            } else {
+                              selectedIds.add(t.id);
+                            }
+                          });
+                        },
+                      ),
+                    ),
+                  ),
+              ],
             ),
           ),
         ],
+      ),
+      bottomNavigationBar: BottomButtonBar(
+        actionButtons: [
+          BottomButton(
+            label: 'Tilbake',
+            onPressed: () => ref.read(sessionProvider.notifier).returnToMenu(),
+          ),
+          BottomButton(
+            label: 'Start',
+            onPressed: () => ref.read(sessionProvider.notifier).start(plan),
+            enabled: plan.isNotEmpty,
+          ),
+        ],
+        showAbortButton: false,
+        useRow: true,
       ),
     );
   }
