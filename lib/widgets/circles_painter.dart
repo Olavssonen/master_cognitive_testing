@@ -250,7 +250,7 @@ class DrawAreaPainter extends CustomPainter {
         final isCorrectSegment = correctLineSegments.contains(i) && correctLineSegments.contains(i + 1);
         
         final lineColor = isCorrectSegment 
-            ? AppColors.grey900  // Correct: black
+            ? AppColors.accent   // Correct: primary color
             : AppColors.grey300; // Incorrect: light grey
         
         final paint = Paint()

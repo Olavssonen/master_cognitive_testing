@@ -275,6 +275,8 @@ class BottomButtonBar extends StatelessWidget {
           style: FilledButton.styleFrom(
             backgroundColor: AppColors.crayolaBlue,
             foregroundColor: AppColors.white,
+            disabledBackgroundColor: AppColors.crayolaBlue.withValues(alpha: 0.4),
+            disabledForegroundColor: AppColors.white.withValues(alpha: 0.6),
           ),
           onPressed: button.enabled ? button.onPressed : null,
           child: buttonContent,
@@ -286,6 +288,8 @@ class BottomButtonBar extends StatelessWidget {
             side: const BorderSide(color: AppColors.crayolaBlue, width: 2),
             foregroundColor: AppColors.white,
             backgroundColor: AppColors.crayolaBlue,
+            disabledBackgroundColor: AppColors.crayolaBlue.withValues(alpha: 0.4),
+            disabledForegroundColor: AppColors.white.withValues(alpha: 0.6),
           ),
           onPressed: button.enabled ? button.onPressed : null,
           child: buttonContent,
@@ -296,6 +300,7 @@ class BottomButtonBar extends StatelessWidget {
           onPressed: button.enabled ? button.onPressed : null,
           style: TextButton.styleFrom(
             foregroundColor: AppColors.errorRed,
+            disabledForegroundColor: AppColors.errorRed.withValues(alpha: 0.5),
           ),
           child: buttonContent,
         );
