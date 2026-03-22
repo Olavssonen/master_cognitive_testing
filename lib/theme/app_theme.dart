@@ -52,7 +52,7 @@ class AppTheme {
         onPrimary: AppColors.white,
         secondary: AppColors.tropicalTeal,
         onSecondary: AppColors.white,
-        surface: AppColors.white,
+        surface: AppColors.platinum,
         onSurface: AppColors.charcoalBlue,
       ),
       scaffoldBackgroundColor: AppColors.platinum,

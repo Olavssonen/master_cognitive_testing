@@ -51,6 +51,7 @@ class _StroopTestScreenState extends State<StroopTestScreen> {
             onStartTest: () {
               setState(() => stage = 2);
             },
+            onAbort: () => widget.run.abort('User aborted'),
           ),
         );
       case 2:

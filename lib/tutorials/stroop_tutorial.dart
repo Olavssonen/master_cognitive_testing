@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_master_app/widgets/test_shell.dart';
 import 'package:flutter_master_app/widgets/stroop_helpers.dart';
 import 'package:flutter_master_app/theme/app_theme.dart';
+import 'package:flutter_master_app/widgets/bottom_button_bar.dart';
 
 /// Tutorial screen for Stroop Test
 class StroopTutorial extends StatefulWidget {
@@ -184,32 +185,42 @@ class _StroopTutorialState extends State<StroopTutorial>
     // Show introduction screen first
     if (showIntroduction) {
       return TestShell(
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                'Stroop Fargetest',
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
+        child: Column(
+          mainAxisSize: MainAxisSize.max,
+          children: [
+            Expanded(
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Stroop Fargetest',
+                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
                     ),
-              ),
-              const SizedBox(height: 20),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                child: Text(
-                  'Se på fargen på teksten, ikke ordet som er skrevet.',
-                  style: Theme.of(context).textTheme.bodyLarge,
-                  textAlign: TextAlign.center,
+                    const SizedBox(height: 20),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                      child: Text(
+                        'Se på fargen på teksten, ikke ordet som er skrevet.',
+                        style: Theme.of(context).textTheme.bodyLarge,
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 40),
-              OutlinedButton(
+            ),
+            BottomButtonBar(
+              primaryButton: BottomButton(
+                label: 'Start veiledning',
                 onPressed: () => setState(() => showIntroduction = false),
-                child: const Text('Start veiledning'),
               ),
-            ],
-          ),
+              onAbort: widget.onAbort ?? () => Navigator.pop(context),
+              debugMode: true,
+            ),
+          ],
         ),
       );
     }

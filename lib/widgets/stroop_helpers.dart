@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_theme.dart';
+import 'bottom_button_bar.dart';
 
 /// Centralized constants for Stroop test
 class StroopColorConstants {
@@ -281,58 +282,49 @@ class StroopWordDisplay extends StatelessWidget {
 class StroopIntermediateScreen extends StatelessWidget {
   final VoidCallback onReplay;
   final VoidCallback onStartTest;
+  final VoidCallback? onAbort;
 
   const StroopIntermediateScreen({
     super.key,
     required this.onReplay,
     required this.onStartTest,
+    this.onAbort,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            'Klar for testen?',
-            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-          ),
-          const SizedBox(height: 60),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Replay button with circular arrow
-              Column(
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.refresh),
-                    iconSize: 48,
-                    onPressed: onReplay,
+    return Column(
+      mainAxisSize: MainAxisSize.max,
+      children: [
+        Expanded(
+          child: Center(
+            child: Text(
+              'Klar for testen?',
+              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
                   ),
-                  const SizedBox(height: 8),
-                  const Text('Spill igjen'),
-                ],
-              ),
-              const SizedBox(width: 80),
-              // Start test button with play icon
-              Column(
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.play_arrow),
-                    iconSize: 48,
-                    onPressed: onStartTest,
-                  ),
-                  const SizedBox(height: 8),
-                  const Text('Start test'),
-                ],
-              ),
-            ],
+            ),
           ),
-        ],
-      ),
+        ),
+        BottomButtonBar(
+          actionButtons: [
+            BottomButton(
+              label: 'Spill igjen',
+              onPressed: onReplay,
+              icon: Icons.refresh,
+            ),
+            BottomButton(
+              label: 'Start test',
+              onPressed: onStartTest,
+              icon: Icons.play_arrow,
+            ),
+          ],
+          onAbort: onAbort,
+          showAbortButton: false,
+          useRow: true,
+          debugMode: true,
+        ),
+      ],
     );
   }
 }
