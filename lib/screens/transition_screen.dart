@@ -4,6 +4,7 @@ import 'package:flutter_master_app/session/session_controller.dart';
 import 'package:flutter_master_app/session/session_state.dart';
 import 'package:flutter_master_app/widgets/session_path_widget.dart';
 import 'package:flutter_master_app/providers/test_providers.dart';
+import 'package:flutter_master_app/widgets/bottom_button_bar.dart';
 
 class TransitionScreen extends ConsumerWidget {
   const TransitionScreen({super.key});
@@ -27,25 +28,25 @@ class TransitionScreen extends ConsumerWidget {
     }
 
     return Scaffold(
-      body: Stack(
+      body: Column(
         children: [
           // Session path widget
-          SessionPathWidget(
-            currentIndex: currentIndex,
-            totalTests: s.plan.length,
-            testRegistry: registry,
-            testPlan: s.plan,
-          ),
-          // Button at bottom
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Padding(
-              padding: const EdgeInsets.all(32.0),
-              child: FilledButton(
-                onPressed: () => ref.read(sessionProvider.notifier).continueAfterTransition(),
-                child: const Text('Fortsett'),
-              ),
+          Expanded(
+            child: SessionPathWidget(
+              currentIndex: currentIndex,
+              totalTests: s.plan.length,
+              testRegistry: registry,
+              testPlan: s.plan,
             ),
+          ),
+          // Bottom button bar
+          BottomButtonBar(
+            primaryButton: BottomButton(
+              label: 'Fortsett',
+              onPressed: () => ref.read(sessionProvider.notifier).continueAfterTransition(),
+              icon: Icons.arrow_forward,
+            ),
+            debugMode: false,
           ),
         ],
       ),

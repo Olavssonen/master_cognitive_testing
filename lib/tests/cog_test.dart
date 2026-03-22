@@ -3,6 +3,7 @@ import 'package:flutter_master_app/models/test_definition.dart';
 import 'package:flutter_master_app/widgets/test_shell.dart';
 import 'package:flutter_master_app/widgets/full_screen_overlay.dart';
 import 'package:flutter_master_app/theme/app_theme.dart';
+import 'package:flutter_master_app/widgets/bottom_button_bar.dart';
 import 'dart:math' as Math;
 
 final cogTest = TestDefinition(
@@ -195,31 +196,14 @@ class _WordRecallPhase1State extends State<WordRecallPhase1> {
               ),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 16.0),
-            child: SizedBox(
-              width: 200,
-              child: FilledButton(
-                onPressed: widget.onNext,
-                child: const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 12.0),
-                  child: Text(
-                    'Neste',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ),
+          BottomButtonBar(
+            primaryButton: BottomButton(
+              label: 'Neste',
+              onPressed: widget.onNext,
+              icon: Icons.arrow_forward,
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
-            child: SizedBox(
-              width: 200,
-              child: TextButton(
-                onPressed: widget.onAbort,
-                child: const Text('Avbryt'),
-              ),
-            ),
+            onAbort: widget.onAbort,
+            debugMode: true,
           ),
         ],
       ),
@@ -347,31 +331,14 @@ class _WordRecallPhase2State extends State<WordRecallPhase2> {
               ),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 16.0),
-            child: SizedBox(
-              width: 200,
-              child: FilledButton(
-                onPressed: _submitRecall,
-                child: const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 12.0),
-                  child: Text(
-                    'Ferdig',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ),
+          BottomButtonBar(
+            primaryButton: BottomButton(
+              label: 'Ferdig',
+              onPressed: _submitRecall,
+              icon: Icons.check_circle,
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
-            child: SizedBox(
-              width: 200,
-              child: TextButton(
-                onPressed: widget.onAbort,
-                child: const Text('Avbryt'),
-              ),
-            ),
+            onAbort: widget.onAbort,
+            debugMode: true,
           ),
         ],
       ),
@@ -805,33 +772,16 @@ class _ClockTestWidgetState extends State<ClockTestWidget> {
                 ),
               ),
             ),
-            // Submit button - prominent, half width
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
-              child: SizedBox(
-                width: 200,
-                child: FilledButton(
-                  onPressed: _submitTest,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 12.0),
-                    child: Text(
-                      _phase == 'numbers' ? 'Neste' : 'Ferdig',
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ),
+            // Abort button - at bottom using BottomButtonBar
+            BottomButtonBar(
+              primaryButton: BottomButton(
+                label: _phase == 'numbers' ? 'Neste' : 'Ferdig',
+                onPressed: _submitTest,
+                type: BottomButtonType.filled,
+                icon: _phase == 'numbers' ? Icons.arrow_forward : Icons.check_circle,
               ),
-            ),
-            // Abort button - at bottom
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
-              child: SizedBox(
-                width: 200,
-                child: TextButton(
-                  onPressed: widget.onAbort,
-                  child: const Text('Avbryt'),
-                ),
-              ),
+              onAbort: widget.onAbort,
+              debugMode: true,
             ),
           ],
         ),

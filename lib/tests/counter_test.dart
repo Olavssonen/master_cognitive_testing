@@ -55,6 +55,7 @@ class _CounterTestScreenState extends State<CounterTestScreen> {
                 );
               },
               type: BottomButtonType.filled,
+              icon: Icons.check_circle,
             ),
             onAbort: () => widget.run.abort('User aborted'),
             showAbortButton: false, // Set to true to show in normal layout, or use debugMode: true

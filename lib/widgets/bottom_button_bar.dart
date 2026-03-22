@@ -7,12 +7,14 @@ class BottomButton {
   final VoidCallback onPressed;
   final bool enabled;
   final BottomButtonType type;
+  final IconData? icon;
 
   const BottomButton({
     required this.label,
     required this.onPressed,
     this.enabled = true,
     this.type = BottomButtonType.filled,
+    this.icon,
   });
 }
 
@@ -106,6 +108,10 @@ class BottomButtonBar extends StatelessWidget {
   /// Controls the entire vertical space allocated to the button bar
   final double barHeight;
 
+  /// Minimum width for buttons to ensure consistent sizing (default: 120.0)
+  /// Prevents buttons from shrinking when text is short
+  final double minButtonWidth;
+
   const BottomButtonBar({
     super.key,
     this.primaryButton,
@@ -120,6 +126,7 @@ class BottomButtonBar extends StatelessWidget {
     this.fontSize = 30.0,
     this.debugMode = true,
     this.barHeight = 150.0,
+    this.minButtonWidth = 200.0,
   });
 
   @override
@@ -242,49 +249,60 @@ class BottomButtonBar extends StatelessWidget {
 
   /// Builds a single action button widget
   Widget _buildActionButton(BottomButton button, BuildContext context) {
+    Widget buttonContent = button.icon != null
+        ? Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                button.label,
+                style: TextStyle(fontSize: fontSize, fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(width: 8),
+              Icon(button.icon, size: 24),
+            ],
+          )
+        : Text(
+            button.label,
+            style: TextStyle(fontSize: fontSize, fontWeight: FontWeight.w600),
+          );
+
     switch (button.type) {
       case BottomButtonType.filled:
         return SizedBox(
           height: buttonHeight,
+          width: minButtonWidth,
           child: FilledButton(
             style: FilledButton.styleFrom(
               backgroundColor: AppColors.crayolaBlue,
               foregroundColor: AppColors.white,
             ),
             onPressed: button.enabled ? button.onPressed : null,
-            child: Text(
-              button.label,
-              style: TextStyle(fontSize: fontSize, fontWeight: FontWeight.w600),
-            ),
+            child: buttonContent,
           ),
         );
       case BottomButtonType.outlined:
         return SizedBox(
           height: buttonHeight,
+          width: minButtonWidth,
           child: OutlinedButton(
             style: OutlinedButton.styleFrom(
               side: const BorderSide(color: AppColors.crayolaBlue, width: 2),
               foregroundColor: AppColors.crayolaBlue,
             ),
             onPressed: button.enabled ? button.onPressed : null,
-            child: Text(
-              button.label,
-              style: TextStyle(fontSize: fontSize, fontWeight: FontWeight.w600),
-            ),
+            child: buttonContent,
           ),
         );
       case BottomButtonType.abort:
         return SizedBox(
           height: buttonHeight,
+          width: minButtonWidth,
           child: TextButton(
             onPressed: button.enabled ? button.onPressed : null,
             style: TextButton.styleFrom(
               foregroundColor: AppColors.errorRed,
             ),
-            child: Text(
-              button.label,
-              style: TextStyle(fontSize: fontSize, fontWeight: FontWeight.w600),
-            ),
+            child: buttonContent,
           ),
         );
     }
