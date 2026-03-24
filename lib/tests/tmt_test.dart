@@ -995,8 +995,7 @@ class _DrawAreaWithCirclesState extends State<DrawAreaWithCircles>
         width: widget.width,
         height: widget.height,
         decoration: BoxDecoration(
-          border: Border.all(color: AppColors.grey300, width: 2),
-          color: AppColors.grey100,
+          color: Colors.transparent,
         ),
         child: ClipRect(
           child: AnimatedBuilder(

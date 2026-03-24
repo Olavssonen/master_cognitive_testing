@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'dart:typed_data';
+import 'dart:ui' as ui;
 import 'package:flutter_master_app/models/test_definition.dart';
 import 'package:flutter_master_app/widgets/test_shell.dart';
 import 'package:flutter_master_app/widgets/full_screen_overlay.dart';
@@ -68,6 +71,7 @@ class _MiniCogTestWidgetState extends State<MiniCogTestWidget> {
   int _correctClockNumbers = 0;
   int _correctHourHand = 0;
   int _correctMinuteHand = 0;
+  Uint8List? _clockImage;
   
   late ClockTestWidget clockTest;
   
@@ -86,6 +90,14 @@ class _MiniCogTestWidgetState extends State<MiniCogTestWidget> {
       _correctClockNumbers = clockScore['correct_numbers'] as int? ?? 0;
       _correctHourHand = clockScore['hour_hand_correct'] as int? ?? 0;
       _correctMinuteHand = clockScore['minute_hand_correct'] as int? ?? 0;
+      var image = clockScore['image'];
+      if (image != null) {
+        if (image is Uint8List) {
+          _clockImage = image;
+        } else if (image is List<int>) {
+          _clockImage = Uint8List.fromList(image);
+        }
+      }
       _currentPhase = 'word_recall_2';
     });
   }
@@ -117,6 +129,7 @@ class _MiniCogTestWidgetState extends State<MiniCogTestWidget> {
       'hands_correct': _correctHourHand + _correctMinuteHand,
       'hands_total': 2,
       'total_score': _correctWords + _correctClockNumbers + _correctHourHand + _correctMinuteHand,
+      'clock_image': _clockImage,
     };
 
     widget.run.complete(
@@ -375,6 +388,10 @@ class _ClockTestWidgetState extends State<ClockTestWidget> {
   
   final GlobalKey<State> _stackKey = GlobalKey();
   final GlobalKey _clockSizedBoxKey = GlobalKey();
+  final GlobalKey _repaintBoundaryKey = GlobalKey();
+  
+  // Screenshot capture
+  Uint8List? _capturedImage;
     // Debug mode: show visual zones and color feedback
   static const bool debugMode = false;
     // Clock geometry (initialize to default values, will be set during layout)
@@ -617,6 +634,24 @@ class _ClockTestWidgetState extends State<ClockTestWidget> {
     );
   }
 
+  Future<void> _captureClockWidget() async {
+    try {
+      final boundary = _repaintBoundaryKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
+      if (boundary != null) {
+        final ui.Image image = await boundary.toImage(pixelRatio: 2.0);
+        final ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+        if (byteData != null) {
+          final bytes = byteData.buffer.asUint8List(byteData.offsetInBytes, byteData.lengthInBytes);
+          setState(() {
+            _capturedImage = bytes;
+          });
+        }
+      }
+    } catch (e) {
+      print('Error capturing clock widget: $e');
+    }
+  }
+
   void _submitTest() {
     if (_phase == 'numbers') {
       // Transition to hands phase - show overlay
@@ -635,161 +670,176 @@ class _ClockTestWidgetState extends State<ClockTestWidget> {
         }
       });
     } else {
-      // Phase 'hands': submit the test with all scores
-      final numberScoreData = _calculateNumberScore();
-      final handScoreData = _calculateHandScore();
-      
-      // Extract hand score values to avoid nullable issues
-      final minuteHandCorrect = handScoreData['minute_hand_correct'] ?? false;
-      final hourHandCorrect = handScoreData['hour_hand_correct'] ?? false;
-      
-      final score = {
-        'correct_numbers': numberScoreData['correct_numbers'],
-        'total_numbers': 12,
-        // Separate scoring for clock hands (not part of 12 points)
-        'hour_hand_correct': hourHandCorrect ? 1 : 0,
-        'minute_hand_correct': minuteHandCorrect ? 1 : 0,
-        'hands_total': 2,
-        'hands_correct': (minuteHandCorrect && hourHandCorrect) ? 2 : (minuteHandCorrect || hourHandCorrect ? 1 : 0),
-        // Overall score
-        'total_score': numberScoreData['correct_numbers']! + (minuteHandCorrect ? 1 : 0) + (hourHandCorrect ? 1 : 0),
-      };
+      // Phase 'hands': capture screenshot then submit the test with all scores
+      _captureClockWidget().then((_) {
+        final numberScoreData = _calculateNumberScore();
+        final handScoreData = _calculateHandScore();
+        
+        // Extract hand score values to avoid nullable issues
+        final minuteHandCorrect = handScoreData['minute_hand_correct'] ?? false;
+        final hourHandCorrect = handScoreData['hour_hand_correct'] ?? false;
+        
+        final score = {
+          'correct_numbers': numberScoreData['correct_numbers'],
+          'total_numbers': 12,
+          // Separate scoring for clock hands (not part of 12 points)
+          'hour_hand_correct': hourHandCorrect ? 1 : 0,
+          'minute_hand_correct': minuteHandCorrect ? 1 : 0,
+          'hands_total': 2,
+          'hands_correct': (minuteHandCorrect && hourHandCorrect) ? 2 : (minuteHandCorrect || hourHandCorrect ? 1 : 0),
+          // Overall score
+          'total_score': numberScoreData['correct_numbers']! + (minuteHandCorrect ? 1 : 0) + (hourHandCorrect ? 1 : 0),
+          // Add screenshot
+          'image': _capturedImage,
+        };
 
-      // If onClockComplete callback is provided, use it (mini-cog flow)
-      if (widget.onClockComplete != null) {
-        widget.onClockComplete!(score);
-      } else {
-        // Fall back to direct completion (backwards compatibility)
-        widget.run.complete(
-          TestResult(testId: 'cog', summary: score),
-        );
-      }
+        // If onClockComplete callback is provided, use it (mini-cog flow)
+        if (widget.onClockComplete != null) {
+          widget.onClockComplete!(score);
+        } else {
+          // Fall back to direct completion (backwards compatibility)
+          widget.run.complete(
+            TestResult(testId: 'cog', summary: score),
+          );
+        }
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final mainContent = Stack(
-      key: _stackKey,
+    final mainContent = Column(
       children: [
-        // Main layout - 3 dynamic sections using Expanded with flex proportions
-        Column(
-          children: [
-            // Top section - instructions (takes 1/7 of screen)
-            Expanded(
-              flex: 1,
-              child: Container(
-                alignment: Alignment.center,
-                child: Text(
-                  _phase == 'hands' ? 'Still klokken til 10 over 11' : _topText,
-                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.w500, color: Theme.of(context).colorScheme.primary),
-                ),
-              ),
+        // Top section - instructions (takes 1/7 of screen)
+        Expanded(
+          flex: 1,
+          child: Container(
+            alignment: Alignment.center,
+            child: Text(
+              _phase == 'hands' ? 'Still klokken til 10 over 11' : _topText,
+              style: TextStyle(fontSize: 28, fontWeight: FontWeight.w500, color: Theme.of(context).colorScheme.primary),
             ),
-            // Middle section - clock (takes 4/7 of screen)
-            Expanded(
-              flex: 4,
-              child: Center(
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    // Make clock responsive - use 80% of available width or height, whichever is smaller
-                    final maxSize = (constraints.maxWidth * 0.80).clamp(0.0, constraints.maxHeight);
-                    final screenSize = maxSize;
-                    final radius = screenSize / 2;
-                    
-                    // Store clock geometry for validation calculations
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      setState(() {
-                        clockRadius = radius;
-                        // Use the SizedBox key to get accurate position
-                        final clockBox = _clockSizedBoxKey.currentContext?.findRenderObject() as RenderBox?;
-                        final stackBox = _stackKey.currentContext?.findRenderObject() as RenderBox?;
-                        if (clockBox != null && stackBox != null) {
-                          // Get the global position of the clock center
-                          final clockWidgetCenter = Offset(
-                            clockBox.size.width / 2,
-                            clockBox.size.height / 2,
-                          );
-                          // Convert to Stack local coordinates
-                          final globalCenter = clockBox.localToGlobal(clockWidgetCenter);
-                          clockCenter = stackBox.globalToLocal(globalCenter);
-                        }
-                      });
-                    });
-                    
-                    return SizedBox(
-                      key: _clockSizedBoxKey,
-                      width: screenSize,
-                      height: screenSize,
-                      child: CustomPaint(
-                        painter: ClockPainter(
-                          clockRadius: radius,
-                          toleranceMargin: toleranceMargin,
-                          debugMode: debugMode,
-                          strokeColor: Theme.of(context).colorScheme.primary,
-                          centerColor: Theme.of(context).colorScheme.primary,
-                          boundaryColor: AppColors.errorRed,
-                          fillColor: Theme.of(context).colorScheme.primary,
+          ),
+        ),
+        // RepaintBoundary wraps the Stack with clock, overlays, and hands
+        Expanded(
+          flex: 6,
+          child: RepaintBoundary(
+            key: _repaintBoundaryKey,
+            child: Stack(
+              key: _stackKey,
+              children: [
+                // Inner layout - clock and numbers
+                Column(
+                  children: [
+                    // Middle section - clock (takes 4/7 of remaining space)
+                    Expanded(
+                      flex: 4,
+                      child: Center(
+                        child: LayoutBuilder(
+                          builder: (context, constraints) {
+                            // Make clock responsive - use 80% of available width or height, whichever is smaller
+                            final maxSize = (constraints.maxWidth * 0.80).clamp(0.0, constraints.maxHeight);
+                            final screenSize = maxSize;
+                            final radius = screenSize / 2;
+                            
+                            // Store clock geometry for validation calculations
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              setState(() {
+                                clockRadius = radius;
+                                // Use the SizedBox key to get accurate position
+                                final clockBox = _clockSizedBoxKey.currentContext?.findRenderObject() as RenderBox?;
+                                final stackBox = _stackKey.currentContext?.findRenderObject() as RenderBox?;
+                                if (clockBox != null && stackBox != null) {
+                                  // Get the global position of the clock center
+                                  final clockWidgetCenter = Offset(
+                                    clockBox.size.width / 2,
+                                    clockBox.size.height / 2,
+                                  );
+                                  // Convert to Stack local coordinates
+                                  final globalCenter = clockBox.localToGlobal(clockWidgetCenter);
+                                  clockCenter = stackBox.globalToLocal(globalCenter);
+                                }
+                              });
+                            });
+                            
+                            return SizedBox(
+                              key: _clockSizedBoxKey,
+                              width: screenSize,
+                              height: screenSize,
+                              child: CustomPaint(
+                                painter: ClockPainter(
+                                  clockRadius: radius,
+                                  toleranceMargin: toleranceMargin,
+                                  debugMode: debugMode,
+                                  strokeColor: Theme.of(context).colorScheme.primary,
+                                  centerColor: Theme.of(context).colorScheme.primary,
+                                  boundaryColor: AppColors.errorRed,
+                                  fillColor: Theme.of(context).colorScheme.primary,
+                                ),
+                              ),
+                            );
+                          },
                         ),
                       ),
-                    );
-                  },
-                ),
-              ),
-            ),
-            // Bottom section - numbers (takes 2/7 of screen)
-            Expanded(
-              flex: 2,
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // First row of 6 numbers
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(6, (index) {
-                        final number = index + 1;
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
-                          child: _buildNumberCircle(number),
-                        );
-                      }),
                     ),
-                    const SizedBox(height: 25),
-                    // Second row of 6 numbers
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(6, (index) {
-                        final number = index + 7;
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
-                          child: _buildNumberCircle(number),
-                        );
-                      }),
+                    // Bottom section - numbers (takes 2/7 of remaining space)
+                    Expanded(
+                      flex: 2,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            // First row of 6 numbers
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: List.generate(6, (index) {
+                                final number = index + 1;
+                                return Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                                  child: _buildNumberCircle(number),
+                                );
+                              }),
+                            ),
+                            const SizedBox(height: 25),
+                            // Second row of 6 numbers
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: List.generate(6, (index) {
+                                final number = index + 7;
+                                return Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                                  child: _buildNumberCircle(number),
+                                );
+                              }),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ],
                 ),
-              ),
+                // Overlay for dragged/placed numbers
+                ..._buildDraggedOverlay(),
+                // Clock hands (visible in hands phase)
+                if (_phase == 'hands')
+                  _buildClockHands(),
+              ],
             ),
-            // Abort button - at bottom using BottomButtonBar
-            BottomButtonBar(
-              primaryButton: BottomButton(
-                label: _phase == 'numbers' ? 'Neste' : 'Ferdig',
-                onPressed: _submitTest,
-                type: BottomButtonType.filled,
-                icon: _phase == 'numbers' ? Icons.arrow_forward : Icons.check_circle,
-              ),
-              onAbort: widget.onAbort,
-              debugMode: true,
-            ),
-          ],
+          ),
         ),
-        // Overlay for dragged/placed numbers
-        ..._buildDraggedOverlay(),
-        // Clock hands (visible in hands phase)
-        if (_phase == 'hands')
-          _buildClockHands(),
+        // Abort button - at bottom using BottomButtonBar
+        BottomButtonBar(
+          primaryButton: BottomButton(
+            label: _phase == 'numbers' ? 'Neste' : 'Ferdig',
+            onPressed: _submitTest,
+            type: BottomButtonType.filled,
+            icon: _phase == 'numbers' ? Icons.arrow_forward : Icons.check_circle,
+          ),
+          onAbort: widget.onAbort,
+          debugMode: true,
+        ),
       ],
     );
     
@@ -809,9 +859,9 @@ class _ClockTestWidgetState extends State<ClockTestWidget> {
 
   List<Widget> _buildDraggedOverlay() {
     const circleSizePixels = 70.0;
-    final widgets = <Widget>[];
+    final List<Widget> widgets = <Widget>[];
 
-    for (var entry in numberPositions.entries) {
+    for (final MapEntry<int, Offset> entry in numberPositions.entries) {
       final number = entry.key;
       final position = entry.value;
       

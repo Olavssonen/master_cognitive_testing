@@ -200,7 +200,6 @@ class TMTTestFormatter implements TestResultFormatter {
                           const SizedBox(height: 8),
                           Container(
                             decoration: BoxDecoration(
-                              border: Border.all(color: AppColors.grey500),
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Image.memory(
@@ -278,7 +277,60 @@ class CogTestFormatter implements TestResultFormatter {
   }
 
   @override
-  Widget? getDetailedView(Map<String, dynamic> summary) => null;
+  Widget? getDetailedView(Map<String, dynamic> summary) {
+    var image = summary['clock_image'];
+    
+    if (image == null) {
+      return null;
+    }
+    
+    // Handle different types that might come through
+    Uint8List? imageData;
+    if (image is Uint8List) {
+      imageData = image;
+    } else if (image is List<int>) {
+      imageData = Uint8List.fromList(image);
+    }
+    
+    if (imageData == null) {
+      return null;
+    }
+    
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(
+              'Klokke',
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+            const SizedBox(height: 12),
+            Container(
+              child: Image.memory(
+                imageData,
+                fit: BoxFit.contain,
+                height: 350,
+                width: 350,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    height: 350,
+                    width: 350,
+                    color: Colors.red[100],
+                    child: Center(
+                      child: Text('Feil: $error'),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 /// Factory to get the appropriate formatter for a test type
