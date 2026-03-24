@@ -29,7 +29,7 @@ class _SessionPathWidgetState extends State<SessionPathWidget>
   void initState() {
     super.initState();
     _animationController = AnimationController(
-      duration: const Duration(seconds: 2),
+      duration: const Duration(seconds: 1),
       vsync: this,
     );
     _animation = Tween<double>(begin: 0, end: 1).animate(_animationController);
@@ -132,14 +132,16 @@ class SessionPathPainter extends CustomPainter {
   void _drawPointRings(Canvas canvas, List<Offset> positions, [double animationProgress = 0]) {
     const double pointRadius = 38;
     const double ringWidth = 8;
+    final isAnimatingToGoal = currentIndex >= positions.length - 2;
 
     for (int i = 0; i < positions.length; i++) {
-      // Completed stops are teal, or animation target after it finishes
-      final isCompleted = i <= currentIndex + 1;
-      final isAnimationTarget = i == currentIndex + 2 && animationProgress >= 1.0;
+      // Completed stops are teal, or animation target after it's nearly complete
+      final isCompleted = i <= currentIndex + 1 && !(isAnimatingToGoal && i == positions.length - 1);
+      final isAnimationTarget = i == currentIndex + 2 && animationProgress >= 0.90;
+      final isGoalTarget = isAnimatingToGoal && i == positions.length - 1 && animationProgress >= 0.90;
 
       Color pointColor;
-      if (isCompleted || isAnimationTarget) {
+      if (isCompleted || isAnimationTarget || isGoalTarget) {
         pointColor = AppColors.tropicalTeal;
       } else {
         pointColor = AppColors.crayolaBlue;
@@ -156,16 +158,31 @@ class SessionPathPainter extends CustomPainter {
   }
 
   void _drawAnimationFill(Canvas canvas, List<Offset> positions, double progress, int currentIndex) {
-    // Draw all completed segments as teal (permanent)
-    for (int i = 0; i <= currentIndex; i++) {
-      if (i < positions.length - 1) {
+    // Check if animating to the final goal
+    final isAnimatingToGoal = currentIndex >= positions.length - 2;
+    
+    if (isAnimatingToGoal) {
+      // Draw all segments before the final one as complete
+      for (int i = 0; i < positions.length - 2; i++) {
         _drawSegmentFilled(canvas, positions[i], positions[i + 1], 1.0);
       }
-    }
+      // Animate only the final segment to the goal
+      if (progress > 0.001) {
+        _drawSegmentFilled(canvas, positions[positions.length - 2], positions[positions.length - 1], progress);
+      }
+    } else {
+      // Normal test transition logic
+      // Draw all completed segments as teal (permanent)
+      for (int i = 0; i <= currentIndex; i++) {
+        if (i < positions.length - 1) {
+          _drawSegmentFilled(canvas, positions[i], positions[i + 1], 1.0);
+        }
+      }
 
-    // Animate the next segment if not at the end
-    if (progress > 0.001 && currentIndex + 1 < positions.length - 1) {
-      _drawSegmentFilled(canvas, positions[currentIndex + 1], positions[currentIndex + 2], progress);
+      // Animate the next segment if not at the end
+      if (progress > 0.001 && currentIndex + 1 < positions.length - 1) {
+        _drawSegmentFilled(canvas, positions[currentIndex + 1], positions[currentIndex + 2], progress);
+      }
     }
   }
 
@@ -263,11 +280,13 @@ class SessionPathPainter extends CustomPainter {
   void _drawPoints(Canvas canvas, List<Offset> positions, [double animationProgress = 0]) {
     const double pointRadius = 40;
     const double ringWidth = 8;
+    final isAnimatingToGoal = currentIndex >= positions.length - 2;
 
     for (int i = 0; i < positions.length; i++) {
-      // Completed stops are inverted, animation target is not inverted (only after animation finishes)
-      final isCompleted = i <= currentIndex + 1;
-      final isAnimationTarget = i == currentIndex + 2 && animationProgress >= 1.0;
+      // Completed stops are inverted, animation target is not inverted (only after animation is nearly complete)
+      final isCompleted = i <= currentIndex + 1 && !(isAnimatingToGoal && i == positions.length - 1);
+      final isAnimationTarget = i == currentIndex + 2 && animationProgress >= 0.90;
+      final isGoalTarget = isAnimatingToGoal && i == positions.length - 1 && animationProgress >= 0.90;
 
       Color bgColor;
       Color iconColor;
@@ -276,7 +295,7 @@ class SessionPathPainter extends CustomPainter {
         // Inverted: teal bg, white icon
         bgColor = AppColors.tropicalTeal;
         iconColor = Colors.white;
-      } else if (isAnimationTarget) {
+      } else if (isAnimationTarget || isGoalTarget) {
         // Not inverted: white bg, teal icon (and teal ring)
         bgColor = Colors.white;
         iconColor = AppColors.tropicalTeal;
