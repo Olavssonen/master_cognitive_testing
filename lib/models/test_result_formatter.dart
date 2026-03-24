@@ -82,6 +82,15 @@ class TMTTestFormatter implements TestResultFormatter {
     };
   }
 
+  String _formatTime(int seconds) {
+    if (seconds < 60) {
+      return '${seconds}s';
+    }
+    final minutes = seconds ~/ 60;
+    final secs = seconds % 60;
+    return '${minutes}m ${secs}s';
+  }
+
   @override
   Text getTextSummary(Map<String, dynamic> summary) {
     final allStages = summary['all_stages'] as Map<String, dynamic>? ?? {};
@@ -94,10 +103,13 @@ class TMTTestFormatter implements TestResultFormatter {
 
       // Show circle count for TMT tests
       final circlesOrder = stageData['circlesOrder'] as List<dynamic>?;
+      final timeSpent = stageData['timeSpent'] as int? ?? 0;
+      final timeText = _formatTime(timeSpent);
+      
       if (circlesOrder != null && circlesOrder.isNotEmpty) {
-        stageInfo.add('${_translateStageName(entry.key)}: $statusText (${circlesOrder.length} sirkler)');
+        stageInfo.add('${_translateStageName(entry.key)}: $statusText (${circlesOrder.length} sirkler) - Tid: $timeText');
       } else {
-        stageInfo.add('${_translateStageName(entry.key)}: $statusText');
+        stageInfo.add('${_translateStageName(entry.key)}: $statusText - Tid: $timeText');
       }
     }
 
@@ -141,12 +153,15 @@ class TMTTestFormatter implements TestResultFormatter {
       final completed = stageData['completed'] as bool? ?? false;
       final statusText = completed ? '✓ Fullført' : '✗ Ufullstendig';
 
-      // Show circle count for TMT tests
+      // Show circle count and time for TMT tests
       final circlesOrder = stageData['circlesOrder'] as List<dynamic>?;
+      final timeSpent = stageData['timeSpent'] as int? ?? 0;
+      final timeText = _formatTime(timeSpent);
+      
       if (circlesOrder != null && circlesOrder.isNotEmpty) {
-        stageInfo.add('${_translateStageName(entry.key)}: $statusText (${circlesOrder.length} sirkler)');
+        stageInfo.add('${_translateStageName(entry.key)}: $statusText (${circlesOrder.length} sirkler) - Tid: $timeText');
       } else {
-        stageInfo.add('${_translateStageName(entry.key)}: $statusText');
+        stageInfo.add('${_translateStageName(entry.key)}: $statusText - Tid: $timeText');
       }
     }
 

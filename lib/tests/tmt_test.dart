@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/rendering.dart';
 import 'dart:typed_data';
+import 'dart:async';
 import 'dart:ui' as ui;
 import 'package:flutter_master_app/models/test_definition.dart';
 import 'package:flutter_master_app/widgets/test_shell.dart';
@@ -36,6 +37,7 @@ class _TMTTestFlowProgressionState extends State<TMTTestFlowProgression> {
       'completed': completed,
       'circlesOrder': resultData['circlesEntered'] as List<String>? ?? [],
       'image': resultData['image'] as Uint8List?,
+      'timeSpent': resultData['timeSpent'] as int? ?? 0,
     };
   }
 
@@ -164,6 +166,12 @@ class _TMTTest extends State<TMTTest> {
   String? lastCorrectCircle;
   final GlobalKey _drawingAreaKey = GlobalKey();
   Uint8List? _capturedImage;
+  
+  // Timing variables
+  static const bool debugMode = true; // Set to true to show countdown
+  late int timeoutSeconds;
+  int remainingSeconds = 0;
+  Timer? _countdownTimer;
 
   @override
   void initState() {
@@ -172,6 +180,64 @@ class _TMTTest extends State<TMTTest> {
       numberOfCircles: 6,
       mode: widget.mode,
     );
+    
+    // Set timeout based on test mode
+    timeoutSeconds = widget.mode == CircleMode.numbersOnly ? 100 : 300;
+    remainingSeconds = timeoutSeconds;
+    
+    // Start countdown timer
+    _startCountdown();
+  }
+  
+  void _startCountdown() {
+    _countdownTimer = Timer.periodic(Duration(seconds: 1), (timer) {
+      if (mounted) {
+        setState(() {
+          if (remainingSeconds > 0) {
+            remainingSeconds--;
+          } else {
+            // Time's up - complete the test
+            _countdownTimer?.cancel();
+            _completeTestDueToTimeout();
+          }
+        });
+      }
+    });
+  }
+  
+  void _completeTestDueToTimeout() {
+    setState(() {
+      testComplete = true;
+    });
+    
+    // Auto-complete after a short delay
+    Future.delayed(Duration(milliseconds: 500), () {
+      if (mounted) {
+        _captureDrawingArea().then((_) {
+          final timeSpent = timeoutSeconds - remainingSeconds;
+          final resultData = {
+            'circlesEntered': circlesEntered,
+            'image': _capturedImage,
+            'timedOut': true,
+            'timeSpent': timeSpent,
+          };
+          
+          widget.onTestResult?.call(resultData, testComplete);
+
+          if (widget.onNextStage != null) {
+            widget.onNextStage!();
+          } else {
+            widget.onCompletion?.call(resultData, testComplete);
+          }
+        });
+      }
+    });
+  }
+  
+  @override
+  void dispose() {
+    _countdownTimer?.cancel();
+    super.dispose();
   }
 
   void onCircleEntered(String circleLabel, bool isCorrect) {
@@ -408,6 +474,32 @@ class _TMTTest extends State<TMTTest> {
       child: Column(
         mainAxisSize: MainAxisSize.max,
         children: [
+          if (debugMode)
+            Container(
+              padding: EdgeInsets.all(12),
+              color: Colors.grey[800],
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Time: ${remainingSeconds}s',
+                    style: TextStyle(
+                      color: remainingSeconds < 20 ? Colors.red : Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(width: 20),
+                  Text(
+                    widget.mode == CircleMode.numbersOnly ? '(Numbers Test)' : '(Mixed Test)',
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           Expanded(
             child: Center(
               child: LayoutBuilder(builder: (context, constraints) {
@@ -456,9 +548,11 @@ class _TMTTest extends State<TMTTest> {
                 onPressed: () {
                   if (testComplete) {
                     _captureDrawingArea().then((_) {
+                      final timeSpent = timeoutSeconds - remainingSeconds;
                       final resultData = {
                         'circlesEntered': circlesEntered,
                         'image': _capturedImage,
+                        'timeSpent': timeSpent,
                       };
                       
                       widget.onTestResult?.call(resultData, testComplete);
