@@ -60,7 +60,11 @@ class _Tap10TestScreenState extends State<Tap10TestScreen> {
               icon: Icons.check_circle,
             ),
             onAbort: () => widget.run.abort('User aborted'),
-            debugMode: true,
+            onSkip: () {
+              widget.run.complete(
+                TestResult(testId: 'tap10', summary: {'taps': 0}),
+              );
+            },
           ),
         ],
       ),

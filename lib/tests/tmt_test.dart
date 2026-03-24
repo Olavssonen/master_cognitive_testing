@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:typed_data';
 import 'dart:async';
 import 'dart:ui' as ui;
@@ -10,6 +11,7 @@ import 'package:flutter_master_app/theme/app_theme.dart';
 import 'package:flutter_master_app/widgets/circles_painter.dart';
 import 'package:flutter_master_app/tutorials/tmt_tutorial.dart';
 import 'package:flutter_master_app/widgets/bottom_button_bar.dart';
+import 'package:flutter_master_app/providers/test_providers.dart';
 
 final tmtTest = TestDefinition(
   id: 'Trail Making Test',
@@ -134,7 +136,7 @@ class _TMTTestFlowState extends State<TMTTestFlow> {
   }
 }
 
-class TMTTest extends StatefulWidget {
+class TMTTest extends ConsumerStatefulWidget {
   final TestRunContext run;
   final CircleMode mode;
   final String stageName;
@@ -152,10 +154,10 @@ class TMTTest extends StatefulWidget {
   });
 
   @override
-  State<TMTTest> createState() => _TMTTest();
+  ConsumerState<TMTTest> createState() => _TMTTest();
 }
 
-class _TMTTest extends State<TMTTest> {
+class _TMTTest extends ConsumerState<TMTTest> {
   late CirclesWithNumbers circlesGenerator;
   List<Offset> drawnPoints = [];
   List<String> circlesEntered = [];
@@ -173,7 +175,6 @@ class _TMTTest extends State<TMTTest> {
   Set<String> _mistakesTracked = {}; // Track which circles we've already counted as mistakes
   
   // Timing variables
-  static const bool debugMode = true; // Set to true to show countdown
   late int timeoutSeconds;
   int remainingSeconds = 0;
   Timer? _countdownTimer;
@@ -485,6 +486,8 @@ class _TMTTest extends State<TMTTest> {
 
   @override
   Widget build(BuildContext context) {
+    final debugMode = ref.watch(debugModeProvider);
+    
     return TestShell(
       child: Column(
         mainAxisSize: MainAxisSize.max,
@@ -594,7 +597,19 @@ class _TMTTest extends State<TMTTest> {
             ],
             onAbort: () => widget.run.abort('User aborted'),
             useRow: true,
-            debugMode: true,
+            onSkip: () {
+              final resultData = {
+                'circlesEntered': <String>[],
+                'timeSpent': 0,
+                'mistakes': 0,
+              };
+              
+              if (widget.onNextStage != null) {
+                widget.onNextStage!();
+              } else {
+                widget.onCompletion?.call(resultData, false);
+              }
+            },
           ),
         ],
       ),

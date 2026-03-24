@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter_master_app/models/test_definition.dart';
@@ -7,6 +8,7 @@ import 'package:flutter_master_app/widgets/test_shell.dart';
 import 'package:flutter_master_app/widgets/full_screen_overlay.dart';
 import 'package:flutter_master_app/theme/app_theme.dart';
 import 'package:flutter_master_app/widgets/bottom_button_bar.dart';
+import 'package:flutter_master_app/providers/test_providers.dart';
 import 'dart:math' as Math;
 
 final cogTest = TestDefinition(
@@ -18,7 +20,15 @@ final cogTest = TestDefinition(
 
 // Words for the word recall test
 const List<String> targetWords = ['Banan', 'Soloppgang', 'Stol'];
-const List<String> distractorWords = ['Leder', 'Årstid', 'Bord', 'Landsby', 'Kjøkken', 'Baby', 'Elv'];
+const List<String> distractorWords = [
+  'Leder',
+  'Årstid',
+  'Bord',
+  'Landsby',
+  'Kjøkken',
+  'Baby',
+  'Elv',
+];
 
 class CogTestScreen extends StatefulWidget {
   final TestRunContext run;
@@ -42,9 +52,7 @@ class _CogTestScreenState extends State<CogTestScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return TestShell(
-      child: miniCogTest,
-    );
+    return TestShell(child: miniCogTest);
   }
 }
 
@@ -65,16 +73,16 @@ class MiniCogTestWidget extends StatefulWidget {
 class _MiniCogTestWidgetState extends State<MiniCogTestWidget> {
   // Phases: 'word_recall_1', 'clock_test', 'word_recall_2', 'completed'
   String _currentPhase = 'word_recall_1';
-  
+
   // Score tracking
   int _correctWords = 0;
   int _correctClockNumbers = 0;
   int _correctHourHand = 0;
   int _correctMinuteHand = 0;
   Uint8List? _clockImage;
-  
+
   late ClockTestWidget clockTest;
-  
+
   @override
   void initState() {
     super.initState();
@@ -113,7 +121,7 @@ class _MiniCogTestWidgetState extends State<MiniCogTestWidget> {
       _correctWords = correctCount;
       _currentPhase = 'completed';
     });
-    
+
     // Submit the test with all scores
     _submitTest();
   }
@@ -128,13 +136,15 @@ class _MiniCogTestWidgetState extends State<MiniCogTestWidget> {
       'minute_hand_correct': _correctMinuteHand,
       'hands_correct': _correctHourHand + _correctMinuteHand,
       'hands_total': 2,
-      'total_score': _correctWords + _correctClockNumbers + _correctHourHand + _correctMinuteHand,
+      'total_score':
+          _correctWords +
+          _correctClockNumbers +
+          _correctHourHand +
+          _correctMinuteHand,
       'clock_image': _clockImage,
     };
 
-    widget.run.complete(
-      TestResult(testId: 'cog', summary: score),
-    );
+    widget.run.complete(TestResult(testId: 'cog', summary: score));
   }
 
   @override
@@ -158,7 +168,7 @@ class _MiniCogTestWidgetState extends State<MiniCogTestWidget> {
         onAbort: widget.onAbort,
       );
     }
-    
+
     return const SizedBox.shrink();
   }
 }
@@ -198,10 +208,11 @@ class _WordRecallPhase1State extends State<WordRecallPhase1> {
                       padding: const EdgeInsets.symmetric(vertical: 20.0),
                       child: Text(
                         word,
-                        style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                          color: Theme.of(context).colorScheme.primary,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: Theme.of(context).textTheme.displayMedium
+                            ?.copyWith(
+                              color: Theme.of(context).colorScheme.primary,
+                              fontWeight: FontWeight.bold,
+                            ),
                       ),
                     );
                   }).toList(),
@@ -216,7 +227,7 @@ class _WordRecallPhase1State extends State<WordRecallPhase1> {
               icon: Icons.arrow_forward,
             ),
             onAbort: widget.onAbort,
-            debugMode: true,
+            onSkip: widget.onNext,
           ),
         ],
       ),
@@ -268,7 +279,7 @@ class _WordRecallPhase2State extends State<WordRecallPhase2> {
         correctCount++;
       }
     }
-    
+
     widget.onComplete(correctCount);
   }
 
@@ -295,12 +306,13 @@ class _WordRecallPhase2State extends State<WordRecallPhase2> {
                         GridView.builder(
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
-                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            crossAxisSpacing: 16,
-                            mainAxisSpacing: 16,
-                            mainAxisExtent: 150,
-                          ),
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 2,
+                                crossAxisSpacing: 16,
+                                mainAxisSpacing: 16,
+                                mainAxisExtent: 150,
+                              ),
                           itemCount: allWords.length,
                           itemBuilder: (context, index) {
                             final word = allWords[index];
@@ -313,7 +325,9 @@ class _WordRecallPhase2State extends State<WordRecallPhase2> {
                                       ? Theme.of(context).colorScheme.primary
                                       : Theme.of(context).colorScheme.surface,
                                   border: Border.all(
-                                    color: Theme.of(context).colorScheme.primary,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.primary,
                                     width: 3,
                                   ),
                                   borderRadius: BorderRadius.circular(12),
@@ -328,8 +342,12 @@ class _WordRecallPhase2State extends State<WordRecallPhase2> {
                                       fontSize: 45,
                                       fontWeight: FontWeight.w600,
                                       color: isSelected
-                                          ? Theme.of(context).colorScheme.onPrimary
-                                          : Theme.of(context).colorScheme.primary,
+                                          ? Theme.of(
+                                              context,
+                                            ).colorScheme.onPrimary
+                                          : Theme.of(
+                                              context,
+                                            ).colorScheme.primary,
                                     ),
                                   ),
                                 ),
@@ -352,6 +370,7 @@ class _WordRecallPhase2State extends State<WordRecallPhase2> {
             ),
             onAbort: widget.onAbort,
             debugMode: true,
+            onSkip: () => widget.onComplete(0),
           ),
         ],
       ),
@@ -359,7 +378,7 @@ class _WordRecallPhase2State extends State<WordRecallPhase2> {
   }
 }
 
-class ClockTestWidget extends StatefulWidget {
+class ClockTestWidget extends ConsumerStatefulWidget {
   final TestRunContext run;
   final VoidCallback onAbort;
   final Function(Map<String, dynamic>)? onClockComplete;
@@ -372,55 +391,56 @@ class ClockTestWidget extends StatefulWidget {
   });
 
   @override
-  State<ClockTestWidget> createState() => _ClockTestWidgetState();
+  ConsumerState<ClockTestWidget> createState() => _ClockTestWidgetState();
 }
 
-class _ClockTestWidgetState extends State<ClockTestWidget> {
+class _ClockTestWidgetState extends ConsumerState<ClockTestWidget> {
   // Track position of numbers on the overlay
   final Map<int, Offset> numberPositions = {};
-  
+
   // Track drag state to calculate deltas properly
   final Map<int, Offset> dragStartGlobalPos = {};
   final Map<int, Offset> dragStartNumberPos = {};
-  
+
   // Track which number is currently being dragged
   int? currentlyDraggingNumber;
-  
+
   final GlobalKey<State> _stackKey = GlobalKey();
   final GlobalKey _clockSizedBoxKey = GlobalKey();
   final GlobalKey _repaintBoundaryKey = GlobalKey();
-  
+
   // Screenshot capture
   Uint8List? _capturedImage;
-    // Debug mode: show visual zones and color feedback
-  static const bool debugMode = false;
-    // Clock geometry (initialize to default values, will be set during layout)
+
+  // Clock geometry (initialize to default values, will be set during layout)
   double clockRadius = 0;
   Offset? clockCenter;
-  
+
   // Tolerance area: pixels inside and outside the outer circle for valid zones
   static const double toleranceMargin = 50.0;
-  
+
   // State tracking for the intermediate overlay
   bool _showingIntermediateOverlay = false;
   String _topText = 'Lag en klokke ved å dra tallene til riktig posisjon';
-  
+
   // Two phases: 'numbers' or 'hands'
   String _phase = 'numbers';
-  
+
   // Hand angles in degrees (0 = 12 o'clock, 90 = 3 o'clock, etc.)
-  double _minuteHandAngle = 246; // langeviser (minute/long hand) - pointing downwards
-  double _hourHandAngle = 120; // korteviser (hour/short hand) - pointing downwards
-  
+  double _minuteHandAngle =
+      246; // langeviser (minute/long hand) - pointing downwards
+  double _hourHandAngle =
+      120; // korteviser (hour/short hand) - pointing downwards
+
   // Track which hand is currently being dragged (null, 0 for minute, 1 for hour)
   int? _draggingHandId;
-  
+
   // Hand dimensions - easily adjustable
   static const double minuteHandLength = 250.0; // longeviser
   static const double minuteHandWidth = 32.0;
-  static const double hourHandLength = 175.0;   // korteviser
+  static const double hourHandLength = 175.0; // korteviser
   static const double hourHandWidth = 32.0;
-  
+
   @override
   void initState() {
     super.initState();
@@ -435,27 +455,27 @@ class _ClockTestWidgetState extends State<ClockTestWidget> {
   /// Returns null if error
   int? _getPizzaSlice(Offset point) {
     if (clockCenter == null) return null;
-    
+
     final dx = point.dx - clockCenter!.dx;
     final dy = point.dy - clockCenter!.dy;
-    
+
     // Calculate angle in degrees, where 0° is up (12 o'clock)
     // atan2 returns angle in radians, -π to π
     var angle = (Math.atan2(dx, -dy) * 180 / Math.pi).toDouble();
-    
+
     // Convert to 0-360 range
     if (angle < 0) angle += 360;
-    
+
     // Each slice is 30 degrees (360 / 12)
     // Slice 12 is from -15 to +15 degrees (centered at 0°/top)
     // Slice 1 is from 15 to 45 degrees
     // Slice 3 is from 75 to 105 degrees (right), etc.
     var centerAngle = angle + 15; // Shift so slice boundaries align
     if (centerAngle >= 360) centerAngle -= 360;
-    
+
     final sliceIndex = (centerAngle / 30).floor(); // 0-11
     final clockNumber = sliceIndex == 0 ? 12 : sliceIndex;
-    
+
     return clockNumber;
   }
 
@@ -463,24 +483,28 @@ class _ClockTestWidgetState extends State<ClockTestWidget> {
   /// numberCenter: center of the number circle
   /// numberRadius: radius of the number circle
   /// clockNumber: which clock position this number represents
-  bool _circleOverlapsValidZone(Offset numberCenter, double numberRadius, int clockNumber) {
+  bool _circleOverlapsValidZone(
+    Offset numberCenter,
+    double numberRadius,
+    int clockNumber,
+  ) {
     if (clockCenter == null) return false;
-    
+
     final distanceToCenter = (numberCenter - clockCenter!).distance;
-    
+
     // Valid distance band for the zone
     final minDistance = clockRadius - toleranceMargin;
     final maxDistance = clockRadius + toleranceMargin;
-    
+
     // Check if circle overlaps with distance band
     // Circle touches the band if: closest point <= maxDistance AND farthest point >= minDistance
     final closestPoint = distanceToCenter - numberRadius;
     final farthestPoint = distanceToCenter + numberRadius;
-    
+
     if (farthestPoint < minDistance || closestPoint > maxDistance) {
       return false; // Circle doesn't reach the valid distance band
     }
-    
+
     // Now check if the center is in the correct pizza slice
     // (if center is correct, most of the circle should be in the right slice)
     final sliceNumber = _getPizzaSlice(numberCenter);
@@ -492,30 +516,27 @@ class _ClockTestWidgetState extends State<ClockTestWidget> {
   Map<String, int> _calculateNumberScore() {
     int correctCount = 0;
     const numberCircleRadius = 35.0; // Half of circleSizePixels (70)
-    
+
     for (int number = 1; number <= 12; number++) {
       final position = numberPositions[number];
-      
+
       // Skip if number is not on overlay (offscreen)
       if (position == null || (position.dx < -100 && position.dy < -100)) {
         continue;
       }
-      
+
       // Check if any part of the number circle overlaps with the valid zone
       final numberCenter = Offset(
         position.dx + numberCircleRadius,
         position.dy + numberCircleRadius,
       );
-      
+
       if (_circleOverlapsValidZone(numberCenter, numberCircleRadius, number)) {
         correctCount++;
       }
     }
-    
-    return {
-      'correct_numbers': correctCount,
-      'total_numbers': 12,
-    };
+
+    return {'correct_numbers': correctCount, 'total_numbers': 12};
   }
 
   /// Calculate hand scores by checking if hands point to correct positions
@@ -525,14 +546,14 @@ class _ClockTestWidgetState extends State<ClockTestWidget> {
     // Get the pizza slice for each hand
     final minuteHandSlice = _getPizzaSliceFromAngle(_minuteHandAngle);
     final hourHandSlice = _getPizzaSliceFromAngle(_hourHandAngle);
-    
+
     // Check if hands are in correct pizza slices
     // Minute hand (langeviser/long) should be in slice 2 only
     final minuteHandCorrect = minuteHandSlice == 2;
-    
+
     // Hour hand (korteviser/short) should be in slice 11 only
     final hourHandCorrect = hourHandSlice == 11;
-    
+
     return {
       'minute_hand_correct': minuteHandCorrect,
       'hour_hand_correct': hourHandCorrect,
@@ -545,12 +566,12 @@ class _ClockTestWidgetState extends State<ClockTestWidget> {
     // Normalize angle to 0-360
     double normalizedAngle = angle % 360;
     if (normalizedAngle < 0) normalizedAngle += 360;
-    
+
     // Each slice is 30 degrees, slice 12 is centered at 0°
     // Add 15 degrees to shift so boundaries align at multiples of 30
     var centerAngle = normalizedAngle + 15;
     if (centerAngle >= 360) centerAngle -= 360;
-    
+
     final sliceIndex = (centerAngle / 30).floor(); // 0-11
     return sliceIndex == 0 ? 12 : sliceIndex;
   }
@@ -558,10 +579,10 @@ class _ClockTestWidgetState extends State<ClockTestWidget> {
   Widget _buildNumberCircle(int number) {
     const circleSizePixels = 70.0;
     final position = numberPositions[number]!;
-    
+
     // Hide the original number if it's on the overlay (not offscreen)
     final isOnOverlay = position.dx > -100 && position.dy > -100;
-    
+
     return Opacity(
       opacity: isOnOverlay ? 0 : 1,
       child: IgnorePointer(
@@ -570,12 +591,13 @@ class _ClockTestWidgetState extends State<ClockTestWidget> {
           onPanStart: (details) {
             if (_phase != 'numbers') return; // Only drag in numbers phase
             if (currentlyDraggingNumber != null) return;
-            
-            final stackBox = _stackKey.currentContext?.findRenderObject() as RenderBox?;
+
+            final stackBox =
+                _stackKey.currentContext?.findRenderObject() as RenderBox?;
             if (stackBox == null) return;
-            
+
             final localPos = stackBox.globalToLocal(details.globalPosition);
-            
+
             setState(() {
               currentlyDraggingNumber = number;
               dragStartGlobalPos[number] = details.globalPosition;
@@ -589,12 +611,12 @@ class _ClockTestWidgetState extends State<ClockTestWidget> {
           onPanUpdate: (details) {
             if (_phase != 'numbers') return; // Only drag in numbers phase
             if (currentlyDraggingNumber != number) return;
-            
+
             final delta = Offset(
               details.globalPosition.dx - dragStartGlobalPos[number]!.dx,
               details.globalPosition.dy - dragStartGlobalPos[number]!.dy,
             );
-            
+
             setState(() {
               numberPositions[number] = Offset(
                 dragStartNumberPos[number]!.dx + delta.dx,
@@ -605,7 +627,7 @@ class _ClockTestWidgetState extends State<ClockTestWidget> {
           onPanEnd: (details) {
             if (_phase != 'numbers') return; // Only drag in numbers phase
             if (currentlyDraggingNumber != number) return;
-            
+
             setState(() {
               currentlyDraggingNumber = null;
               dragStartGlobalPos.remove(number);
@@ -636,12 +658,19 @@ class _ClockTestWidgetState extends State<ClockTestWidget> {
 
   Future<void> _captureClockWidget() async {
     try {
-      final boundary = _repaintBoundaryKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
+      final boundary =
+          _repaintBoundaryKey.currentContext?.findRenderObject()
+              as RenderRepaintBoundary?;
       if (boundary != null) {
         final ui.Image image = await boundary.toImage(pixelRatio: 2.0);
-        final ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+        final ByteData? byteData = await image.toByteData(
+          format: ui.ImageByteFormat.png,
+        );
         if (byteData != null) {
-          final bytes = byteData.buffer.asUint8List(byteData.offsetInBytes, byteData.lengthInBytes);
+          final bytes = byteData.buffer.asUint8List(
+            byteData.offsetInBytes,
+            byteData.lengthInBytes,
+          );
           setState(() {
             _capturedImage = bytes;
           });
@@ -660,7 +689,7 @@ class _ClockTestWidgetState extends State<ClockTestWidget> {
         _topText = 'Still klokken til 10 over 11';
         _phase = 'hands';
       });
-      
+
       // Hide overlay after it fades (duration + fade animation ~3.2 seconds)
       Future.delayed(const Duration(milliseconds: 3200), () {
         if (mounted) {
@@ -674,11 +703,11 @@ class _ClockTestWidgetState extends State<ClockTestWidget> {
       _captureClockWidget().then((_) {
         final numberScoreData = _calculateNumberScore();
         final handScoreData = _calculateHandScore();
-        
+
         // Extract hand score values to avoid nullable issues
         final minuteHandCorrect = handScoreData['minute_hand_correct'] ?? false;
         final hourHandCorrect = handScoreData['hour_hand_correct'] ?? false;
-        
+
         final score = {
           'correct_numbers': numberScoreData['correct_numbers'],
           'total_numbers': 12,
@@ -686,9 +715,14 @@ class _ClockTestWidgetState extends State<ClockTestWidget> {
           'hour_hand_correct': hourHandCorrect ? 1 : 0,
           'minute_hand_correct': minuteHandCorrect ? 1 : 0,
           'hands_total': 2,
-          'hands_correct': (minuteHandCorrect && hourHandCorrect) ? 2 : (minuteHandCorrect || hourHandCorrect ? 1 : 0),
+          'hands_correct': (minuteHandCorrect && hourHandCorrect)
+              ? 2
+              : (minuteHandCorrect || hourHandCorrect ? 1 : 0),
           // Overall score
-          'total_score': numberScoreData['correct_numbers']! + (minuteHandCorrect ? 1 : 0) + (hourHandCorrect ? 1 : 0),
+          'total_score':
+              numberScoreData['correct_numbers']! +
+              (minuteHandCorrect ? 1 : 0) +
+              (hourHandCorrect ? 1 : 0),
           // Add screenshot
           'image': _capturedImage,
         };
@@ -698,9 +732,7 @@ class _ClockTestWidgetState extends State<ClockTestWidget> {
           widget.onClockComplete!(score);
         } else {
           // Fall back to direct completion (backwards compatibility)
-          widget.run.complete(
-            TestResult(testId: 'cog', summary: score),
-          );
+          widget.run.complete(TestResult(testId: 'cog', summary: score));
         }
       });
     }
@@ -708,6 +740,8 @@ class _ClockTestWidgetState extends State<ClockTestWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final debugMode = ref.watch(debugModeProvider);
+
     final mainContent = Column(
       children: [
         // Top section - instructions (takes 1/7 of screen)
@@ -717,7 +751,11 @@ class _ClockTestWidgetState extends State<ClockTestWidget> {
             alignment: Alignment.center,
             child: Text(
               _phase == 'hands' ? 'Still klokken til 10 over 11' : _topText,
-              style: TextStyle(fontSize: 28, fontWeight: FontWeight.w500, color: Theme.of(context).colorScheme.primary),
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.w500,
+                color: Theme.of(context).colorScheme.primary,
+              ),
             ),
           ),
         ),
@@ -739,17 +777,25 @@ class _ClockTestWidgetState extends State<ClockTestWidget> {
                         child: LayoutBuilder(
                           builder: (context, constraints) {
                             // Make clock responsive - use 80% of available width or height, whichever is smaller
-                            final maxSize = (constraints.maxWidth * 0.80).clamp(0.0, constraints.maxHeight);
+                            final maxSize = (constraints.maxWidth * 0.80).clamp(
+                              0.0,
+                              constraints.maxHeight,
+                            );
                             final screenSize = maxSize;
                             final radius = screenSize / 2;
-                            
+
                             // Store clock geometry for validation calculations
                             WidgetsBinding.instance.addPostFrameCallback((_) {
                               setState(() {
                                 clockRadius = radius;
                                 // Use the SizedBox key to get accurate position
-                                final clockBox = _clockSizedBoxKey.currentContext?.findRenderObject() as RenderBox?;
-                                final stackBox = _stackKey.currentContext?.findRenderObject() as RenderBox?;
+                                final clockBox =
+                                    _clockSizedBoxKey.currentContext
+                                            ?.findRenderObject()
+                                        as RenderBox?;
+                                final stackBox =
+                                    _stackKey.currentContext?.findRenderObject()
+                                        as RenderBox?;
                                 if (clockBox != null && stackBox != null) {
                                   // Get the global position of the clock center
                                   final clockWidgetCenter = Offset(
@@ -757,12 +803,17 @@ class _ClockTestWidgetState extends State<ClockTestWidget> {
                                     clockBox.size.height / 2,
                                   );
                                   // Convert to Stack local coordinates
-                                  final globalCenter = clockBox.localToGlobal(clockWidgetCenter);
-                                  clockCenter = stackBox.globalToLocal(globalCenter);
+                                  final globalCenter = clockBox.localToGlobal(
+                                    clockWidgetCenter,
+                                  );
+                                  clockCenter = stackBox.globalToLocal(
+                                    globalCenter,
+                                  );
                                 }
                               });
                             });
-                            
+                            final debugMode = ref.watch(debugModeProvider);
+
                             return SizedBox(
                               key: _clockSizedBoxKey,
                               width: screenSize,
@@ -772,10 +823,16 @@ class _ClockTestWidgetState extends State<ClockTestWidget> {
                                   clockRadius: radius,
                                   toleranceMargin: toleranceMargin,
                                   debugMode: debugMode,
-                                  strokeColor: Theme.of(context).colorScheme.primary,
-                                  centerColor: Theme.of(context).colorScheme.primary,
+                                  strokeColor: Theme.of(
+                                    context,
+                                  ).colorScheme.primary,
+                                  centerColor: Theme.of(
+                                    context,
+                                  ).colorScheme.primary,
                                   boundaryColor: AppColors.errorRed,
-                                  fillColor: Theme.of(context).colorScheme.primary,
+                                  fillColor: Theme.of(
+                                    context,
+                                  ).colorScheme.primary,
                                 ),
                               ),
                             );
@@ -797,7 +854,9 @@ class _ClockTestWidgetState extends State<ClockTestWidget> {
                               children: List.generate(6, (index) {
                                 final number = index + 1;
                                 return Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                  ),
                                   child: _buildNumberCircle(number),
                                 );
                               }),
@@ -809,7 +868,9 @@ class _ClockTestWidgetState extends State<ClockTestWidget> {
                               children: List.generate(6, (index) {
                                 final number = index + 7;
                                 return Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                  ),
                                   child: _buildNumberCircle(number),
                                 );
                               }),
@@ -821,28 +882,34 @@ class _ClockTestWidgetState extends State<ClockTestWidget> {
                   ],
                 ),
                 // Overlay for dragged/placed numbers
-                ..._buildDraggedOverlay(),
+                ..._buildDraggedOverlay(debugMode),
                 // Clock hands (visible in hands phase)
-                if (_phase == 'hands')
-                  _buildClockHands(),
+                if (_phase == 'hands') _buildClockHands(),
               ],
             ),
           ),
         ),
+        // Abort button - at bottom using BottomButtonBar
         // Abort button - at bottom using BottomButtonBar
         BottomButtonBar(
           primaryButton: BottomButton(
             label: _phase == 'numbers' ? 'Neste' : 'Ferdig',
             onPressed: _submitTest,
             type: BottomButtonType.filled,
-            icon: _phase == 'numbers' ? Icons.arrow_forward : Icons.check_circle,
+            icon: _phase == 'numbers'
+                ? Icons.arrow_forward
+                : Icons.check_circle,
           ),
           onAbort: widget.onAbort,
-          debugMode: true,
+          onSkip: () {
+            widget.run.complete(
+              TestResult(testId: 'cog', summary: {'total_score': 0}),
+            );
+          },
         ),
       ],
     );
-    
+
     // Conditionally wrap with FullScreenOverlay when showing the intermediate overlay
     if (_showingIntermediateOverlay) {
       return FullScreenOverlay(
@@ -853,18 +920,18 @@ class _ClockTestWidgetState extends State<ClockTestWidget> {
         child: mainContent,
       );
     }
-    
+
     return mainContent;
   }
 
-  List<Widget> _buildDraggedOverlay() {
+  List<Widget> _buildDraggedOverlay(bool debugMode) {
     const circleSizePixels = 70.0;
     final List<Widget> widgets = <Widget>[];
 
     for (final MapEntry<int, Offset> entry in numberPositions.entries) {
       final number = entry.key;
       final position = entry.value;
-      
+
       // Only show if position is not offscreen
       if (position.dx < -100 || position.dy < -100) continue;
 
@@ -876,12 +943,13 @@ class _ClockTestWidgetState extends State<ClockTestWidget> {
             onPanStart: (details) {
               if (_phase != 'numbers') return; // Only drag in numbers phase
               if (currentlyDraggingNumber != null) return;
-              
-              final stackBox = _stackKey.currentContext?.findRenderObject() as RenderBox?;
+
+              final stackBox =
+                  _stackKey.currentContext?.findRenderObject() as RenderBox?;
               if (stackBox == null) return;
-              
+
               final localPos = stackBox.globalToLocal(details.globalPosition);
-              
+
               setState(() {
                 currentlyDraggingNumber = number;
                 dragStartGlobalPos[number] = details.globalPosition;
@@ -895,12 +963,12 @@ class _ClockTestWidgetState extends State<ClockTestWidget> {
             onPanUpdate: (details) {
               if (_phase != 'numbers') return; // Only drag in numbers phase
               if (currentlyDraggingNumber != number) return;
-              
+
               final delta = Offset(
                 details.globalPosition.dx - dragStartGlobalPos[number]!.dx,
                 details.globalPosition.dy - dragStartGlobalPos[number]!.dy,
               );
-              
+
               setState(() {
                 numberPositions[number] = Offset(
                   dragStartNumberPos[number]!.dx + delta.dx,
@@ -911,7 +979,7 @@ class _ClockTestWidgetState extends State<ClockTestWidget> {
             onPanEnd: (details) {
               if (_phase != 'numbers') return; // Only drag in numbers phase
               if (currentlyDraggingNumber != number) return;
-              
+
               setState(() {
                 currentlyDraggingNumber = null;
                 dragStartGlobalPos.remove(number);
@@ -931,9 +999,13 @@ class _ClockTestWidgetState extends State<ClockTestWidget> {
                   );
                   const numberCircleRadius = circleSizePixels / 2; // 35 pixels
                   // Check if any part of the circle overlaps with valid zone
-                  return _circleOverlapsValidZone(numberCenter, numberCircleRadius, number) 
-                    ? AppColors.successGreen 
-                    : Theme.of(context).colorScheme.primary;
+                  return _circleOverlapsValidZone(
+                        numberCenter,
+                        numberCircleRadius,
+                        number,
+                      )
+                      ? AppColors.successGreen
+                      : Theme.of(context).colorScheme.primary;
                 }(),
                 shape: BoxShape.circle,
               ),
@@ -960,7 +1032,7 @@ class _ClockTestWidgetState extends State<ClockTestWidget> {
     if (_phase != 'hands') {
       return const SizedBox.shrink();
     }
-    
+
     if (clockCenter == null) {
       return const SizedBox.shrink();
     }
@@ -996,13 +1068,14 @@ class _ClockTestWidgetState extends State<ClockTestWidget> {
           child: GestureDetector(
             onPanStart: (details) {
               // Only start hand drag if touch is inside the clock circle
-              final stackBox = _stackKey.currentContext?.findRenderObject() as RenderBox?;
+              final stackBox =
+                  _stackKey.currentContext?.findRenderObject() as RenderBox?;
               if (stackBox == null) return;
 
               final localPos = stackBox.globalToLocal(details.globalPosition);
               final dx = localPos.dx - clockCenterNotNull.dx;
               final dy = localPos.dy - clockCenterNotNull.dy;
-              
+
               // Check if touch is inside the clock circle
               final distFromCenter = Offset(dx, dy).distance;
               if (distFromCenter > clockRadius) {
@@ -1010,9 +1083,15 @@ class _ClockTestWidgetState extends State<ClockTestWidget> {
               }
 
               // Check if touch is close enough to a hand (anywhere along the line)
-              final minuteHandTip = _getHandTipOffset(_minuteHandAngle, minuteHandLength);
-              final hourHandTip = _getHandTipOffset(_hourHandAngle, hourHandLength);
-              
+              final minuteHandTip = _getHandTipOffset(
+                _minuteHandAngle,
+                minuteHandLength,
+              );
+              final hourHandTip = _getHandTipOffset(
+                _hourHandAngle,
+                hourHandLength,
+              );
+
               // Calculate distance to the hand line segments
               final distToMinuteHand = _distanceToLineSegment(
                 Offset.zero, // Clock center in local coords
@@ -1040,7 +1119,8 @@ class _ClockTestWidgetState extends State<ClockTestWidget> {
               // Only update if a hand drag is in progress
               if (_draggingHandId == null) return;
 
-              final stackBox = _stackKey.currentContext?.findRenderObject() as RenderBox?;
+              final stackBox =
+                  _stackKey.currentContext?.findRenderObject() as RenderBox?;
               if (stackBox == null) return;
 
               final localPos = stackBox.globalToLocal(details.globalPosition);
@@ -1069,9 +1149,7 @@ class _ClockTestWidgetState extends State<ClockTestWidget> {
                 _draggingHandId = null;
               });
             },
-            child: Container(
-              color: Colors.transparent,
-            ),
+            child: Container(color: Colors.transparent),
           ),
         ),
       ],
@@ -1081,17 +1159,18 @@ class _ClockTestWidgetState extends State<ClockTestWidget> {
   /// Get the tip offset of a hand relative to clock center
   Offset _getHandTipOffset(double angle, double length) {
     final radians = (angle - 90) * Math.pi / 180; // Adjust so 0° is up
-    return Offset(
-      length * Math.cos(radians),
-      length * Math.sin(radians),
-    );
+    return Offset(length * Math.cos(radians), length * Math.sin(radians));
   }
 
   /// Calculate the shortest distance from a point to a line segment
   /// lineStart: start of the line (clock center in local coords)
   /// lineEnd: end of the line (hand tip in local coords)
   /// point: the point to measure distance from
-  double _distanceToLineSegment(Offset lineStart, Offset lineEnd, Offset point) {
+  double _distanceToLineSegment(
+    Offset lineStart,
+    Offset lineEnd,
+    Offset point,
+  ) {
     final dx = lineEnd.dx - lineStart.dx;
     final dy = lineEnd.dy - lineStart.dy;
     final lengthSq = dx * dx + dy * dy;
@@ -1102,8 +1181,14 @@ class _ClockTestWidgetState extends State<ClockTestWidget> {
     }
 
     // Calculate the projection of the point onto the line
-    var t = ((point.dx - lineStart.dx) * dx + (point.dy - lineStart.dy) * dy) / lengthSq;
-    t = (t < 0) ? 0 : (t > 1) ? 1 : t;
+    var t =
+        ((point.dx - lineStart.dx) * dx + (point.dy - lineStart.dy) * dy) /
+        lengthSq;
+    t = (t < 0)
+        ? 0
+        : (t > 1)
+        ? 1
+        : t;
 
     final projectionX = lineStart.dx + t * dx;
     final projectionY = lineStart.dy + t * dy;
@@ -1180,11 +1265,7 @@ class ClockHandsPainter extends CustomPainter {
     final endX = clockCenter.dx + length * Math.cos(radians);
     final endY = clockCenter.dy + length * Math.sin(radians);
 
-    canvas.drawLine(
-      clockCenter,
-      Offset(endX, endY),
-      paint,
-    );
+    canvas.drawLine(clockCenter, Offset(endX, endY), paint);
   }
 
   @override
@@ -1216,27 +1297,27 @@ class ClockPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
-    
+
     // Draw debugging visuals only in debug mode
     if (debugMode) {
       // Draw pizza slices with transparent colors for debugging
       _drawPizzaSlices(canvas, center);
-      
+
       // Draw tolerance area bands
       _drawToleranceAreas(canvas, center);
     }
-        // Fill the inside of the clock circle with primary color at 50% opacity
+    // Fill the inside of the clock circle with primary color at 50% opacity
     final fillPaint = Paint()
       ..color = fillColor.withOpacity(0.1)
       ..style = PaintingStyle.fill;
     canvas.drawCircle(center, clockRadius, fillPaint);
-        // Draw the main clock circle outline
+    // Draw the main clock circle outline
     final circlePaint = Paint()
       ..color = strokeColor
       ..strokeWidth = 6
       ..style = PaintingStyle.stroke;
     canvas.drawCircle(center, clockRadius, circlePaint);
-    
+
     // Draw center point
     final centerPaint = Paint()
       ..color = centerColor
@@ -1247,10 +1328,10 @@ class ClockPainter extends CustomPainter {
   void _drawPizzaSlices(Canvas canvas, Offset center) {
     const sliceCount = 12;
     const sliceAngle = 360 / sliceCount; // 30 degrees per slice
-    
+
     final minRadius = clockRadius - toleranceMargin;
     final maxRadius = clockRadius + toleranceMargin;
-    
+
     // Colors for different slices (for visual distinction)
     final colors = [
       AppColors.errorRed.withOpacity(0.15),
@@ -1266,7 +1347,7 @@ class ClockPainter extends CustomPainter {
       AppColors.tropicalTeal.withOpacity(0.15),
       AppColors.lavender.withOpacity(0.15),
     ];
-    
+
     for (int i = 0; i < sliceCount; i++) {
       // Center each slice on its clock position
       // Slice 0 (12): center at -90°, span -105° to -75°
@@ -1274,19 +1355,19 @@ class ClockPainter extends CustomPainter {
       final centerAngle = (i * sliceAngle - 90);
       final startAngle = (centerAngle - 15) * Math.pi / 180;
       final endAngle = (centerAngle + 15) * Math.pi / 180;
-      
+
       final paint = Paint()
         ..color = colors[i]
         ..style = PaintingStyle.fill;
-      
+
       // Create an annular sector (pizza slice within tolerance band)
       final path = Path();
-      
+
       // Start at inner circle
       final innerStartX = center.dx + minRadius * Math.cos(startAngle);
       final innerStartY = center.dy + minRadius * Math.sin(startAngle);
       path.moveTo(innerStartX, innerStartY);
-      
+
       // Arc along inner circle
       path.arcTo(
         Rect.fromCircle(center: center, radius: minRadius),
@@ -1294,12 +1375,12 @@ class ClockPainter extends CustomPainter {
         endAngle - startAngle,
         false,
       );
-      
+
       // Line to outer circle
       final outerEndX = center.dx + maxRadius * Math.cos(endAngle);
       final outerEndY = center.dy + maxRadius * Math.sin(endAngle);
       path.lineTo(outerEndX, outerEndY);
-      
+
       // Arc along outer circle (backwards)
       path.arcTo(
         Rect.fromCircle(center: center, radius: maxRadius),
@@ -1307,7 +1388,7 @@ class ClockPainter extends CustomPainter {
         startAngle - endAngle,
         false,
       );
-      
+
       path.close();
       canvas.drawPath(path, paint);
     }
@@ -1316,16 +1397,16 @@ class ClockPainter extends CustomPainter {
   void _drawToleranceAreas(Canvas canvas, Offset center) {
     final minRadius = clockRadius - toleranceMargin;
     final maxRadius = clockRadius + toleranceMargin;
-    
+
     // Draw explicit boundary circles (these are the actual validation boundaries)
     final boundaryPaint = Paint()
       ..color = boundaryColor
       ..strokeWidth = 2
       ..style = PaintingStyle.stroke;
-    
+
     // Inner boundary (closest to center that's still valid)
     canvas.drawCircle(center, minRadius, boundaryPaint);
-    
+
     // Outer boundary (farthest from center that's still valid)
     canvas.drawCircle(center, maxRadius, boundaryPaint);
   }
@@ -1341,4 +1422,3 @@ class ClockPainter extends CustomPainter {
         oldDelegate.fillColor != fillColor;
   }
 }
-

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_master_app/session/session_controller.dart';
 import 'package:flutter_master_app/theme/app_theme.dart';
+import 'package:flutter_master_app/screens/settings_screen.dart';
 import 'dart:math';
 import 'dart:async';
 
@@ -264,8 +265,11 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
                                 foregroundColor: AppColors.crayolaBlue,
                               ),
                               onPressed: () {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Innstillinger kommer snart')),
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const SettingsScreen(),
+                                  ),
                                 );
                               },
                               child: const Text(

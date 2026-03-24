@@ -326,7 +326,6 @@ class _TMTTutorialState extends State<TMTTutorial> with TickerProviderStateMixin
             ],
             onAbort: widget.onAbort,
             useRow: true,
-            debugMode: true,
           ),
         ],
       ),

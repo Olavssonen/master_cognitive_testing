@@ -476,7 +476,6 @@ class StroopIntermediateScreen extends StatelessWidget {
           onAbort: onAbort,
           showAbortButton: false,
           useRow: true,
-          debugMode: true,
         ),
       ],
     );

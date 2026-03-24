@@ -60,6 +60,11 @@ class _CounterTestScreenState extends State<CounterTestScreen> {
             onAbort: () => widget.run.abort('User aborted'),
             showAbortButton: false, // Set to true to show in normal layout, or use debugMode: true
             // debugMode: true, // Uncomment to show abort button in bottom-right corner
+            onSkip: () {
+              widget.run.complete(
+                TestResult(testId: 'counter', summary: {'counter': 0}),
+              );
+            },
           ),
         ],
       ),

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_master_app/theme/app_theme.dart';
+import 'package:flutter_master_app/providers/test_providers.dart';
 
 /// Represents a single bottom button configuration
 class BottomButton {
@@ -64,7 +66,7 @@ enum BottomButtonType {
 ///   onAbort: () => handleAbort(),
 /// )
 /// ```
-class BottomButtonBar extends StatelessWidget {
+class BottomButtonBar extends ConsumerWidget {
   /// Single primary button (e.g., "Fullfør", "Fortsett")
   /// If provided, this is displayed before actionButtons
   final BottomButton? primaryButton;
@@ -77,6 +79,10 @@ class BottomButtonBar extends StatelessWidget {
   /// Callback when abort button is pressed
   /// If null, abort button is not shown
   final VoidCallback? onAbort;
+
+  /// Callback for skip test in debug mode
+  /// If null, skip button is not shown in debug mode
+  final VoidCallback? onSkip;
 
   /// Label for the abort button (default: 'Avbryt')
   final String abortLabel;
@@ -102,7 +108,8 @@ class BottomButtonBar extends StatelessWidget {
 
   /// Debug mode: shows abort button in bottom-right corner, isolated from main layout
   /// This prevents the abort button from taking up space or displacing other buttons
-  final bool debugMode;
+  /// If null, reads from the global debugModeProvider
+  final bool? debugMode;
 
   /// Fixed height for the button bar container (default: 200.0)
   /// Controls the entire vertical space allocated to the button bar
@@ -117,6 +124,7 @@ class BottomButtonBar extends StatelessWidget {
     this.primaryButton,
     this.actionButtons,
     this.onAbort,
+    this.onSkip,
     this.abortLabel = 'Avbryt',
     this.useRow = false,
     this.buttonSpacing = 16.0,
@@ -124,18 +132,20 @@ class BottomButtonBar extends StatelessWidget {
     this.showAbortButton = true,
     this.buttonHeight = 75.0,
     this.fontSize = 30.0,
-    this.debugMode = true,
+    this.debugMode,
     this.barHeight = 150.0,
     this.minButtonWidth = 120.0,
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Use provided debugMode or read from provider (only when needed)
+    final bool effectiveDebugMode = debugMode ?? ref.watch(debugModeProvider);
+    
     final allButtons = _buildButtonList();
-    final hasAbortButton = onAbort != null && showAbortButton && !debugMode;
 
     // If no buttons at all, return empty container
-    if (allButtons.isEmpty && !hasAbortButton && !debugMode) {
+    if (allButtons.isEmpty) {
       return const SizedBox.shrink();
     }
 
@@ -147,54 +157,68 @@ class BottomButtonBar extends StatelessWidget {
       child: Center(
         child: Padding(
           padding: padding,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (allButtons.isNotEmpty)
-                _buildButtonContainer(allButtons, context),
-              if (allButtons.isNotEmpty && hasAbortButton)
-                SizedBox(height: buttonSpacing),
-              if (hasAbortButton)
-                _buildAbortButton(),
-            ],
-          ),
+          child: _buildButtonContainer(allButtons, context),
         ),
       ),
     );
 
-    // If debug mode, place abort button in isolated corner using Stack
-    if (debugMode && onAbort != null) {
-      return SizedBox(
-        width: double.infinity, // Expand to full width
-        child: Stack(
-          clipBehavior: Clip.none,
-          alignment: Alignment.center, // Center children by default
-          children: [
-            // Main buttons centered
-            Align(
-              alignment: Alignment.center,
-              child: mainContent,
-            ),
-            // X button positioned at bottom-right of screen - doesn't affect centering
-            Positioned(
-              bottom: 0,
-              right: 16,
-              child: SizedBox(
-                height: buttonHeight * 0.8,
-                width: buttonHeight * 0.8,
-                child: TextButton(
-                  onPressed: onAbort,
-                  style: TextButton.styleFrom(
-                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                    padding: EdgeInsets.zero,
-                  ),
-                  child: const Icon(Icons.close, size: 28),
+    // If debug mode, add debug buttons in corner overlays
+    if (effectiveDebugMode) {
+      final List<Widget> debugChildren = [
+        // Main button bar
+        mainContent,
+      ];
+
+      // X button positioned at bottom-right corner
+      if (onAbort != null) {
+        debugChildren.add(
+          Positioned(
+            bottom: 8,
+            right: 16,
+            child: SizedBox(
+              height: buttonHeight * 0.8,
+              width: buttonHeight * 0.8,
+              child: TextButton(
+                onPressed: onAbort,
+                style: TextButton.styleFrom(
+                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                  padding: EdgeInsets.zero,
                 ),
+                child: const Icon(Icons.close, size: 28),
               ),
             ),
-          ],
-        ),
-      );
+          ),
+        );
+      }
+
+      // Skip arrow button positioned at bottom-left corner
+      if (onSkip != null) {
+        debugChildren.add(
+          Positioned(
+            bottom: 8,
+            left: 16,
+            child: SizedBox(
+              height: buttonHeight * 0.8,
+              width: buttonHeight * 0.8,
+              child: TextButton(
+                onPressed: onSkip,
+                style: TextButton.styleFrom(
+                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                  padding: EdgeInsets.zero,
+                ),
+                child: const Icon(Icons.arrow_forward, size: 28),
+              ),
+            ),
+          ),
+        );
+      }
+
+      if (debugChildren.length > 1) {
+        return Stack(
+          clipBehavior: Clip.none,
+          children: debugChildren,
+        );
+      }
     }
 
     return mainContent;

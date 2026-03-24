@@ -6,6 +6,23 @@ import 'package:flutter_master_app/tests/tmt_test.dart';
 import 'package:flutter_master_app/tests/stroop_test.dart';
 import 'package:flutter_master_app/tests/cog_test.dart';
 
+final debugModeProvider = NotifierProvider<DebugModeNotifier, bool>(DebugModeNotifier.new);
+
+class DebugModeNotifier extends Notifier<bool> {
+  @override
+  bool build() {
+    return false;
+  }
+
+  void toggle() {
+    state = !state;
+  }
+
+  void set(bool value) {
+    state = value;
+  }
+}
+
 final testRegistryProvider = Provider<List<TestDefinition>>((ref) {
   return [
     counterTest,
