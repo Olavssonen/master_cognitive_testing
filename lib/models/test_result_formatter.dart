@@ -101,15 +101,17 @@ class TMTTestFormatter implements TestResultFormatter {
       final completed = stageData['completed'] as bool? ?? false;
       final statusText = completed ? '✓ Fullført' : '✗ Ufullstendig';
 
-      // Show circle count for TMT tests
+      // Show circle count, time, and mistakes for TMT tests
       final circlesOrder = stageData['circlesOrder'] as List<dynamic>?;
       final timeSpent = stageData['timeSpent'] as int? ?? 0;
+      final mistakes = stageData['mistakes'] as int? ?? 0;
       final timeText = _formatTime(timeSpent);
+      final mistakeText = mistakes > 0 ? ' | Feil: $mistakes' : '';
       
       if (circlesOrder != null && circlesOrder.isNotEmpty) {
-        stageInfo.add('${_translateStageName(entry.key)}: $statusText (${circlesOrder.length} sirkler) - Tid: $timeText');
+        stageInfo.add('${_translateStageName(entry.key)}: $statusText (${circlesOrder.length} sirkler) - Tid: $timeText$mistakeText');
       } else {
-        stageInfo.add('${_translateStageName(entry.key)}: $statusText - Tid: $timeText');
+        stageInfo.add('${_translateStageName(entry.key)}: $statusText - Tid: $timeText$mistakeText');
       }
     }
 
@@ -151,17 +153,19 @@ class TMTTestFormatter implements TestResultFormatter {
     for (final entry in allStages.entries) {
       final stageData = entry.value as Map<String, dynamic>? ?? {};
       final completed = stageData['completed'] as bool? ?? false;
-      final statusText = completed ? '✓ Fullført' : '✗ Ufullstendig';
+      final statusText = completed ? 'Fullført' : 'Ufullstendig';
 
-      // Show circle count and time for TMT tests
+      // Show circle count, time, and mistakes for TMT tests
       final circlesOrder = stageData['circlesOrder'] as List<dynamic>?;
       final timeSpent = stageData['timeSpent'] as int? ?? 0;
+      final mistakes = stageData['mistakes'] as int? ?? 0;
       final timeText = _formatTime(timeSpent);
+      final mistakeText = mistakes > 0 ? ' | Feil: $mistakes' : '';
       
       if (circlesOrder != null && circlesOrder.isNotEmpty) {
-        stageInfo.add('${_translateStageName(entry.key)}: $statusText (${circlesOrder.length} sirkler) - Tid: $timeText');
+        stageInfo.add('${_translateStageName(entry.key)}: $statusText (${circlesOrder.length} sirkler) - Tid: $timeText$mistakeText');
       } else {
-        stageInfo.add('${_translateStageName(entry.key)}: $statusText - Tid: $timeText');
+        stageInfo.add('${_translateStageName(entry.key)}: $statusText - Tid: $timeText$mistakeText');
       }
     }
 

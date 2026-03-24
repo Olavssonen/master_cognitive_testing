@@ -38,6 +38,7 @@ class _TMTTestFlowProgressionState extends State<TMTTestFlowProgression> {
       'circlesOrder': resultData['circlesEntered'] as List<String>? ?? [],
       'image': resultData['image'] as Uint8List?,
       'timeSpent': resultData['timeSpent'] as int? ?? 0,
+      'mistakes': resultData['mistakes'] as int? ?? 0,
     };
   }
 
@@ -167,6 +168,10 @@ class _TMTTest extends State<TMTTest> {
   final GlobalKey _drawingAreaKey = GlobalKey();
   Uint8List? _capturedImage;
   
+  // Mistake tracking
+  int mistakeCount = 0;
+  Set<String> _mistakesTracked = {}; // Track which circles we've already counted as mistakes
+  
   // Timing variables
   static const bool debugMode = true; // Set to true to show countdown
   late int timeoutSeconds;
@@ -220,6 +225,7 @@ class _TMTTest extends State<TMTTest> {
             'image': _capturedImage,
             'timedOut': true,
             'timeSpent': timeSpent,
+            'mistakes': mistakeCount,
           };
           
           widget.onTestResult?.call(resultData, testComplete);
@@ -244,6 +250,14 @@ class _TMTTest extends State<TMTTest> {
     // This is called when parent detects a new circle
     // Trigger feedback in the child widget
     _feedbackTrigger?.call(circleLabel, isCorrect);
+    
+    // Track mistakes - count each wrong circle only once per attempt
+    if (!isCorrect && !_mistakesTracked.contains(circleLabel)) {
+      setState(() {
+        mistakeCount++;
+        _mistakesTracked.add(circleLabel);
+      });
+    }
   }
 
   void onDrawingUpdated(List<Offset> points) {
@@ -442,6 +456,7 @@ class _TMTTest extends State<TMTTest> {
       circlesEntered.clear();
       _lastFeedbackSequence.clear();
       _allTouchedCircles.clear();
+      _mistakesTracked.clear(); // Reset mistake tracking for this stroke
       lastCorrectCircle = null;
       testComplete = false;
     });
@@ -559,6 +574,7 @@ class _TMTTest extends State<TMTTest> {
                         'circlesEntered': circlesEntered,
                         'image': _capturedImage,
                         'timeSpent': timeSpent,
+                        'mistakes': mistakeCount,
                       };
                       
                       widget.onTestResult?.call(resultData, testComplete);
