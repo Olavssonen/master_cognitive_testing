@@ -177,7 +177,7 @@ class _TMTTest extends State<TMTTest> {
   void initState() {
     super.initState();
     circlesGenerator = CirclesWithNumbers(
-      numberOfCircles: 6,
+      numberOfCircles: 25,
       mode: widget.mode,
     );
     
@@ -509,7 +509,13 @@ class _TMTTest extends State<TMTTest> {
                     : 400.0;
 
               if (circlesGenerator.circles.isEmpty) {
-                circlesGenerator.generateCircles(width, height);
+                // Use fixed TMT test positions based on test mode
+                if (widget.mode == CircleMode.numbersOnly) {
+                  circlesGenerator.generateFixedCirclesTMT(width, height);
+                } else {
+                  // Use fixed mixed test positions for mixed mode
+                  circlesGenerator.generateFixedCirclesMixed(width, height);
+                }
               }
 
                 return RepaintBoundary(

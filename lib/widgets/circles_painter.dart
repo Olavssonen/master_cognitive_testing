@@ -128,6 +128,130 @@ class CirclesWithNumbers {
       }
     }
   }
+
+  /// Generate circles using the original TMT test positions (normalized coordinates).
+  /// Positions are based on the standard TMT-A/B test layout.
+  /// Only applicable for numbersOnly mode in the main test.
+  void generateFixedCirclesTMT(double width, double height) {
+    circles = [];
+
+    // Original TMT test positions (normalized 0-1 coordinates)
+    final tmtPositions = <String, Map<String, double>>{
+      "1": {"x": 0.7208, "y": 0.5370},
+      "2": {"x": 0.4910, "y": 0.6539},
+      "3": {"x": 0.7914, "y": 0.7097},
+      "4": {"x": 0.7655, "y": 0.3315},
+      "5": {"x": 0.4220, "y": 0.3552},
+      "6": {"x": 0.6078, "y": 0.4388},
+      "7": {"x": 0.4102, "y": 0.5327},
+      "8": {"x": 0.2651, "y": 0.6891},
+      "9": {"x": 0.3161, "y": 0.8030},
+      "10": {"x": 0.3922, "y": 0.6776},
+      "11": {"x": 0.6651, "y": 0.8303},
+      "12": {"x": 0.1545, "y": 0.8667},
+      "13": {"x": 0.2416, "y": 0.4430},
+      "14": {"x": 0.1294, "y": 0.5703},
+      "15": {"x": 0.0776, "y": 0.0642},
+      "16": {"x": 0.2416, "y": 0.2200},
+      "17": {"x": 0.5349, "y": 0.0448},
+      "18": {"x": 0.4973, "y": 0.2497},
+      "19": {"x": 0.8008, "y": 0.1333},
+      "20": {"x": 0.6322, "y": 0.1224},
+      "21": {"x": 0.8831, "y": 0.0448},
+      "22": {"x": 0.8996, "y": 0.3255},
+      "23": {"x": 0.9357, "y": 0.8612},
+      "24": {"x": 0.8573, "y": 0.5182},
+      "25": {"x": 0.8267, "y": 0.8315},
+    };
+
+    // Generate circles based on numberOfCircles (up to 25)
+    for (int i = 1; i <= numberOfCircles && i <= 25; i++) {
+      final posKey = i.toString();
+      final pos = tmtPositions[posKey];
+
+      if (pos != null) {
+        final screenX = pos["x"]! * width;
+        final screenY = pos["y"]! * height;
+
+        circles.add(
+          Circle(
+            center: Offset(screenX, screenY),
+            radius: circleRadius,
+            label: _getLabel(i),
+          ),
+        );
+      }
+    }
+  }
+
+  /// Generate circles using the mixed TMT test positions (normalized coordinates).
+  /// Positions are based on the standard TMT-B test layout with mixed numbers and letters.
+  /// For mixed mode in the main test.
+  void generateFixedCirclesMixed(double width, double height) {
+    circles = [];
+
+    // Mixed TMT test positions (normalized 0-1 coordinates)
+    // Contains both number positions (1-13) and letter positions (A-L)
+    final mixedPositions = <String, Map<String, double>>{
+      // Numbers (1-13)
+      "1": {"x": 0.4918, "y": 0.4188},
+      "2": {"x": 0.2533, "y": 0.7618},
+      "3": {"x": 0.4267, "y": 0.2939},
+      "4": {"x": 0.5451, "y": 0.1606},
+      "5": {"x": 0.7820, "y": 0.4648},
+      "6": {"x": 0.4118, "y": 0.7727},
+      "7": {"x": 0.2878, "y": 0.3945},
+      "8": {"x": 0.1302, "y": 0.1121},
+      "9": {"x": 0.2949, "y": 0.1133},
+      "10": {"x": 0.9231, "y": 0.0703},
+      "11": {"x": 0.8769, "y": 0.9139},
+      "12": {"x": 0.0580, "y": 0.5618},
+      "13": {"x": 0.0651, "y": 0.0497},
+      // Letters (A-L)
+      "A": {"x": 0.6745, "y": 0.6867},
+      "B": {"x": 0.4275, "y": 0.1794},
+      "C": {"x": 0.6392, "y": 0.5358},
+      "D": {"x": 0.8016, "y": 0.1261},
+      "E": {"x": 0.8031, "y": 0.8418},
+      "F": {"x": 0.1584, "y": 0.8533},
+      "G": {"x": 0.1663, "y": 0.6067},
+      "H": {"x": 0.1765, "y": 0.4788},
+      "I": {"x": 0.6518, "y": 0.1188},
+      "J": {"x": 0.8180, "y": 0.6994},
+      "K": {"x": 0.0620, "y": 0.8988},
+      "L": {"x": 0.1200, "y": 0.7848},
+    };
+
+    // Generate circles for mixed mode
+    // Interleave numbers and letters: 1, A, 2, B, 3, C, etc.
+    List<String> circleKeys = [];
+    for (int i = 1; i <= 13; i++) {
+      circleKeys.add(i.toString());
+      final letterChar = String.fromCharCode(64 + i); // A=65, B=66, etc.
+      if (i <= 12) {
+        // Only add letters A-L (12 letters total)
+        circleKeys.add(letterChar);
+      }
+    }
+
+    for (int i = 0; i < circleKeys.length && i < numberOfCircles; i++) {
+      final key = circleKeys[i];
+      final pos = mixedPositions[key];
+
+      if (pos != null) {
+        final screenX = pos["x"]! * width;
+        final screenY = pos["y"]! * height;
+
+        circles.add(
+          Circle(
+            center: Offset(screenX, screenY),
+            radius: circleRadius,
+            label: key,
+          ),
+        );
+      }
+    }
+  }
 }
 
 /// Custom painter for the circles and drawn lines
