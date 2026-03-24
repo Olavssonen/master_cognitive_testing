@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_master_app/models/test_definition.dart';
+import 'package:flutter_master_app/widgets/celebration_particles.dart';
 import '../theme/app_theme.dart';
 
 class SessionPathWidget extends StatefulWidget {
@@ -9,12 +10,12 @@ class SessionPathWidget extends StatefulWidget {
   final List<String> testPlan;
 
   const SessionPathWidget({
-    Key? key,
+    super.key,
     required this.currentIndex,
     required this.totalTests,
     required this.testRegistry,
     required this.testPlan,
-  }) : super(key: key);
+  });
 
   @override
   State<SessionPathWidget> createState() => _SessionPathWidgetState();
@@ -33,7 +34,7 @@ class _SessionPathWidgetState extends State<SessionPathWidget>
       vsync: this,
     );
     _animation = Tween<double>(begin: 0, end: 1).animate(_animationController);
-    
+
     // Start animation on initial load
     _animationController.forward();
   }
@@ -58,18 +59,65 @@ class _SessionPathWidgetState extends State<SessionPathWidget>
     return AnimatedBuilder(
       animation: _animation,
       builder: (context, child) {
-        return CustomPaint(
-          painter: SessionPathPainter(
-            currentIndex: widget.currentIndex,
-            totalTests: widget.totalTests,
-            animationProgress: _animation.value,
-            testRegistry: widget.testRegistry,
-            testPlan: widget.testPlan,
-          ),
-          size: Size.infinite,
+        return Stack(
+          children: [
+            CustomPaint(
+              painter: SessionPathPainter(
+                currentIndex: widget.currentIndex,
+                totalTests: widget.totalTests,
+                animationProgress: _animation.value,
+                testRegistry: widget.testRegistry,
+                testPlan: widget.testPlan,
+              ),
+              size: Size.infinite,
+            ),
+            // Celebration particles overlay
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final positions = _calculatePositions(
+                  Size(constraints.maxWidth, constraints.maxHeight),
+                  widget.totalTests,
+                );
+                final isAnimatingToGoal =
+                    widget.currentIndex >= widget.totalTests;
+
+                return CelebrationParticlesWidget(
+                  currentIndex: widget.currentIndex,
+                  animationProgress: _animation.value,
+                  positions: positions,
+                  celebrateOnReachGoal: isAnimatingToGoal,
+                );
+              },
+            ),
+          ],
         );
       },
     );
+  }
+
+  /// Calculate positions along the path - same logic as SessionPathPainter
+  List<Offset> _calculatePositions(Size size, int totalTests) {
+    final totalPoints = totalTests + 2;
+    final List<Offset> positions = [];
+    final double pointSpacing = (size.height - 320) / (totalPoints - 1);
+    final double centerX = size.width / 2;
+    final double maxWave = 240;
+
+    for (int i = 0; i < totalPoints; i++) {
+      final double y = 140 + (i * pointSpacing);
+
+      double waveAmount;
+      if (i == 0 || i == totalPoints - 1) {
+        waveAmount = 0;
+      } else {
+        waveAmount = (i % 2 == 0) ? -maxWave : maxWave;
+      }
+      final double x = centerX + waveAmount;
+
+      positions.add(Offset(x, y));
+    }
+
+    return positions;
   }
 }
 
@@ -92,7 +140,7 @@ class SessionPathPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     // Total points: 1 start + totalTests + 1 goal
     final totalPoints = totalTests + 2;
-    
+
     // Calculate positions along a winding path
     final List<Offset> positions = [];
     final double pointSpacing = (size.height - 320) / (totalPoints - 1);
@@ -101,7 +149,7 @@ class SessionPathPainter extends CustomPainter {
 
     for (int i = 0; i < totalPoints; i++) {
       final double y = 140 + (i * pointSpacing);
-      
+
       // Create a snake pattern - first and last stay in center, middle ones go wide
       double waveAmount;
       if (i == 0 || i == totalPoints - 1) {
@@ -124,21 +172,31 @@ class SessionPathPainter extends CustomPainter {
 
     // Draw the points
     _drawPoints(canvas, positions, animationProgress);
-    
+
     // Draw rings on top to cover pipe overlap
     _drawPointRings(canvas, positions, animationProgress);
   }
 
-  void _drawPointRings(Canvas canvas, List<Offset> positions, [double animationProgress = 0]) {
+  void _drawPointRings(
+    Canvas canvas,
+    List<Offset> positions, [
+    double animationProgress = 0,
+  ]) {
     const double pointRadius = 38;
     const double ringWidth = 8;
     final isAnimatingToGoal = currentIndex >= positions.length - 2;
 
     for (int i = 0; i < positions.length; i++) {
       // Completed stops are teal, or animation target after it's nearly complete
-      final isCompleted = i <= currentIndex + 1 && !(isAnimatingToGoal && i == positions.length - 1);
-      final isAnimationTarget = i == currentIndex + 2 && animationProgress >= 0.90;
-      final isGoalTarget = isAnimatingToGoal && i == positions.length - 1 && animationProgress >= 0.90;
+      final isCompleted =
+          i <= currentIndex + 1 &&
+          !(isAnimatingToGoal && i == positions.length - 1);
+      final isAnimationTarget =
+          i == currentIndex + 2 && animationProgress >= 0.90;
+      final isGoalTarget =
+          isAnimatingToGoal &&
+          i == positions.length - 1 &&
+          animationProgress >= 0.90;
 
       Color pointColor;
       if (isCompleted || isAnimationTarget || isGoalTarget) {
@@ -157,10 +215,15 @@ class SessionPathPainter extends CustomPainter {
     }
   }
 
-  void _drawAnimationFill(Canvas canvas, List<Offset> positions, double progress, int currentIndex) {
+  void _drawAnimationFill(
+    Canvas canvas,
+    List<Offset> positions,
+    double progress,
+    int currentIndex,
+  ) {
     // Check if animating to the final goal
     final isAnimatingToGoal = currentIndex >= positions.length - 2;
-    
+
     if (isAnimatingToGoal) {
       // Draw all segments before the final one as complete
       for (int i = 0; i < positions.length - 2; i++) {
@@ -168,7 +231,12 @@ class SessionPathPainter extends CustomPainter {
       }
       // Animate only the final segment to the goal
       if (progress > 0.001) {
-        _drawSegmentFilled(canvas, positions[positions.length - 2], positions[positions.length - 1], progress);
+        _drawSegmentFilled(
+          canvas,
+          positions[positions.length - 2],
+          positions[positions.length - 1],
+          progress,
+        );
       }
     } else {
       // Normal test transition logic
@@ -181,12 +249,22 @@ class SessionPathPainter extends CustomPainter {
 
       // Animate the next segment if not at the end
       if (progress > 0.001 && currentIndex + 1 < positions.length - 1) {
-        _drawSegmentFilled(canvas, positions[currentIndex + 1], positions[currentIndex + 2], progress);
+        _drawSegmentFilled(
+          canvas,
+          positions[currentIndex + 1],
+          positions[currentIndex + 2],
+          progress,
+        );
       }
     }
   }
 
-  void _drawSegmentFilled(Canvas canvas, Offset startPos, Offset endPos, double progress) {
+  void _drawSegmentFilled(
+    Canvas canvas,
+    Offset startPos,
+    Offset endPos,
+    double progress,
+  ) {
     if (progress < 0.001) return;
 
     final double midY = (startPos.dy + endPos.dy) / 2;
@@ -203,18 +281,20 @@ class SessionPathPainter extends CustomPainter {
     for (int i = 0; i < segmentCount; i++) {
       // Calculate t value for this segment
       final double t = (i + 1) / segments;
-      
+
       // Clamp t to progress
       final double clampedT = t > progress ? progress : t;
-      
+
       // Calculate point on cubic Bezier curve
       final double oneMinusT = 1 - clampedT;
-      final double x = oneMinusT * oneMinusT * oneMinusT * startPos.dx +
+      final double x =
+          oneMinusT * oneMinusT * oneMinusT * startPos.dx +
           3 * oneMinusT * oneMinusT * clampedT * controlX1 +
           3 * oneMinusT * clampedT * clampedT * controlX2 +
           clampedT * clampedT * clampedT * endPos.dx;
-      
-      final double y = oneMinusT * oneMinusT * oneMinusT * startPos.dy +
+
+      final double y =
+          oneMinusT * oneMinusT * oneMinusT * startPos.dy +
           3 * oneMinusT * oneMinusT * clampedT * midY +
           3 * oneMinusT * clampedT * clampedT * midY +
           clampedT * clampedT * clampedT * endPos.dy;
@@ -240,20 +320,13 @@ class SessionPathPainter extends CustomPainter {
     for (int i = 1; i < positions.length; i++) {
       final prev = positions[i - 1];
       final curr = positions[i];
-      
+
       // Create smooth curves between points
       final double midY = (prev.dy + curr.dy) / 2;
       final double controlX1 = prev.dx;
       final double controlX2 = curr.dx;
-      
-      path.cubicTo(
-        controlX1,
-        midY,
-        controlX2,
-        midY,
-        curr.dx,
-        curr.dy,
-      );
+
+      path.cubicTo(controlX1, midY, controlX2, midY, curr.dx, curr.dy);
     }
 
     // Draw outer pipe (primary color)
@@ -265,7 +338,7 @@ class SessionPathPainter extends CustomPainter {
       ..strokeJoin = StrokeJoin.round;
 
     canvas.drawPath(path, outerPaint);
-    
+
     // Draw inner hollow (background color to create pipe effect)
     final innerPaint = Paint()
       ..color = AppColors.platinum
@@ -277,20 +350,30 @@ class SessionPathPainter extends CustomPainter {
     canvas.drawPath(path, innerPaint);
   }
 
-  void _drawPoints(Canvas canvas, List<Offset> positions, [double animationProgress = 0]) {
+  void _drawPoints(
+    Canvas canvas,
+    List<Offset> positions, [
+    double animationProgress = 0,
+  ]) {
     const double pointRadius = 40;
     const double ringWidth = 8;
     final isAnimatingToGoal = currentIndex >= positions.length - 2;
 
     for (int i = 0; i < positions.length; i++) {
       // Completed stops are inverted, animation target is not inverted (only after animation is nearly complete)
-      final isCompleted = i <= currentIndex + 1 && !(isAnimatingToGoal && i == positions.length - 1);
-      final isAnimationTarget = i == currentIndex + 2 && animationProgress >= 0.90;
-      final isGoalTarget = isAnimatingToGoal && i == positions.length - 1 && animationProgress >= 0.90;
+      final isCompleted =
+          i <= currentIndex + 1 &&
+          !(isAnimatingToGoal && i == positions.length - 1);
+      final isAnimationTarget =
+          i == currentIndex + 2 && animationProgress >= 0.90;
+      final isGoalTarget =
+          isAnimatingToGoal &&
+          i == positions.length - 1 &&
+          animationProgress >= 0.90;
 
       Color bgColor;
       Color iconColor;
-      
+
       if (isCompleted) {
         // Inverted: teal bg, white icon
         bgColor = AppColors.tropicalTeal;
@@ -310,11 +393,11 @@ class SessionPathPainter extends CustomPainter {
         ..style = PaintingStyle.fill;
 
       canvas.drawCircle(positions[i], pointRadius - ringWidth + 2, bgPaint);
-      
+
       // Get the test icon for this position
       IconData? iconData;
       bool isStartOrEnd = (i == 0 || i == positions.length - 1);
-      
+
       if (!isStartOrEnd && i - 1 < testPlan.length) {
         final testId = testPlan[i - 1];
         try {
@@ -327,15 +410,33 @@ class SessionPathPainter extends CustomPainter {
 
       // Draw icon if available (increased size to fill space better)
       if (iconData != null) {
-        _drawIcon(canvas, positions[i], iconData, iconColor, pointRadius - ringWidth + 4);
+        _drawIcon(
+          canvas,
+          positions[i],
+          iconData,
+          iconColor,
+          pointRadius - ringWidth + 4,
+        );
       } else if (isStartOrEnd) {
         // Draw flag icon for start/end (increased size)
-        _drawIcon(canvas, positions[i], Icons.flag_rounded, iconColor, pointRadius - ringWidth + 4);
+        _drawIcon(
+          canvas,
+          positions[i],
+          Icons.flag_rounded,
+          iconColor,
+          pointRadius - ringWidth + 4,
+        );
       }
     }
   }
 
-  void _drawIcon(Canvas canvas, Offset position, IconData icon, Color color, double size) {
+  void _drawIcon(
+    Canvas canvas,
+    Offset position,
+    IconData icon,
+    Color color,
+    double size,
+  ) {
     final textPainter = TextPainter(
       text: TextSpan(
         text: String.fromCharCode(icon.codePoint),
