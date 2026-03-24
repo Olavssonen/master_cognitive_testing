@@ -29,7 +29,12 @@ class _StroopTutorialState extends State<StroopTutorial>
   Color? feedbackColor;
   late AnimationController _feedbackController;
   late AnimationController _wordTransitionController;
+  late AnimationController _secondLetterAnimationController;
   bool _isProcessing = false;
+  
+  // Button position tracking
+  late List<GlobalKey> buttonKeys = List.generate(4, (_) => GlobalKey());
+  List<Offset> buttonPositions = [];
 
   @override
   void initState() {
@@ -42,14 +47,44 @@ class _StroopTutorialState extends State<StroopTutorial>
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
+    _secondLetterAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 2800),
+      vsync: this,
+    );
     _wordTransitionController.forward(); // Prime it so first word shows
+    _secondLetterAnimationController.repeat(); // Continuous loop for second letter animation
     _initializeStage();
+    
+    // Get button positions after first frame
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _updateButtonPositions();
+    });
+  }
+  
+  void _updateButtonPositions() {
+    final positions = <Offset>[];
+    for (final key in buttonKeys) {
+      final context = key.currentContext;
+      if (context != null) {
+        final box = context.findRenderObject() as RenderBox?;
+        if (box != null) {
+          // Get button center position
+          positions.add(box.localToGlobal(Offset(box.size.width / 2, box.size.height / 2)));
+        }
+      }
+    }
+    if (positions.length == 4) {
+      setState(() {
+        buttonPositions = positions;
+      });
+    }
   }
 
   @override
   void dispose() {
     _feedbackController.dispose();
     _wordTransitionController.dispose();
+    _secondLetterAnimationController.dispose();
     super.dispose();
   }
 
@@ -140,7 +175,9 @@ class _StroopTutorialState extends State<StroopTutorial>
             stage++;
             _initializeStage();
             _wordTransitionController.reset();
+            _secondLetterAnimationController.stop();
             _wordTransitionController.forward();
+            _secondLetterAnimationController.repeat();
             feedbackLetter = null;
             feedbackColor = null;
             _isProcessing = false;
@@ -152,7 +189,9 @@ class _StroopTutorialState extends State<StroopTutorial>
         } else {
           currentItemIndex++;  // Update item FIRST, before animation
           _wordTransitionController.reset();
+          _secondLetterAnimationController.stop();
           _wordTransitionController.forward();
+          _secondLetterAnimationController.repeat();
           _isProcessing = false;
         }
       });
@@ -167,7 +206,9 @@ class _StroopTutorialState extends State<StroopTutorial>
       // Wrong answer - show feedback but don't progress
       setState(() {
         _wordTransitionController.reset();
+        _secondLetterAnimationController.stop();
         _wordTransitionController.forward();
+        _secondLetterAnimationController.repeat();
         _isProcessing = false;
       });
       
@@ -244,7 +285,9 @@ class _StroopTutorialState extends State<StroopTutorial>
                     stage++;
                     _initializeStage();
                     _wordTransitionController.reset();
+                    _secondLetterAnimationController.stop();
                     _wordTransitionController.forward();
+                    _secondLetterAnimationController.repeat();
                   } else {
                     widget.onComplete();
                   }
@@ -273,18 +316,25 @@ class _StroopTutorialState extends State<StroopTutorial>
             color: currentItem.textColor,
           ),
           animationController: _wordTransitionController,
+          secondLetterAnimationController: _secondLetterAnimationController,
+          correctLetter: currentItem.correctLetter,
+          buttonPositions: buttonPositions,
+          stage: stage,
         ),
         buttons: [
           for (int i = 0; i < colorLetters.length; i++)
-            FeedbackStroopButton(
-              letter: colorLetters[i],
-              backgroundColor: stage == 2 ? AppColors.grey700 : colors[i],
-              label: stage == 0 ? colorNames[i] : null,
-              size: StroopLayout.unifiedButtonSize,
-              onPressed: () => _onButtonPressed(colorLetters[i]),
-              feedbackController: _feedbackController,
-              feedbackLetter: feedbackLetter,
-              feedbackColor: feedbackColor,
+            Container(
+              key: buttonKeys[i],
+              child: FeedbackStroopButton(
+                letter: colorLetters[i],
+                backgroundColor: stage == 2 ? AppColors.grey700 : colors[i],
+                label: stage == 0 ? colorNames[i] : null,
+                size: StroopLayout.unifiedButtonSize,
+                onPressed: () => _onButtonPressed(colorLetters[i]),
+                feedbackController: _feedbackController,
+                feedbackLetter: feedbackLetter,
+                feedbackColor: feedbackColor,
+              ),
             ),
         ],
         onAbort: widget.onAbort,

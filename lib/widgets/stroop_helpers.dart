@@ -12,7 +12,7 @@ class StroopColorConstants {
     Color(0xFFFBC02D), // Yellow
   ];
 
-  static const List<String> colorNames = ['rød', 'blå', 'grønn', 'gul'];
+  static const List<String> colorNames = ['RØD', 'BLÅ', 'GRØNN', 'GUL'];
   static const List<String> colorLetters = ['Ø', 'L', 'R', 'U'];
 }
 
@@ -250,30 +250,184 @@ class StroopWordDisplay extends StatelessWidget {
   final String word;
   final TextStyle style;
   final AnimationController animationController;
+  final AnimationController? secondLetterAnimationController;
+  final String? correctLetter;
+  final List<Offset> buttonPositions;
+  final int stage;
 
   const StroopWordDisplay({
     super.key,
     required this.word,
     required this.style,
     required this.animationController,
+    this.secondLetterAnimationController,
+    this.correctLetter,
+    this.buttonPositions = const [],
+    this.stage = 0,
   });
 
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: animationController,
+      builder: (context, _) {
+        // Only show second letter animation for stage 0 (first four words)
+        final shouldShowSecondLetter = stage == 0 && 
+            word.length > 1 && 
+            secondLetterAnimationController != null && 
+            correctLetter != null;
+
+        return Stack(
+          alignment: Alignment.center,
+          children: [
+            // Main word with scale and fade
+            ScaleTransition(
+              scale: Tween<double>(begin: 0.5, end: 1.0).animate(
+                CurvedAnimation(parent: animationController, curve: Curves.easeOut),
+              ),
+              child: Opacity(
+                opacity: animationController.value,
+                child: Text(word, style: style),
+              ),
+            ),
+            // Second letter animation - only if all conditions are met
+            if (shouldShowSecondLetter)
+              SecondLetterIndicator(
+                word: word,
+                letter: word[1],
+                correctLetter: correctLetter!,
+                animationController: secondLetterAnimationController!,
+                style: style,
+                buttonPositions: buttonPositions,
+                startFontSize: style.fontSize ?? 72.0,
+              ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+/// Animated indicator showing second letter animating down to the button
+class SecondLetterIndicator extends StatelessWidget {
+  final String word;
+  final String letter;
+  final String correctLetter;
+  final AnimationController animationController;
+  final TextStyle style;
+  final List<Offset> buttonPositions;
+  final double startFontSize;
+
+  const SecondLetterIndicator({
+    super.key,
+    required this.word,
+    required this.letter,
+    required this.correctLetter,
+    required this.animationController,
+    required this.style,
+    required this.buttonPositions,
+    this.startFontSize = 72.0,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    // Map letter to button index
+    final buttonIndex = StroopColorConstants.colorLetters.indexOf(correctLetter);
+    
+    if (buttonIndex < 0) {
+      return const SizedBox.shrink();
+    }
+
+    return AnimatedBuilder(
+      animation: animationController,
       builder: (context, child) {
-        return ScaleTransition(
-          scale: Tween<double>(begin: 0.5, end: 1.0).animate(
-            CurvedAnimation(parent: animationController, curve: Curves.easeOut),
-          ),
-          child: Opacity(
-            opacity: animationController.value,
-            child: child,
+        // Apply professional easing curve: ease-in at start, ease-out at end
+        final curvedAnimation = CurvedAnimation(
+          parent: animationController,
+          curve: Curves.easeInOutCubic,
+        );
+        final animValue = curvedAnimation.value;
+        
+        // Calculate font size transitioning from word size to button size
+        final endFontSize = startFontSize * 0.65;
+        final currentFontSize = startFontSize + (endFontSize - startFontSize) * animValue;
+        final screenSize = MediaQuery.of(context).size;
+        final screenCenter = Offset(screenSize.width / 2, screenSize.height / 2);
+
+        // Calculate the actual starting position of word[1] dynamically using TextPainter
+        final textPainter = TextPainter(
+          text: TextSpan(text: letter, style: style),
+          textDirection: TextDirection.ltr,
+        );
+        textPainter.layout();
+        
+        // Measure widths using TextPainter for accuracy
+        final fullWordPainter = TextPainter(
+          text: TextSpan(text: word, style: style),
+          textDirection: TextDirection.ltr,
+        );
+        fullWordPainter.layout();
+        
+        final firstCharPainter = TextPainter(
+          text: TextSpan(text: word[0], style: style),
+          textDirection: TextDirection.ltr,
+        );
+        firstCharPainter.layout();
+        
+        final secondCharPainter = TextPainter(
+          text: TextSpan(text: word[1], style: style),
+          textDirection: TextDirection.ltr,
+        );
+        secondCharPainter.layout();
+        
+        // Word is centered, so it starts at: -totalWidth / 2
+        // Second letter starts at: word start + first char width + half of second char width
+        final wordStartX = -fullWordPainter.width / 2;
+        final secondLetterStartX = wordStartX + firstCharPainter.width + secondCharPainter.width / 2;
+
+        // Simple: Animate from word[1] position to button center
+        double startX = secondLetterStartX;
+        double startY = 0.0;
+        double endX = 0.0;
+        double endY = 0.0;
+
+        if (buttonPositions.isNotEmpty && buttonIndex < buttonPositions.length) {
+          final buttonPosition = buttonPositions[buttonIndex];
+          endX = buttonPosition.dx - screenCenter.dx;
+          endY = buttonPosition.dy - screenCenter.dy;
+        } else {
+          const buttonWidth = 100.0;
+          const buttonSpacing = 16.0;
+          const totalButtonsWidth = 4 * buttonWidth + 3 * buttonSpacing;
+          const bottomPadding = 16.0;
+          const bottomActionHeight = 80.0;
+          
+          endX = -(totalButtonsWidth / 2) + (buttonIndex * (buttonWidth + buttonSpacing)) + (buttonWidth / 2);
+          final estimatedButtonY = screenSize.height - bottomActionHeight - (buttonWidth / 2) - bottomPadding;
+          endY = estimatedButtonY - screenCenter.dy;
+        }
+
+        // Interpolate from start to end with smooth continuous animation
+        // End position includes the plunge downward into the button
+        const plungeDistance = 70.0;  // How far the letter plunges down into button
+        final smoothEndX = endX;
+        final smoothEndY = endY + plungeDistance;
+        
+        final currentX = startX + (smoothEndX - startX) * animValue;
+        final currentY = startY + (smoothEndY - startY) * animValue;
+
+        return Transform.translate(
+          offset: Offset(currentX, currentY),
+          child: Text(
+            letter.toUpperCase(),
+            style: (style).copyWith(
+              fontSize: currentFontSize,
+              color: style.color ?? AppColors.charcoalBlue,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         );
       },
-      child: Text(word, style: style),
     );
   }
 }
