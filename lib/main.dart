@@ -8,5 +8,7 @@ void main() {
   // Hide system navigation bar and gesture indicator on Android
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
   
-  runApp(const ProviderScope(child: MyApp()));
+  // Lock app to portrait only and wait for it to complete before running app
+  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp])
+      .then((_) => runApp(const ProviderScope(child: MyApp())));
 }
