@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_master_app/widgets/test_shell.dart';
 import 'package:flutter_master_app/widgets/stroop_helpers.dart';
@@ -112,28 +113,22 @@ class _StroopTutorialState extends State<StroopTutorial>
         );
       }
     } else if (stage == 1) {
-      // Stage 1: All colors in random order, word matches color
-      final indices = [0, 1, 2, 3];
-      indices.shuffle();
-      for (final i in indices) {
-        items.add(
-          StroopItem(
-            textColor: colors[i],
-            displayWord: colorNames[i],
-            correctLetter: colorLetters[i],
-          ),
-        );
-      }
-    } else {
-      // Stage 2: Random mismatched items (like real test)
-      final random = DateTime.now().millisecond;
+      // Stage 1: Random mismatched items (like real test but with labels)
+      final random = Random();
+      int? previousColorIndex;
       for (int i = 0; i < 4; i++) {
-        int textColorIndex = (random + i) % colors.length;
-        int wordNameIndex = (random + i * 2) % colorNames.length;
+        int textColorIndex = random.nextInt(colors.length);
+        
+        // Ensure correct answer doesn't repeat consecutively
+        while (textColorIndex == previousColorIndex) {
+          textColorIndex = random.nextInt(colors.length);
+        }
+        
+        int wordNameIndex = random.nextInt(colorNames.length);
 
         // Ensure word doesn't match text color
         while (wordNameIndex == textColorIndex) {
-          wordNameIndex = (wordNameIndex + 1) % colorNames.length;
+          wordNameIndex = random.nextInt(colorNames.length);
         }
 
         items.add(
@@ -143,6 +138,37 @@ class _StroopTutorialState extends State<StroopTutorial>
             correctLetter: colorLetters[textColorIndex],
           ),
         );
+        
+        previousColorIndex = textColorIndex;
+      }
+    } else {
+      // Stage 2: Random mismatched items (like real test)
+      final random = Random();
+      int? previousColorIndex;
+      for (int i = 0; i < 4; i++) {
+        int textColorIndex = random.nextInt(colors.length);
+        
+        // Ensure correct answer doesn't repeat consecutively
+        while (textColorIndex == previousColorIndex) {
+          textColorIndex = random.nextInt(colors.length);
+        }
+        
+        int wordNameIndex = random.nextInt(colorNames.length);
+
+        // Ensure word doesn't match text color
+        while (wordNameIndex == textColorIndex) {
+          wordNameIndex = random.nextInt(colorNames.length);
+        }
+
+        items.add(
+          StroopItem(
+            textColor: colors[textColorIndex],
+            displayWord: colorNames[wordNameIndex],
+            correctLetter: colorLetters[textColorIndex],
+          ),
+        );
+        
+        previousColorIndex = textColorIndex;
       }
     }
 
@@ -326,8 +352,8 @@ class _StroopTutorialState extends State<StroopTutorial>
               key: buttonKeys[i],
               child: FeedbackStroopButton(
                 letter: colorLetters[i],
-                backgroundColor: stage == 2 ? AppColors.grey700 : colors[i],
-                label: stage == 0 ? colorNames[i] : null,
+                backgroundColor: stage >= 1 ? AppColors.grey700 : colors[i],
+                label: stage <= 1 ? colorNames[i] : null,
                 size: StroopLayout.unifiedButtonSize,
                 onPressed: () => _onButtonPressed(colorLetters[i]),
                 feedbackController: _feedbackController,

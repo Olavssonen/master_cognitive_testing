@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_master_app/theme/app_theme.dart';
 
 class TestShell extends StatelessWidget {
   final Widget child;
@@ -11,6 +12,7 @@ class TestShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.platinum,
       body: SafeArea(child: child),
     );
   }

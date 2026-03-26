@@ -165,13 +165,16 @@ class StroopScreen extends StatelessWidget {
             children: [
               if (bottomButton != null) bottomButton! else const SizedBox(),
               if (bottomButton != null) const SizedBox(height: 12) else const SizedBox(),
-              TextButton(
-                onPressed: onAbort,
-                style: TextButton.styleFrom(
-                  foregroundColor: AppColors.errorRed,
-                ),
-                child: const Text('Avbryt'),
-              ),
+              if (onAbort != null)
+                TextButton(
+                  onPressed: onAbort,
+                  style: TextButton.styleFrom(
+                    foregroundColor: AppColors.errorRed,
+                  ),
+                  child: const Text('Avbryt'),
+                )
+              else
+                const SizedBox(height: 36), // Maintain spacing when button is hidden
             ],
           ),
         ),

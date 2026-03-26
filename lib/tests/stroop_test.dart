@@ -1,8 +1,12 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_master_app/models/test_definition.dart';
 import 'package:flutter_master_app/widgets/test_shell.dart';
 import 'package:flutter_master_app/widgets/stroop_helpers.dart';
+import 'package:flutter_master_app/widgets/bottom_button_bar.dart';
 import 'package:flutter_master_app/tutorials/stroop_tutorial.dart';
+import 'package:flutter_master_app/providers/test_providers.dart';
 import 'package:flutter_master_app/theme/app_theme.dart';
 
 final stroopTest = TestDefinition(
@@ -12,15 +16,15 @@ final stroopTest = TestDefinition(
   build: (context, run) => StroopTestScreen(run: run),
 );
 
-class StroopTestScreen extends StatefulWidget {
+class StroopTestScreen extends ConsumerStatefulWidget {
   final TestRunContext run;
   const StroopTestScreen({super.key, required this.run});
 
   @override
-  State<StroopTestScreen> createState() => _StroopTestScreenState();
+  ConsumerState<StroopTestScreen> createState() => _StroopTestScreenState();
 }
 
-class _StroopTestScreenState extends State<StroopTestScreen> {
+class _StroopTestScreenState extends ConsumerState<StroopTestScreen> {
   int stage = 0;
   final Map<String, dynamic> stageResults = {};
 
@@ -34,13 +38,15 @@ class _StroopTestScreenState extends State<StroopTestScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDebugMode = ref.watch(debugModeProvider);
+    
     switch (stage) {
       case 0:
         return StroopTutorial(
           onComplete: () {
             setState(() => stage = 1);
           },
-          onAbort: () => widget.run.abort('User aborted'),
+          onAbort: isDebugMode ? () => widget.run.abort('User aborted') : null,
         );
       case 1:
         return TestShell(
@@ -51,7 +57,7 @@ class _StroopTestScreenState extends State<StroopTestScreen> {
             onStartTest: () {
               setState(() => stage = 2);
             },
-            onAbort: () => widget.run.abort('User aborted'),
+            onAbort: isDebugMode ? () => widget.run.abort('User aborted') : null,
           ),
         );
       case 2:
@@ -70,7 +76,7 @@ class _StroopTestScreenState extends State<StroopTestScreen> {
               ),
             );
           },
-          onAbort: () => widget.run.abort('User aborted'),
+          onAbort: isDebugMode ? () => widget.run.abort('User aborted') : null,
         );
       default:
         return const SizedBox();
@@ -139,16 +145,23 @@ class _StroopTestState extends State<StroopTest> with TickerProviderStateMixin {
     final colorNames = StroopColorConstants.colorNames;
     final colorLetters = StroopColorConstants.colorLetters;
 
-    final random = DateTime.now().millisecond;
+    final random = Random();
     final List<StroopItem> items = [];
+    int? previousColorIndex;
 
     for (int i = 0; i < count; i++) {
-      int textColorIndex = (random + i) % colors.length;
-      int wordNameIndex = (random + i * 2) % colorNames.length;
+      int textColorIndex = random.nextInt(colors.length);
+      
+      // Ensure correct answer doesn't repeat consecutively
+      while (textColorIndex == previousColorIndex) {
+        textColorIndex = random.nextInt(colors.length);
+      }
+      
+      int wordNameIndex = random.nextInt(colorNames.length);
 
       // Ensure word doesn't match text color for most items
       while (wordNameIndex == textColorIndex && count > 1) {
-        wordNameIndex = (wordNameIndex + 1) % colorNames.length;
+        wordNameIndex = random.nextInt(colorNames.length);
       }
 
       items.add(
@@ -158,6 +171,8 @@ class _StroopTestState extends State<StroopTest> with TickerProviderStateMixin {
           correctLetter: colorLetters[textColorIndex],
         ),
       );
+      
+      previousColorIndex = textColorIndex;
     }
 
     return items;
@@ -219,54 +234,68 @@ class _StroopTestState extends State<StroopTest> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    if (testComplete) {
+      return TestShell(
+        child: Column(
+          mainAxisSize: MainAxisSize.max,
+          children: [
+            Expanded(
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Test Complete!',
+                      style: Theme.of(context).textTheme.headlineMedium,
+                    ),
+                    const SizedBox(height: 20),
+                    Text(
+                      'Correct: $correctCount\nWrong: $wrongCount',
+                      style: Theme.of(context).textTheme.bodyLarge,
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            BottomButtonBar(
+              primaryButton: BottomButton(
+                label: 'Ferdig',
+                onPressed: _finishTest,
+              ),
+              onAbort: null,
+              showAbortButton: false,
+            ),
+          ],
+        ),
+      );
+    }
+
     return TestShell(
       child: StroopScreen(
         progressText: '${currentIndex + 1}/$numberOfWords',
-        middleContent: !testComplete
-            ? StroopWordDisplay(
-                word: stroopItems[currentIndex].displayWord,
-                style: TextStyle(
-                  fontSize: StroopLayout.test.middleTextSize,
-                  fontWeight: FontWeight.bold,
-                  color: stroopItems[currentIndex].textColor,
-                ),
-                animationController: _wordTransitionController,
-              )
-            : Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    'Test Complete!',
-                    style: Theme.of(context).textTheme.headlineMedium,
-                  ),
-                  const SizedBox(height: 20),
-                  Text(
-                    'Correct: $correctCount\nWrong: $wrongCount',
-                    style: Theme.of(context).textTheme.bodyLarge,
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
-        buttons: !testComplete
-            ? [
-                for (final letter in StroopColorConstants.colorLetters)
-                  FeedbackStroopButton(
-                    letter: letter,
-                    backgroundColor: AppColors.grey700,
-                    onPressed: () => _onButtonPressed(letter),
-                    feedbackController: _feedbackController,
-                    feedbackLetter: feedbackLetter,
-                    feedbackColor: feedbackColor,
-                    size: StroopLayout.unifiedButtonSize,
-                  ),
-              ]
-            : [],
-        bottomButton: testComplete
-            ? OutlinedButton(
-                onPressed: _finishTest,
-                child: const Text('Lever resultater'),
-              )
-            : null,
+        middleContent: StroopWordDisplay(
+          word: stroopItems[currentIndex].displayWord,
+          style: TextStyle(
+            fontSize: StroopLayout.test.middleTextSize,
+            fontWeight: FontWeight.bold,
+            color: stroopItems[currentIndex].textColor,
+          ),
+          animationController: _wordTransitionController,
+        ),
+        buttons: [
+          for (final letter in StroopColorConstants.colorLetters)
+            FeedbackStroopButton(
+              letter: letter,
+              backgroundColor: AppColors.grey700,
+              onPressed: () => _onButtonPressed(letter),
+              feedbackController: _feedbackController,
+              feedbackLetter: feedbackLetter,
+              feedbackColor: feedbackColor,
+              size: StroopLayout.unifiedButtonSize,
+            ),
+        ],
+        bottomButton: null,
         onAbort: widget.onAbort,
       ),
     );
