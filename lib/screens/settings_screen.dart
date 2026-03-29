@@ -151,7 +151,11 @@ class SettingsScreen extends ConsumerWidget {
                                 value: AppLocale.norwegian,
                                 child: Text('Norsk'),
                               ));
-                            } else {
+                              items.add(const DropdownMenuItem(
+                                value: AppLocale.spanish,
+                                child: Text('Español'),
+                              ));
+                            } else if (currentLocale == AppLocale.norwegian) {
                               items.add(const DropdownMenuItem(
                                 value: AppLocale.norwegian,
                                 child: Text('Norsk'),
@@ -159,6 +163,23 @@ class SettingsScreen extends ConsumerWidget {
                               items.add(const DropdownMenuItem(
                                 value: AppLocale.english,
                                 child: Text('English'),
+                              ));
+                              items.add(const DropdownMenuItem(
+                                value: AppLocale.spanish,
+                                child: Text('Español'),
+                              ));
+                            } else {
+                              items.add(const DropdownMenuItem(
+                                value: AppLocale.spanish,
+                                child: Text('Español'),
+                              ));
+                              items.add(const DropdownMenuItem(
+                                value: AppLocale.english,
+                                child: Text('English'),
+                              ));
+                              items.add(const DropdownMenuItem(
+                                value: AppLocale.norwegian,
+                                child: Text('Norsk'),
                               ));
                             }
                             

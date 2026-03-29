@@ -3,8 +3,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_master_app/l10n/strings.dart';
 import 'package:flutter_master_app/l10n/strings_en.dart';
 import 'package:flutter_master_app/l10n/strings_no.dart';
+import 'package:flutter_master_app/l10n/strings_es.dart';
 
-enum AppLocale { english, norwegian }
+enum AppLocale { english, norwegian, spanish }
 
 class LanguageNotifier extends AsyncNotifier<AppLocale> {
   static const String _languageKey = 'app_language';
@@ -35,9 +36,11 @@ final appStringsProvider = Provider<AppStrings>((ref) {
   final languageAsync = ref.watch(languageProvider);
   return languageAsync.when(
     data: (locale) {
-      return locale == AppLocale.norwegian
-          ? NorwegianStrings()
-          : EnglishStrings();
+      return switch (locale) {
+        AppLocale.norwegian => NorwegianStrings(),
+        AppLocale.spanish => SpanishStrings(),
+        AppLocale.english => EnglishStrings(),
+      };
     },
     loading: () => EnglishStrings(), // Default to English while loading
     error: (err, stack) => EnglishStrings(), // Default to English on error

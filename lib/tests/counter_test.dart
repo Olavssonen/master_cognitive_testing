@@ -4,6 +4,7 @@ import 'package:flutter_master_app/models/test_definition.dart';
 import 'package:flutter_master_app/widgets/test_shell.dart';
 import 'package:flutter_master_app/widgets/bottom_button_bar.dart';
 import 'package:flutter_master_app/providers/language_provider.dart';
+import 'package:flutter_master_app/providers/test_providers.dart';
 
 final counterTest = TestDefinition(
   id: 'Counter Test',
@@ -26,6 +27,7 @@ class _CounterTestScreenState extends ConsumerState<CounterTestScreen> {
   @override
   Widget build(BuildContext context) {
     final strings = ref.watch(appStringsProvider);
+    final isDebugMode = ref.watch(debugModeProvider);
     
     return TestShell(
       child: Column(
@@ -63,7 +65,7 @@ class _CounterTestScreenState extends ConsumerState<CounterTestScreen> {
             colorSet: counter > 0 
               ? BottomBarColorSet.secondary 
               : BottomBarColorSet.primary,
-            onAbort: () => widget.run.abort('User aborted'),
+            onAbort: isDebugMode ? () => widget.run.abort('User aborted') : null,
             showAbortButton: false,
             onSkip: () {
               widget.run.complete(

@@ -21,15 +21,15 @@ final tmtTest = TestDefinition(
 );
 
 /// Manages the progression: Numbers Tutorial → Numbers Test → Mixed Tutorial → Mixed Test
-class TMTTestFlowProgression extends StatefulWidget {
+class TMTTestFlowProgression extends ConsumerStatefulWidget {
   final TestRunContext run;
   const TMTTestFlowProgression({super.key, required this.run});
 
   @override
-  State<TMTTestFlowProgression> createState() => _TMTTestFlowProgressionState();
+  ConsumerState<TMTTestFlowProgression> createState() => _TMTTestFlowProgressionState();
 }
 
-class _TMTTestFlowProgressionState extends State<TMTTestFlowProgression> {
+class _TMTTestFlowProgressionState extends ConsumerState<TMTTestFlowProgression> {
   int stage = 0; // 0: Numbers tut, 1: Numbers test, 2: Mixed tut, 3: Mixed test
   final Map<String, dynamic> stageResults = {}; // Store results from each stage
 
@@ -46,6 +46,8 @@ class _TMTTestFlowProgressionState extends State<TMTTestFlowProgression> {
 
   @override
   Widget build(BuildContext context) {
+    final isDebugMode = ref.watch(debugModeProvider);
+    
     switch (stage) {
       case 0:
         return TMTTutorial(
@@ -53,7 +55,7 @@ class _TMTTestFlowProgressionState extends State<TMTTestFlowProgression> {
           onComplete: () {
             setState(() => stage = 1);
           },
-          onAbort: () => widget.run.abort('User aborted'),
+          onAbort: isDebugMode ? () => widget.run.abort('User aborted') : null,
         );
       case 1:
         return TMTTest(
@@ -73,7 +75,7 @@ class _TMTTestFlowProgressionState extends State<TMTTestFlowProgression> {
           onComplete: () {
             setState(() => stage = 3);
           },
-          onAbort: () => widget.run.abort('User aborted'),
+          onAbort: isDebugMode ? () => widget.run.abort('User aborted') : null,
         );
       case 3:
         return TMTTest(
@@ -107,19 +109,21 @@ class _TMTTestFlowProgressionState extends State<TMTTestFlowProgression> {
 }
 
 /// Manages single tutorial to test flow
-class TMTTestFlow extends StatefulWidget {
+class TMTTestFlow extends ConsumerStatefulWidget {
   final TestRunContext run;
   const TMTTestFlow({super.key, required this.run});
 
   @override
-  State<TMTTestFlow> createState() => _TMTTestFlowState();
+  ConsumerState<TMTTestFlow> createState() => _TMTTestFlowState();
 }
 
-class _TMTTestFlowState extends State<TMTTestFlow> {
+class _TMTTestFlowState extends ConsumerState<TMTTestFlow> {
   bool tutorialComplete = false;
 
   @override
   Widget build(BuildContext context) {
+    final isDebugMode = ref.watch(debugModeProvider);
+    
     if (!tutorialComplete) {
       return TMTTutorial(
         mode: CircleMode.numbersOnly,
@@ -128,7 +132,7 @@ class _TMTTestFlowState extends State<TMTTestFlow> {
             tutorialComplete = true;
           });
         },
-        onAbort: () => widget.run.abort('User aborted'),
+        onAbort: isDebugMode ? () => widget.run.abort('User aborted') : null,
       );
     }
 
@@ -598,7 +602,7 @@ class _TMTTest extends ConsumerState<TMTTest> {
             colorSet: testComplete 
               ? BottomBarColorSet.secondary 
               : BottomBarColorSet.primary,
-            onAbort: () => widget.run.abort('User aborted'),
+            onAbort: debugMode ? () => widget.run.abort('User aborted') : null,
             useRow: true,
             onSkip: () {
               final resultData = {

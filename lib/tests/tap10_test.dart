@@ -4,6 +4,7 @@ import 'package:flutter_master_app/models/test_definition.dart';
 import 'package:flutter_master_app/widgets/test_shell.dart';
 import 'package:flutter_master_app/widgets/bottom_button_bar.dart';
 import 'package:flutter_master_app/providers/language_provider.dart';
+import 'package:flutter_master_app/providers/test_providers.dart';
 
 final tap10Test = TestDefinition(
   id: 'Trykk 10 Test',
@@ -26,6 +27,7 @@ class _Tap10TestScreenState extends ConsumerState<Tap10TestScreen> {
   @override
   Widget build(BuildContext context) {
     final strings = ref.watch(appStringsProvider);
+    final isDebugMode = ref.watch(debugModeProvider);
     final done = taps >= 10;
 
     return TestShell(
@@ -64,7 +66,7 @@ class _Tap10TestScreenState extends ConsumerState<Tap10TestScreen> {
             colorSet: done 
               ? BottomBarColorSet.secondary 
               : BottomBarColorSet.primary,
-            onAbort: () => widget.run.abort('User aborted'),
+            onAbort: isDebugMode ? () => widget.run.abort('User aborted') : null,
             onSkip: () {
               widget.run.complete(
                 TestResult(testId: 'tap10', summary: {'taps': 0}),

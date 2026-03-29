@@ -23,23 +23,23 @@ final cogTest = TestDefinition(
 const List<String> targetWords = ['Banan', 'Soloppgang', 'Stol'];
 const List<String> distractorWords = ['Leder', 'Årstid', 'Bord', 'Landsby', 'Kjøkken', 'Baby', 'Elv'];
 
-class CogTestScreen extends StatefulWidget {
+class CogTestScreen extends ConsumerStatefulWidget {
   final TestRunContext run;
   const CogTestScreen({super.key, required this.run});
 
   @override
-  State<CogTestScreen> createState() => _CogTestScreenState();
+  ConsumerState<CogTestScreen> createState() => _CogTestScreenState();
 }
 
-class _CogTestScreenState extends State<CogTestScreen> {
+class _CogTestScreenState extends ConsumerState<CogTestScreen> {
   late MiniCogTestWidget miniCogTest;
 
   @override
   void initState() {
     super.initState();
+    // We'll handle debug mode in the build method instead
     miniCogTest = MiniCogTestWidget(
       run: widget.run,
-      onAbort: () => widget.run.abort('User aborted'),
     );
   }
 
@@ -53,12 +53,12 @@ class _CogTestScreenState extends State<CogTestScreen> {
 
 class MiniCogTestWidget extends ConsumerStatefulWidget {
   final TestRunContext run;
-  final VoidCallback onAbort;
+  final VoidCallback? onAbort;
 
   const MiniCogTestWidget({
     super.key,
     required this.run,
-    required this.onAbort,
+    this.onAbort,
   });
 
   @override
@@ -76,16 +76,9 @@ class _MiniCogTestWidgetState extends ConsumerState<MiniCogTestWidget> {
   int _correctMinuteHand = 0;
   Uint8List? _clockImage;
   
-  late ClockTestWidget clockTest;
-  
   @override
   void initState() {
     super.initState();
-    clockTest = ClockTestWidget(
-      run: widget.run,
-      onAbort: widget.onAbort,
-      onClockComplete: _handleClockTestComplete,
-    );
   }
 
   void _handleClockTestComplete(Map<String, dynamic> clockScore) {
@@ -148,10 +141,13 @@ class _MiniCogTestWidgetState extends ConsumerState<MiniCogTestWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final isDebugMode = ref.watch(debugModeProvider);
+    final onAbort = isDebugMode ? () => widget.run.abort('User aborted') : null;
+    
     if (_currentPhase == 'word_recall_1') {
       return WordRecallPhase1(
         onNext: _proceedToClockTest,
-        onAbort: widget.onAbort,
+        onAbort: onAbort,
       );
     } else if (_currentPhase == 'clock_instruction') {
       return TestShell(
@@ -165,18 +161,22 @@ class _MiniCogTestWidgetState extends ConsumerState<MiniCogTestWidget> {
               icon: Icons.play_arrow,
               onPressed: _proceedToClockTestExecution,
             ),
-            onAbort: widget.onAbort,
+            onAbort: onAbort,
             debugMode: true,
             colorSet: BottomBarColorSet.secondary,
           ),
         ),
       );
     } else if (_currentPhase == 'clock_test') {
-      return clockTest;
+      return ClockTestWidget(
+        run: widget.run,
+        onAbort: onAbort,
+        onClockComplete: _handleClockTestComplete,
+      );
     } else if (_currentPhase == 'word_recall_2') {
       return WordRecallPhase2(
         onComplete: _handleWordRecall2Complete,
-        onAbort: widget.onAbort,
+        onAbort: onAbort,
       );
     }
     
@@ -413,13 +413,13 @@ class _WordRecallPhase2State extends ConsumerState<WordRecallPhase2> {
 
 class ClockTestWidget extends ConsumerStatefulWidget {
   final TestRunContext run;
-  final VoidCallback onAbort;
+  final VoidCallback? onAbort;
   final Function(Map<String, dynamic>)? onClockComplete;
 
   const ClockTestWidget({
     super.key,
     required this.run,
-    required this.onAbort,
+    this.onAbort,
     this.onClockComplete,
   });
 
