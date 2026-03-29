@@ -117,10 +117,10 @@ class NorwegianStrings extends AppStrings {
   String get mixed => 'Blandet';
 
   @override
-  String get testComplete => 'Test fullfÃ¸rt';
+  String get testComplete => 'Test fullført';
 
   @override
-  String get testsCompleted => 'FullfÃ¸rte';
+  String get testsCompleted => 'Fullførte';
 
   @override
   String get correct => 'Korrekt';
@@ -129,7 +129,7 @@ class NorwegianStrings extends AppStrings {
   String get wrong => 'Galt';
 
   @override
-  String get accuracy => 'NÃ¸yaktighet';
+  String get accuracy => 'Nøyaktighet';
 
   @override
   String get taps => 'Trykk';
@@ -138,7 +138,7 @@ class NorwegianStrings extends AppStrings {
   String get time => 'Tid';
 
   @override
-  String get completed => 'FullfÃ¸rt';
+  String get completed => 'Fullført';
 
   @override
   String get incomplete => 'Ufullstendig';
@@ -160,10 +160,10 @@ class NorwegianStrings extends AppStrings {
   String get howToPlay => 'Slik spiller du';
 
   @override
-  String get counterTutorialDesc => 'Trykk enkelt pÃ¥ "+"-knappen sÃ¥ mange ganger du kan. Denne testen mÃ¥ler tappingshastigheten og koordinasjonen din.';
+  String get counterTutorialDesc => 'Trykk enkelt på "+"-knappen så mange ganger du kan. Denne testen måler tappingshastigheten og koordinasjonen din.';
 
   @override
-  String get tap10TutorialDesc => 'Trykk pÃ¥ knappen 10 ganger sÃ¥ raskt du kan. Denne testen mÃ¥ler fingerkraften og kontrollen din.';
+  String get tap10TutorialDesc => 'Trykk på knappen 10 ganger så raskt du kan. Denne testen måler fingerkraften og kontrollen din.';
 
   @override
   String get currentCount => 'Gjeldende telling';
@@ -175,25 +175,25 @@ class NorwegianStrings extends AppStrings {
   String get tapsRemaining => 'Trykk';
 
   @override
-  String get tutorialComplete => 'Veiledning fullfÃ¸rt!';
+  String get tutorialComplete => 'Veiledning fullført!';
 
   @override
-  String get readyToContinue => 'Trykk pÃ¥ knappen ovenfor for Ã¥ Ã¸ke telleren.\nNÃ¥r du er klar, klikk "Neste".';
+  String get readyToContinue => 'Trykk på knappen ovenfor for å øke telleren.\nNår du er klar, klikk "Neste".';
 
   @override
-  String get retry => 'PrÃ¸v igjen';
+  String get retry => 'Prøv igjen';
 
   @override
-  String get great => 'Bra! GÃ¥r videre...';
+  String get great => 'Bra! Går videre...';
 
   @override
-  String get gotIt => 'Du skjÃ¸nner det!';
+  String get gotIt => 'Du skjønner det!';
 
   @override
   String get continueTutorial => 'Fortsett';
 
   @override
-  String get tap10TapsToGo => 'ganger til for Ã¥ fullfÃ¸re veiledningen';
+  String get tap10TapsToGo => 'ganger til for å fullføre veiledningen';
 
   @override
   String get correctLabel => 'Korrekt';
@@ -208,7 +208,7 @@ class NorwegianStrings extends AppStrings {
   String get wrong_label => 'galt';
 
   @override
-  String get accuracy_label => 'NÃ¸yaktighet';
+  String get accuracy_label => 'Nøyaktighet';
 
   @override
   String get mistakes => 'Feil';

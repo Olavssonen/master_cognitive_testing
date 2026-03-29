@@ -500,6 +500,9 @@ class _ClockTestWidgetState extends ConsumerState<ClockTestWidget> {
   static const double hourHandLength = 175.0;   // korteviser
   static const double hourHandWidth = 32.0;
   
+  // Fixed pseudo-random number order for display (no two consecutive numbers adjacent)
+  late List<int> randomizedNumbers;
+  
   @override
   void initState() {
     super.initState();
@@ -507,6 +510,10 @@ class _ClockTestWidgetState extends ConsumerState<ClockTestWidget> {
     for (int i = 1; i <= 12; i++) {
       numberPositions[i] = const Offset(-1000, -1000); // Offscreen
     }
+    
+    // Create fixed order where no two consecutive numbers are adjacent
+    // Odds ascending, then evens descending: [1,3,5,7,9,11,12,10,8,6,4,2]
+    randomizedNumbers = [1, 3, 5, 7, 9, 11, 12, 10, 8, 6, 4, 2];
   }
 
   /// Get the pizza slice number (1-12) for a given point
@@ -904,11 +911,11 @@ class _ClockTestWidgetState extends ConsumerState<ClockTestWidget> {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.start,
                             children: [
-                              // First row of 6 numbers
+                              // First row of 6 numbers (randomized)
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: List.generate(6, (index) {
-                                  final number = index + 1;
+                                  final number = randomizedNumbers[index];
                                   return Padding(
                                     padding: const EdgeInsets.symmetric(horizontal: 12),
                                     child: _buildNumberCircle(number),
@@ -916,11 +923,11 @@ class _ClockTestWidgetState extends ConsumerState<ClockTestWidget> {
                                 }),
                               ),
                               const SizedBox(height: 25),
-                              // Second row of 6 numbers
+                              // Second row of 6 numbers (randomized)
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: List.generate(6, (index) {
-                                  final number = index + 7;
+                                  final number = randomizedNumbers[index + 6];
                                   return Padding(
                                     padding: const EdgeInsets.symmetric(horizontal: 12),
                                     child: _buildNumberCircle(number),
