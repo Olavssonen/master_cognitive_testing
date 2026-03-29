@@ -21,12 +21,12 @@ class StroopColorConstants {
 class StroopLayout {
   static const tutorial = StroopLayoutConfig(
     buttonSize: 100,
-    middleTextSize: 72,
+    middleTextSize: 90,
   );
 
   static const test = StroopLayoutConfig(
     buttonSize: 100,
-    middleTextSize: 64,
+    middleTextSize: 80,
   );
   
   // Unified button size for both tutorial and test

@@ -24,11 +24,23 @@ class DebugModeNotifier extends Notifier<bool> {
 }
 
 final testRegistryProvider = Provider<List<TestDefinition>>((ref) {
-  return [
-    counterTest,
-    tap10Test,
-    cogTest,
-    tmtTest,
-    stroopTest,
-  ];
+  final debugMode = ref.watch(debugModeProvider);
+  
+  if (debugMode) {
+    // Debug mode ON: all tests available
+    return [
+      counterTest,
+      tap10Test,
+      cogTest,
+      tmtTest,
+      stroopTest,
+    ];
+  } else {
+    // Debug mode OFF: only stroop, tmt, and cog available
+    return [
+      cogTest,
+      tmtTest,
+      stroopTest,
+    ];
+  }
 });
