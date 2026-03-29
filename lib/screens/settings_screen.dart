@@ -60,11 +60,14 @@ class SettingsScreen extends ConsumerWidget {
                   ),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          strings.debug,
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(minHeight: 56),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            strings.debug,
                           style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.w500,
@@ -78,7 +81,8 @@ class SettingsScreen extends ConsumerWidget {
                           },
                           activeThumbColor: Theme.of(context).colorScheme.primary,
                         ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -96,18 +100,22 @@ class SettingsScreen extends ConsumerWidget {
                   ),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          strings.points,
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(minHeight: 56),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            strings.points,
                           style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.w500,
                             color: Theme.of(context).colorScheme.primary,
                           ),
                         ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -125,11 +133,14 @@ class SettingsScreen extends ConsumerWidget {
                   ),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          strings.language,
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(minHeight: 56),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            strings.language,
                           style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.w500,
@@ -215,10 +226,6 @@ class SettingsScreen extends ConsumerWidget {
                             return Container(
                               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                               decoration: BoxDecoration(
-                                border: Border.all(
-                                  color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
-                                  width: 1.5,
-                                ),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: DropdownButton<AppLocale>(
@@ -253,7 +260,8 @@ class SettingsScreen extends ConsumerWidget {
                           ),
                           error: (err, stack) => Text('Error'),
                         ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
