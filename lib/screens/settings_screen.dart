@@ -43,17 +43,17 @@ class SettingsScreen extends ConsumerWidget {
           const SizedBox(height: 40),
           Expanded(
             child: ListView(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(54),
               children: [
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Debug Mode',
+                      'Debug',
                       style: TextStyle(
-                        fontSize: 18,
+                        fontSize: 38,
                         fontWeight: FontWeight.w500,
-                        color: Theme.of(context).colorScheme.onSurface,
+                        color: Theme.of(context).colorScheme.primary,
                       ),
                     ),
                     Switch(
@@ -62,6 +62,32 @@ class SettingsScreen extends ConsumerWidget {
                         ref.read(debugModeProvider.notifier).set(value);
                       },
                       activeColor: Theme.of(context).colorScheme.primary,
+                    ),
+                  ],
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Points',
+                      style: TextStyle(
+                        fontSize: 38,
+                        fontWeight: FontWeight.w500,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                  ],
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Language',
+                      style: TextStyle(
+                        fontSize: 38,
+                        fontWeight: FontWeight.w500,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
                     ),
                   ],
                 ),
