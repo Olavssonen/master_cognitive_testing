@@ -1,4 +1,4 @@
-import 'strings.dart';
+﻿import 'strings.dart';
 
 /// Norwegian translations
 class NorwegianStrings extends AppStrings {
@@ -30,7 +30,7 @@ class NorwegianStrings extends AppStrings {
   String get summary => 'Sesjonopsummering';
 
   @override
-  String get language => 'Språk';
+  String get language => 'SprÃ¥k';
 
   @override
   String get debug => 'Debug';
@@ -90,7 +90,7 @@ class NorwegianStrings extends AppStrings {
   String get clockInstruction => 'Lag en klokke';
 
   @override
-  String get lookAtColorNotWord => 'Se på fargen, ikke ordet';
+  String get lookAtColorNotWord => 'Se pÃ¥ fargen, ikke ordet';
 
   @override
   String get clockDrawPosition => 'Dra tallene til riktig posisjon';
@@ -99,7 +99,7 @@ class NorwegianStrings extends AppStrings {
   String get clockHandInstruction => 'Still klokken til 10 over 11';
 
   @override
-  String get clockGoalTime => 'Mål';
+  String get clockGoalTime => 'MÃ¥l';
 
   @override
   String get numbersCircles => 'Talltest';
@@ -117,10 +117,10 @@ class NorwegianStrings extends AppStrings {
   String get mixed => 'Blandet';
 
   @override
-  String get testComplete => 'Test fullført';
+  String get testComplete => 'Test fullfÃ¸rt';
 
   @override
-  String get testsCompleted => 'Fullførte';
+  String get testsCompleted => 'FullfÃ¸rte';
 
   @override
   String get correct => 'Korrekt';
@@ -129,7 +129,7 @@ class NorwegianStrings extends AppStrings {
   String get wrong => 'Galt';
 
   @override
-  String get accuracy => 'Nøyaktighet';
+  String get accuracy => 'NÃ¸yaktighet';
 
   @override
   String get taps => 'Trykk';
@@ -138,7 +138,7 @@ class NorwegianStrings extends AppStrings {
   String get time => 'Tid';
 
   @override
-  String get completed => 'Fullført';
+  String get completed => 'FullfÃ¸rt';
 
   @override
   String get incomplete => 'Ufullstendig';
@@ -160,10 +160,10 @@ class NorwegianStrings extends AppStrings {
   String get howToPlay => 'Slik spiller du';
 
   @override
-  String get counterTutorialDesc => 'Trykk enkelt på "+"-knappen så mange ganger du kan. Denne testen måler tappingshastigheten og koordinasjonen din.';
+  String get counterTutorialDesc => 'Trykk enkelt pÃ¥ "+"-knappen sÃ¥ mange ganger du kan. Denne testen mÃ¥ler tappingshastigheten og koordinasjonen din.';
 
   @override
-  String get tap10TutorialDesc => 'Trykk på knappen 10 ganger så raskt du kan. Denne testen måler fingerkraften og kontrollen din.';
+  String get tap10TutorialDesc => 'Trykk pÃ¥ knappen 10 ganger sÃ¥ raskt du kan. Denne testen mÃ¥ler fingerkraften og kontrollen din.';
 
   @override
   String get currentCount => 'Gjeldende telling';
@@ -175,25 +175,25 @@ class NorwegianStrings extends AppStrings {
   String get tapsRemaining => 'Trykk';
 
   @override
-  String get tutorialComplete => 'Veiledning fullført!';
+  String get tutorialComplete => 'Veiledning fullfÃ¸rt!';
 
   @override
-  String get readyToContinue => 'Trykk på knappen ovenfor for å øke telleren.\nNår du er klar, klikk "Neste".';
+  String get readyToContinue => 'Trykk pÃ¥ knappen ovenfor for Ã¥ Ã¸ke telleren.\nNÃ¥r du er klar, klikk "Neste".';
 
   @override
-  String get retry => 'Prøv igjen';
+  String get retry => 'PrÃ¸v igjen';
 
   @override
-  String get great => 'Bra! Går videre...';
+  String get great => 'Bra! GÃ¥r videre...';
 
   @override
-  String get gotIt => 'Du skjønner det!';
+  String get gotIt => 'Du skjÃ¸nner det!';
 
   @override
   String get continueTutorial => 'Fortsett';
 
   @override
-  String get tap10TapsToGo => 'ganger til for å fullføre veiledningen';
+  String get tap10TapsToGo => 'ganger til for Ã¥ fullfÃ¸re veiledningen';
 
   @override
   String get correctLabel => 'Korrekt';
@@ -208,7 +208,7 @@ class NorwegianStrings extends AppStrings {
   String get wrong_label => 'galt';
 
   @override
-  String get accuracy_label => 'Nøyaktighet';
+  String get accuracy_label => 'NÃ¸yaktighet';
 
   @override
   String get mistakes => 'Feil';
@@ -243,8 +243,42 @@ class NorwegianStrings extends AppStrings {
   @override
   String get clockHands => 'Klokkeviser';
 
-  @override  String get clockDrawing => 'Klokke';
-
-  @override  String get totalScoreLabel => 'Totalpoeng';
   @override
-  String get errorMessage => 'Feil: ';}
+  String get clockDrawing => 'Klokke';
+
+  @override
+  String get totalScoreLabel => 'Totalpoeng';
+
+  @override
+  String get bananWord => 'Banan';
+
+  @override
+  String get sunriseWord => 'Soloppgang';
+
+  @override
+  String get chairWord => 'Stol';
+
+  @override
+  String get leatherWord => 'Leder';
+
+  @override
+  String get seasonWord => 'Årstid';
+
+  @override
+  String get tableWord => 'Bord';
+
+  @override
+  String get villageWord => 'Landsby';
+
+  @override
+  String get kitchenWord => 'Kjøkken';
+
+  @override
+  String get babyWord => 'Baby';
+
+  @override
+  String get riverWord => 'Elv';
+
+  @override
+  String get errorMessage => 'Feil: ';
+}

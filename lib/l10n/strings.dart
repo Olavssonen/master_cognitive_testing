@@ -88,6 +88,20 @@ abstract class AppStrings {
   String get clockDrawing;
   String get totalScoreLabel;
 
+  // COG Test - Words to remember
+  String get bananWord;
+  String get sunriseWord;
+  String get chairWord;
+
+  // COG Test - Distractor words
+  String get leatherWord;
+  String get seasonWord;
+  String get tableWord;
+  String get villageWord;
+  String get kitchenWord;
+  String get babyWord;
+  String get riverWord;
+
   // Results & feedback
   String get testComplete;
   String get testsCompleted;

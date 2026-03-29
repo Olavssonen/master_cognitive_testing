@@ -19,9 +19,9 @@ final cogTest = TestDefinition(
   build: (context, run) => CogTestScreen(run: run),
 );
 
-// Words for the word recall test
-const List<String> targetWords = ['Banan', 'Soloppgang', 'Stol'];
-const List<String> distractorWords = ['Leder', 'Årstid', 'Bord', 'Landsby', 'Kjøkken', 'Baby', 'Elv'];
+// Words for the word recall test - these are now in strings files
+// Target words will be accessed via appStringsProvider
+// Distractor words will be accessed via appStringsProvider
 
 class CogTestScreen extends ConsumerStatefulWidget {
   final TestRunContext run;
@@ -233,7 +233,11 @@ class _WordRecallPhase1State extends ConsumerState<WordRecallPhase1> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  ...targetWords.map((word) {
+                  ...[
+                    ref.watch(appStringsProvider).bananWord,
+                    ref.watch(appStringsProvider).sunriseWord,
+                    ref.watch(appStringsProvider).chairWord,
+                  ].map((word) {
                     return Padding(
                       padding: const EdgeInsets.symmetric(vertical: 20.0),
                       child: Text(
@@ -279,6 +283,8 @@ class WordRecallPhase2 extends ConsumerStatefulWidget {
 }
 
 class _WordRecallPhase2State extends ConsumerState<WordRecallPhase2> {
+  late List<String> targetWords;
+  late List<String> distractorWords;
   late List<String> allWords;
   Set<String> selectedWords = {};
   bool _showingInstructions = true;
@@ -286,6 +292,23 @@ class _WordRecallPhase2State extends ConsumerState<WordRecallPhase2> {
   @override
   void initState() {
     super.initState();
+    // Build word lists from app strings
+    final appStrings = ref.read(appStringsProvider);
+    targetWords = [
+      appStrings.bananWord,
+      appStrings.sunriseWord,
+      appStrings.chairWord,
+    ];
+    distractorWords = [
+      appStrings.leatherWord,
+      appStrings.seasonWord,
+      appStrings.tableWord,
+      appStrings.villageWord,
+      appStrings.kitchenWord,
+      appStrings.babyWord,
+      appStrings.riverWord,
+    ];
+    
     // Shuffle and prepare the word list
     allWords = [...targetWords, ...distractorWords];
     allWords.shuffle(Math.Random());

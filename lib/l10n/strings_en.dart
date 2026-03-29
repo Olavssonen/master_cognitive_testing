@@ -153,8 +153,7 @@ class EnglishStrings extends AppStrings {
   String get repeatWords => 'Repeat the words you should remember';
   
   @override
-  // TODO: implement clockInstruction2
-  String get clockInstruction2 => "place the numbers in the correct position";
+  String get clockInstruction2 => "Place the numbers in the correct position";
 
   @override
   String get howToPlay => 'How to Play';
@@ -248,6 +247,36 @@ class EnglishStrings extends AppStrings {
 
   @override
   String get totalScoreLabel => 'Total Score';
+
+  @override
+  String get bananWord => 'Banana';
+
+  @override
+  String get sunriseWord => 'Sunrise';
+
+  @override
+  String get chairWord => 'Chair';
+
+  @override
+  String get leatherWord => 'Leather';
+
+  @override
+  String get seasonWord => 'Season';
+
+  @override
+  String get tableWord => 'Table';
+
+  @override
+  String get villageWord => 'Village';
+
+  @override
+  String get kitchenWord => 'Kitchen';
+
+  @override
+  String get babyWord => 'Baby';
+
+  @override
+  String get riverWord => 'River';
 
   @override
   String get errorMessage => 'Error: ';

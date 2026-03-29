@@ -249,5 +249,36 @@ class SpanishStrings extends AppStrings {
   String get totalScoreLabel => 'Puntuación Total';
 
   @override
+  String get bananWord => 'Plátano';
+
+  @override
+  String get sunriseWord => 'Amanecer';
+
+  @override
+  String get chairWord => 'Silla';
+
+  @override
+  String get leatherWord => 'Cuero';
+
+  @override
+  String get seasonWord => 'Estación';
+
+  @override
+  String get tableWord => 'Mesa';
+
+  @override
+  String get villageWord => 'Pueblo';
+
+  @override
+  String get kitchenWord => 'Cocina';
+
+  @override
+  String get babyWord => 'Bebé';
+
+  @override
+  String get riverWord => 'Río';
+
+  @override
   String get errorMessage => 'Error: ';
 }
+
