@@ -153,7 +153,6 @@ class NorwegianStrings extends AppStrings {
   String get repeatWords => 'Gjenta ordene du skulle huske';
   
   @override
-  // TODO: implement clockInstruction2
   String get clockInstruction2 => "Dra tallene til riktig posisjon";
 
   @override

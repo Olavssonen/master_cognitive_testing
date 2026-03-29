@@ -306,6 +306,7 @@ class StroopIntermediateScreen extends ConsumerWidget {
     final strings = ref.watch(appStringsProvider);
     return RoundInfoScreen(
       title: strings.round2,
+      subtitle: strings.stroopTest,
       bodyText: strings.lookAtColorNotWord,
       bottomContent: BottomButtonBar(
         actionButtons: [

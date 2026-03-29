@@ -191,6 +191,7 @@ class _StroopTutorialState extends ConsumerState<StroopTutorial>
       return TestShell(
         child: RoundInfoScreen(
           title: ref.watch(appStringsProvider).round1,
+          subtitle: ref.watch(appStringsProvider).stroopTest,
           bodyText: ref.watch(appStringsProvider).lookAtColorNotWord,
           bottomContent: BottomButtonBar(
             primaryButton: BottomButton(
@@ -198,7 +199,8 @@ class _StroopTutorialState extends ConsumerState<StroopTutorial>
               icon: Icons.play_arrow,
               onPressed: () => setState(() => showIntroduction = false),
             ),
-            onAbort: widget.onAbort ?? () => Navigator.pop(context),
+            onAbort: null,
+            showAbortButton: false,
             colorSet: BottomBarColorSet.secondary,
           ),
         ),
