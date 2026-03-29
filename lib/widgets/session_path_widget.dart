@@ -185,7 +185,7 @@ class SessionPathPainter extends CustomPainter {
     }
 
     // Draw the points
-    _drawPoints(canvas, positions, animationProgress);
+    _drawPoints(canvas, positions, animationProgress, size.width);
 
     // Draw rings on top to cover pipe overlap
     _drawPointRings(canvas, positions, animationProgress);
@@ -366,12 +366,14 @@ class SessionPathPainter extends CustomPainter {
 
   void _drawPoints(
     Canvas canvas,
-    List<Offset> positions, [
-    double animationProgress = 0,
-  ]) {
+    List<Offset> positions,
+    double animationProgress,
+    double screenWidth,
+  ) {
     const double pointRadius = 40;
     const double ringWidth = 8;
     final isAnimatingToGoal = currentIndex >= positions.length - 2;
+    final double centerX = screenWidth / 2;
 
     for (int i = 0; i < positions.length; i++) {
       // Completed stops are inverted, animation target is not inverted (only after animation is nearly complete)
@@ -387,18 +389,22 @@ class SessionPathPainter extends CustomPainter {
 
       Color bgColor;
       Color iconColor;
+      Color textColor;
 
       if (isCompleted) {
-        // Inverted: teal bg, white icon
+        // Inverted: teal bg, white icon, teal text
         bgColor = AppColors.tropicalTeal;
         iconColor = Colors.white;
+        textColor = AppColors.tropicalTeal;
       } else if (isAnimationTarget || isGoalTarget) {
-        // Not inverted: white bg, teal icon (and teal ring)
+        // Not inverted: white bg, teal icon (and teal ring), teal text
         bgColor = Colors.white;
         iconColor = AppColors.tropicalTeal;
+        textColor = AppColors.tropicalTeal;
       } else {
         bgColor = Colors.white;
         iconColor = AppColors.crayolaBlue;
+        textColor = AppColors.crayolaBlue;
       }
 
       // Draw background circle (slightly larger to integrate with ring)
@@ -408,8 +414,9 @@ class SessionPathPainter extends CustomPainter {
 
       canvas.drawCircle(positions[i], pointRadius - ringWidth + 2, bgPaint);
 
-      // Get the test icon for this position
+      // Get the test icon and title for this position
       IconData? iconData;
+      String? testTitle;
       bool isStartOrEnd = (i == 0 || i == positions.length - 1);
 
       if (!isStartOrEnd && i - 1 < testPlan.length) {
@@ -417,19 +424,23 @@ class SessionPathPainter extends CustomPainter {
         try {
           final testDef = testRegistry.firstWhere((t) => t.id == testId);
           iconData = testDef.icon;
+          testTitle = testDef.title;
         } catch (e) {
           // Test not found
         }
       }
 
-      // Draw icon if available (increased size to fill space better)
+      // Draw icon and text if available
       if (iconData != null) {
-        _drawIcon(
+        _drawIconWithText(
           canvas,
           positions[i],
           iconData,
           iconColor,
+          testTitle,
+          textColor,
           pointRadius - ringWidth + 4,
+          centerX,
         );
       } else if (isStartOrEnd) {
         // Draw flag icon for start/end (increased size)
@@ -440,6 +451,27 @@ class SessionPathPainter extends CustomPainter {
           iconColor,
           pointRadius - ringWidth + 4,
         );
+        
+        // Draw start/end labels
+        if (i == 0) {
+          // Draw "Start" above the first icon
+          _drawStartEndLabel(
+            canvas,
+            positions[i],
+            "Start",
+            textColor,
+            true,
+          );
+        } else if (i == positions.length - 1) {
+          // Draw "Mål" below the last icon
+          _drawStartEndLabel(
+            canvas,
+            positions[i],
+            "Mål",
+            textColor,
+            false,
+          );
+        }
       }
     }
   }
@@ -467,6 +499,135 @@ class SessionPathPainter extends CustomPainter {
     textPainter.paint(
       canvas,
       position - Offset(textPainter.width / 2, textPainter.height / 2),
+    );
+  }
+
+  void _drawIconWithText(
+    Canvas canvas,
+    Offset position,
+    IconData icon,
+    Color iconColor,
+    String? testTitle,
+    Color textColor,
+    double iconSize,
+    double centerX,
+  ) {
+    // Draw the icon
+    _drawIcon(
+      canvas,
+      position,
+      icon,
+      iconColor,
+      iconSize * 0.6, // Make icon smaller to leave room for text
+    );
+
+    // Draw the test title text on the inside (towards center) of the icon
+    if (testTitle != null && testTitle.isNotEmpty) {
+      final textPainter = TextPainter(
+        text: TextSpan(
+          text: testTitle,
+          style: TextStyle(
+            color: textColor,
+            fontSize: 28,
+            fontWeight: FontWeight.w600,
+            height: 1.0,
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+        maxLines: 2,
+        textAlign: TextAlign.center,
+      );
+      textPainter.layout(maxWidth: 200);
+      
+      const double ringRadius = 48; // pointRadius (40) + ringWidth (8)
+      const double padding = 50; // Space between ring and text
+      const double lineWidth = 3.5;
+      const double lineGap = 10; // Space between line and icon/text
+      
+      // Determine text position based on icon position relative to center
+      double textLeftX;
+      
+      if (position.dx < centerX) {
+        // Icon on left side - place text to the right (towards center)
+        textLeftX = position.dx + ringRadius + padding;
+      } else if (position.dx > centerX) {
+        // Icon on right side - place text to the left (towards center)
+        textLeftX = position.dx - ringRadius - padding - textPainter.width;
+      } else {
+        // Icon at center - center the text
+        textLeftX = position.dx - textPainter.width / 2;
+      }
+      
+      final textY = position.dy - textPainter.height / 2;
+      
+      // Draw connecting line
+      if (position.dx < centerX) {
+        // Icon on left side - line from ring to text start
+        final linePaint = Paint()
+          ..color = textColor
+          ..strokeWidth = lineWidth
+          ..style = PaintingStyle.stroke;
+        
+        canvas.drawLine(
+          Offset(position.dx + ringRadius + lineGap, position.dy),
+          Offset(textLeftX - lineGap, position.dy),
+          linePaint,
+        );
+      } else if (position.dx > centerX) {
+        // Icon on right side - line from ring to text end
+        final linePaint = Paint()
+          ..color = textColor
+          ..strokeWidth = lineWidth
+          ..style = PaintingStyle.stroke;
+        
+        canvas.drawLine(
+          Offset(position.dx - ringRadius - lineGap, position.dy),
+          Offset(textLeftX + textPainter.width + lineGap, position.dy),
+          linePaint,
+        );
+      }
+      
+      textPainter.paint(
+        canvas,
+        Offset(textLeftX, textY),
+      );
+    }
+  }
+
+  void _drawStartEndLabel(
+    Canvas canvas,
+    Offset position,
+    String label,
+    Color color,
+    bool isAbove,
+  ) {
+    final textPainter = TextPainter(
+      text: TextSpan(
+        text: label,
+        style: TextStyle(
+          color: color,
+          fontSize: 28,
+          fontWeight: FontWeight.w600,
+          height: 1.0,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    );
+    textPainter.layout();
+    
+    const double ringRadius = 48; // pointRadius (40) + ringWidth (8)
+    const double padding = 15; // Space between ring and label
+    
+    // Position label above or below the icon
+    final labelY = isAbove 
+        ? position.dy - ringRadius - padding - textPainter.height
+        : position.dy + ringRadius + padding;
+    
+    final labelX = position.dx - textPainter.width / 2;
+    
+    textPainter.paint(
+      canvas,
+      Offset(labelX, labelY),
     );
   }
 
