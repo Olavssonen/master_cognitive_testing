@@ -5,6 +5,7 @@ import 'package:flutter_master_app/theme/app_theme.dart';
 import 'package:flutter_master_app/screens/settings_screen.dart';
 import 'dart:math';
 import 'dart:async';
+import 'dart:io';
 
 class Particle {
   late Offset position;
@@ -301,7 +302,7 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
                                       ),
                                       TextButton(
                                         onPressed: () {
-                                          Navigator.pop(context);
+                                          exit(0);
                                         },
                                         child: const Text('Avslutt', style: TextStyle(color: AppColors.errorRed)),
                                       ),
