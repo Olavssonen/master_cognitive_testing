@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_master_app/widgets/test_shell.dart';
 import 'package:flutter_master_app/widgets/stroop_helpers.dart';
+import 'package:flutter_master_app/widgets/round_info_screen.dart';
 import 'package:flutter_master_app/theme/app_theme.dart';
 import 'package:flutter_master_app/widgets/bottom_button_bar.dart';
 
@@ -30,12 +31,7 @@ class _StroopTutorialState extends State<StroopTutorial>
   Color? feedbackColor;
   late AnimationController _feedbackController;
   late AnimationController _wordTransitionController;
-  late AnimationController _secondLetterAnimationController;
   bool _isProcessing = false;
-  
-  // Button position tracking
-  late List<GlobalKey> buttonKeys = List.generate(4, (_) => GlobalKey());
-  List<Offset> buttonPositions = [];
 
   @override
   void initState() {
@@ -48,44 +44,14 @@ class _StroopTutorialState extends State<StroopTutorial>
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
-    _secondLetterAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 2800),
-      vsync: this,
-    );
     _wordTransitionController.forward(); // Prime it so first word shows
-    _secondLetterAnimationController.repeat(); // Continuous loop for second letter animation
     _initializeStage();
-    
-    // Get button positions after first frame
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _updateButtonPositions();
-    });
-  }
-  
-  void _updateButtonPositions() {
-    final positions = <Offset>[];
-    for (final key in buttonKeys) {
-      final context = key.currentContext;
-      if (context != null) {
-        final box = context.findRenderObject() as RenderBox?;
-        if (box != null) {
-          // Get button center position
-          positions.add(box.localToGlobal(Offset(box.size.width / 2, box.size.height / 2)));
-        }
-      }
-    }
-    if (positions.length == 4) {
-      setState(() {
-        buttonPositions = positions;
-      });
-    }
   }
 
   @override
   void dispose() {
     _feedbackController.dispose();
     _wordTransitionController.dispose();
-    _secondLetterAnimationController.dispose();
     super.dispose();
   }
 
@@ -201,9 +167,7 @@ class _StroopTutorialState extends State<StroopTutorial>
             stage++;
             _initializeStage();
             _wordTransitionController.reset();
-            _secondLetterAnimationController.stop();
             _wordTransitionController.forward();
-            _secondLetterAnimationController.repeat();
             feedbackLetter = null;
             feedbackColor = null;
             _isProcessing = false;
@@ -215,9 +179,7 @@ class _StroopTutorialState extends State<StroopTutorial>
         } else {
           currentItemIndex++;  // Update item FIRST, before animation
           _wordTransitionController.reset();
-          _secondLetterAnimationController.stop();
           _wordTransitionController.forward();
-          _secondLetterAnimationController.repeat();
           _isProcessing = false;
         }
       });
@@ -232,9 +194,7 @@ class _StroopTutorialState extends State<StroopTutorial>
       // Wrong answer - show feedback but don't progress
       setState(() {
         _wordTransitionController.reset();
-        _secondLetterAnimationController.stop();
         _wordTransitionController.forward();
-        _secondLetterAnimationController.repeat();
         _isProcessing = false;
       });
       
@@ -252,41 +212,17 @@ class _StroopTutorialState extends State<StroopTutorial>
     // Show introduction screen first
     if (showIntroduction) {
       return TestShell(
-        child: Column(
-          mainAxisSize: MainAxisSize.max,
-          children: [
-            Expanded(
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Stroop Fargetest',
-                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                    ),
-                    const SizedBox(height: 20),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                      child: Text(
-                        'Se på fargen på teksten, ikke ordet som er skrevet.',
-                        style: Theme.of(context).textTheme.bodyLarge,
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+        child: RoundInfoScreen(
+          title: 'Runde 1',
+          subtitle: 'Se på fargen, ikke ordet',
+          bottomContent: BottomButtonBar(
+            primaryButton: BottomButton(
+              label: 'Start',
+              icon: Icons.play_arrow,
+              onPressed: () => setState(() => showIntroduction = false),
             ),
-            BottomButtonBar(
-              primaryButton: BottomButton(
-                label: 'Start veiledning',
-                onPressed: () => setState(() => showIntroduction = false),
-              ),
-              onAbort: widget.onAbort ?? () => Navigator.pop(context),
-            ),
-          ],
+            onAbort: widget.onAbort ?? () => Navigator.pop(context),
+          ),
         ),
       );
     }
@@ -310,9 +246,7 @@ class _StroopTutorialState extends State<StroopTutorial>
                     stage++;
                     _initializeStage();
                     _wordTransitionController.reset();
-                    _secondLetterAnimationController.stop();
                     _wordTransitionController.forward();
-                    _secondLetterAnimationController.repeat();
                   } else {
                     widget.onComplete();
                   }
@@ -341,25 +275,18 @@ class _StroopTutorialState extends State<StroopTutorial>
             color: currentItem.textColor,
           ),
           animationController: _wordTransitionController,
-          secondLetterAnimationController: _secondLetterAnimationController,
-          correctLetter: currentItem.correctLetter,
-          buttonPositions: buttonPositions,
-          stage: stage,
         ),
         buttons: [
           for (int i = 0; i < colorLetters.length; i++)
-            Container(
-              key: buttonKeys[i],
-              child: FeedbackStroopButton(
-                letter: colorLetters[i],
-                backgroundColor: stage >= 1 ? AppColors.grey700 : colors[i],
-                label: stage <= 1 ? colorNames[i] : null,
-                size: StroopLayout.unifiedButtonSize,
-                onPressed: () => _onButtonPressed(colorLetters[i]),
-                feedbackController: _feedbackController,
-                feedbackLetter: feedbackLetter,
-                feedbackColor: feedbackColor,
-              ),
+            FeedbackStroopButton(
+              letter: colorLetters[i],
+              backgroundColor: stage >= 1 ? AppColors.grey700 : colors[i],
+              label: stage <= 1 ? colorNames[i] : null,
+              size: StroopLayout.unifiedButtonSize,
+              onPressed: () => _onButtonPressed(colorLetters[i]),
+              feedbackController: _feedbackController,
+              feedbackLetter: feedbackLetter,
+              feedbackColor: feedbackColor,
             ),
         ],
         onAbort: widget.onAbort,
