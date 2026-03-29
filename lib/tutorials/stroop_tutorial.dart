@@ -197,6 +197,7 @@ class _StroopTutorialState extends State<StroopTutorial>
               onPressed: () => setState(() => showIntroduction = false),
             ),
             onAbort: widget.onAbort ?? () => Navigator.pop(context),
+            colorSet: BottomBarColorSet.secondary,
           ),
         ),
       );

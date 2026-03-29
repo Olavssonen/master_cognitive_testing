@@ -136,11 +136,13 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
           BottomButton(
             label: 'Tilbake',
             onPressed: () => ref.read(sessionProvider.notifier).returnToMenu(),
+            icon: Icons.arrow_back,
           ),
           BottomButton(
             label: 'Start',
             onPressed: () => ref.read(sessionProvider.notifier).start(plan),
             enabled: plan.isNotEmpty,
+            icon: Icons.play_arrow,
           ),
         ],
         showAbortButton: false,

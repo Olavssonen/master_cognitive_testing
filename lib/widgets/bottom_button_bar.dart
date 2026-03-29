@@ -320,14 +320,23 @@ class BottomButtonBar extends ConsumerWidget {
     Widget buttonContent = button.icon != null
         ? Row(
             mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                button.label,
-                style: TextStyle(fontSize: fontSize, fontWeight: FontWeight.w600),
-              ),
-              const SizedBox(width: 8),
-              Icon(button.icon, size: 24),
-            ],
+            children: button.label == 'Tilbake'
+                ? [
+                    Icon(button.icon, size: 24),
+                    const SizedBox(width: 8),
+                    Text(
+                      button.label,
+                      style: TextStyle(fontSize: fontSize, fontWeight: FontWeight.w600),
+                    ),
+                  ]
+                : [
+                    Text(
+                      button.label,
+                      style: TextStyle(fontSize: fontSize, fontWeight: FontWeight.w600),
+                    ),
+                    const SizedBox(width: 8),
+                    Icon(button.icon, size: 24),
+                  ],
           )
         : Text(
             button.label,

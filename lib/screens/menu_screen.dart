@@ -15,6 +15,7 @@ class Particle {
   late double size;
   final double lifetime;
   final double maxDistance;
+  final Color color;
 
   Particle({
     required Offset startPosition,
@@ -26,6 +27,7 @@ class Particle {
     required double maxSize,
     this.maxDistance = 150,
     required double outwardAngle, // Angle pointing away from center
+    required this.color,
   }) : lifetime = minLifetime + Random().nextDouble() * (maxLifetime - minLifetime) {
     position = startPosition;
     // Add some randomness around the outward direction (±45 degrees)
@@ -55,11 +57,10 @@ class ParticlePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = AppColors.platinum
       ..style = PaintingStyle.fill;
 
     for (var particle in particles) {
-      paint.color = AppColors.platinum.withValues(alpha: particle.opacity);
+      paint.color = particle.color.withValues(alpha: particle.opacity);
       canvas.drawCircle(particle.position, particle.size, paint);
     }
   }
@@ -145,6 +146,8 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
         // Spawn new particles every frame
         if (Random().nextDouble() < 0.3) {
           final spawnData = getRandomEdgeSpawnPoint(particleCenter!);
+          // Alternate between primary and secondary based on particle count
+          final isPrimary = particles.length % 2 == 0;
           particles.add(Particle(
             startPosition: spawnData['point'],
             outwardAngle: spawnData['angle'],
@@ -154,6 +157,9 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
             maxSpeed: 80,
             minSize: 3,
             maxSize: 10,
+            color: isPrimary 
+              ? Theme.of(context).colorScheme.primary
+              : Theme.of(context).colorScheme.secondary,
           ));
         }
 
@@ -175,7 +181,7 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.crayolaBlue,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: SafeArea(
         child: Center(
           child: Padding(
@@ -204,12 +210,12 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
                                   painter: ParticlePainter(particles),
                                   size: Size(constraints.maxWidth, 200),
                                 ),
-                                const Text(
-                                  'Krister Tester \nKognitive Evner',
+                                Text(
+                                  'Hjerneflyt',
                                   style: TextStyle(
-                                    fontSize: 72,
+                                    fontSize: 120,
                                     fontWeight: FontWeight.w900,
-                                    color: AppColors.platinum,
+                                    color: Theme.of(context).colorScheme.secondary,
                                     height: 1.2,
                                   ),
                                   textAlign: TextAlign.center,
@@ -236,14 +242,14 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
                       height: 75,
                       child: FilledButton(
                         style: FilledButton.styleFrom(
-                          backgroundColor: AppColors.platinum,
-                          foregroundColor: AppColors.crayolaBlue,
+                          backgroundColor: Theme.of(context).colorScheme.secondary,
+                          foregroundColor: Theme.of(context).colorScheme.onSecondary,
                         ),
                         onPressed: () {
                           ref.read(sessionProvider.notifier).enterLibrary();
                         },
                         child: const Text(
-                          'Start Test',
+                          'Spill',
                           style: TextStyle(fontSize: 34, fontWeight: FontWeight.w600),
                         ),
                       ),
@@ -262,8 +268,8 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
                             height: 50,
                             child: FilledButton(
                               style: FilledButton.styleFrom(
-                                backgroundColor: AppColors.platinum,
-                                foregroundColor: AppColors.crayolaBlue,
+                                backgroundColor: Theme.of(context).colorScheme.primary,
+                                foregroundColor: Theme.of(context).colorScheme.onSecondary,
                               ),
                               onPressed: () {
                                 Navigator.push(
@@ -287,8 +293,8 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
                             height: 50,
                             child: FilledButton(
                               style: FilledButton.styleFrom(
-                                backgroundColor: AppColors.platinum,
-                                foregroundColor: AppColors.crayolaBlue,
+                                backgroundColor: Theme.of(context).colorScheme.primary,
+                                foregroundColor: Theme.of(context).colorScheme.onSecondary,
                               ),
                               onPressed: () {
                                 showDialog(

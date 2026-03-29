@@ -75,9 +75,9 @@ class _TransitionScreenState extends ConsumerState<TransitionScreen> {
           // Bottom button bar
           BottomButtonBar(
             primaryButton: BottomButton(
-              label: 'Fortsett',
+              label: 'Start',
               onPressed: () => ref.read(sessionProvider.notifier).continueAfterTransition(),
-              icon: Icons.arrow_forward,
+              icon: Icons.play_arrow,
             ),
             colorSet: _animationsComplete 
               ? BottomBarColorSet.secondary 
