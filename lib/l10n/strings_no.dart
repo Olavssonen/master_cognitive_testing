@@ -30,7 +30,7 @@ class NorwegianStrings extends AppStrings {
   String get summary => 'Sesjonopsummering';
 
   @override
-  String get language => 'SprÃ¥k';
+  String get language => 'Språk';
 
   @override
   String get debug => 'Debug';
@@ -90,7 +90,7 @@ class NorwegianStrings extends AppStrings {
   String get clockInstruction => 'Lag en klokke';
 
   @override
-  String get lookAtColorNotWord => 'Se pÃ¥ fargen, ikke ordet';
+  String get lookAtColorNotWord => 'Se på fargen, ikke ordet';
 
   @override
   String get clockDrawPosition => 'Dra tallene til riktig posisjon';
@@ -99,7 +99,7 @@ class NorwegianStrings extends AppStrings {
   String get clockHandInstruction => 'Still klokken til 10 over 11';
 
   @override
-  String get clockGoalTime => 'MÃ¥l';
+  String get clockGoalTime => 'Mål';
 
   @override
   String get numbersCircles => 'Talltest';

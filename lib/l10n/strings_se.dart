@@ -18,25 +18,25 @@ class SwedishStrings extends AppStrings {
   String get back => 'Tillbaka';
 
   @override
-  String get confirm => 'BekrÃ¤fta';
+  String get confirm => 'Bekräfta';
 
   @override
-  String get settings => 'InstÃ¤llningar';
+  String get settings => 'Inställningar';
 
   @override
-  String get selectTests => 'VÃ¤lj Tester';
+  String get selectTests => 'Välj Tester';
 
   @override
   String get summary => 'Sessionssammanfattning';
 
   @override
-  String get language => 'SprÃ¥k';
+  String get language => 'Språk';
 
   @override
-  String get debug => 'FelsÃ¶kning';
+  String get debug => 'Felsökning';
 
   @override
-  String get points => 'PoÃ¤ng';
+  String get points => 'Poäng';
 
   @override
   String get start => 'Starta';
@@ -51,16 +51,16 @@ class SwedishStrings extends AppStrings {
   String get clear => 'Rensa';
 
   @override
-  String get next => 'NÃ¤sta';
+  String get next => 'Nästa';
 
   @override
-  String get beginTest => 'BÃ¶rja Test';
+  String get beginTest => 'Börja Test';
 
   @override
-  String get skip => 'Hoppa Ã¶ver';
+  String get skip => 'Hoppa över';
 
   @override
-  String get counterTest => 'RÃ¤knare';
+  String get counterTest => 'Räknare';
 
   @override
   String get tap10Test => 'Tryck 10';
@@ -75,31 +75,31 @@ class SwedishStrings extends AppStrings {
   String get stroopTest => 'Stroop';
 
   @override
-  String get round1 => 'OmgÃ¥ng 1';
+  String get round1 => 'Omgång 1';
 
   @override
-  String get round2 => 'OmgÃ¥ng 2';
+  String get round2 => 'Omgång 2';
 
   @override
-  String get round3 => 'OmgÃ¥ng 3';
+  String get round3 => 'Omgång 3';
 
   @override
-  String get round4 => 'OmgÃ¥ng 4';
+  String get round4 => 'Omgång 4';
 
   @override
   String get clockInstruction => 'Skapa en klocka';
 
   @override
-  String get lookAtColorNotWord => 'Titta pÃ¥ fÃ¤rgen, inte ordet';
+  String get lookAtColorNotWord => 'Titta på färgen, inte ordet';
 
   @override
   String get clockDrawPosition => 'Placera siffror i korrekt position';
 
   @override
-  String get clockHandInstruction => 'StÃ¤ll klockan till 11:10';
+  String get clockHandInstruction => 'Ställ klockan till 11:10';
 
   @override
-  String get clockGoalTime => 'MÃ¥l';
+  String get clockGoalTime => 'Mål';
 
   @override
   String get numbersCircles => 'Siffrortest';
@@ -117,13 +117,13 @@ class SwedishStrings extends AppStrings {
   String get mixed => 'Blandat';
 
   @override
-  String get testComplete => 'Test SlutfÃ¶rt';
+  String get testComplete => 'Test Slutfört';
 
   @override
-  String get testsCompleted => 'Tester SlutfÃ¶rda';
+  String get testsCompleted => 'Tester Slutförda';
 
   @override
-  String get correct => 'RÃ¤tt';
+  String get correct => 'Rätt';
 
   @override
   String get wrong => 'Fel';
@@ -141,16 +141,16 @@ class SwedishStrings extends AppStrings {
   String get completed => 'SlutfÃ¶rt';
 
   @override
-  String get incomplete => 'OfullstÃ¤ndigt';
+  String get incomplete => 'Ofullständigt';
 
   @override
   String get memory => 'Minne';
 
   @override
-  String get rememberWords => 'Kom ihÃ¥g orden';
+  String get rememberWords => 'Kom ihåg orden';
 
   @override
-  String get repeatWords => 'Upprepa de ord du ska komma ihÃ¥g';
+  String get repeatWords => 'Upprepa de ord du ska komma ihåg';
 
   @override
   String get clockInstruction2 => "placera siffror i korrekt position";
@@ -159,13 +159,13 @@ class SwedishStrings extends AppStrings {
   String get howToPlay => 'Hur Man Spelar';
 
   @override
-  String get counterTutorialDesc => 'Tryck pÃ¥ "+"-knappen sÃ¥ mÃ¥nga gÃ¥nger du kan. Det hÃ¤r testet mÃ¤ter din tryckhastighet och koordination.';
+  String get counterTutorialDesc => 'Tryck på "+"-knappen så många gånger du kan. Det här testet mäter din tryckhastighet och koordination.';
 
   @override
-  String get tap10TutorialDesc => 'Tryck pÃ¥ knappen 10 gÃ¥nger sÃ¥ fort du kan. Det hÃ¤r testet mÃ¤ter din fingerkraft och kontroll.';
+  String get tap10TutorialDesc => 'Tryck på knappen 10 gånger så fort du kan. Det här testet mäter din fingerkraft och kontroll.';
 
   @override
-  String get currentCount => 'Aktuell rÃ¤kning';
+  String get currentCount => 'Aktuell räkning';
 
   @override
   String get tapsLabel => 'tryckningar';
@@ -174,28 +174,28 @@ class SwedishStrings extends AppStrings {
   String get tapsRemaining => 'Tryck';
 
   @override
-  String get tutorialComplete => 'SjÃ¤lvstudie SlutfÃ¶rd!';
+  String get tutorialComplete => 'Självstudier Slutförd!';
 
   @override
-  String get readyToContinue => 'Tryck pÃ¥ knappen ovan fÃ¶r att Ã¶ka rÃ¤knaren.\nNÃ¤r du Ã¤r redo, klicka pÃ¥ "NÃ¤sta".';
+  String get readyToContinue => 'Tryck på knappen ovan för att öka räknaren.\nNär du är redo, klicka på "Nästa".';
 
   @override
-  String get retry => 'FÃ¶rsÃ¶k Igen';
+  String get retry => 'Försök Igen';
 
   @override
-  String get great => 'UtmÃ¤rkt! FortsÃ¤tter...';
+  String get great => 'Utmärkt! Fortsätter...';
 
   @override
   String get gotIt => 'Du klarade det!';
 
   @override
-  String get continueTutorial => 'FortsÃ¤tt';
+  String get continueTutorial => 'Fortsätt';
 
   @override
-  String get tap10TapsToGo => 'fler tryckningar fÃ¶r att slutfÃ¶ra sjÃ¤lvstudien';
+  String get tap10TapsToGo => 'fler tryckningar för att slutföra självstudien';
 
   @override
-  String get correctLabel => 'RÃ¤tt';
+  String get correctLabel => 'Rätt';
 
   @override
   String get wrongLabel => 'Fel';
