@@ -59,6 +59,9 @@ class _Tap10TestScreenState extends State<Tap10TestScreen> {
               enabled: done,
               icon: Icons.check_circle,
             ),
+            colorSet: done 
+              ? BottomBarColorSet.secondary 
+              : BottomBarColorSet.primary,
             onAbort: () => widget.run.abort('User aborted'),
             onSkip: () {
               widget.run.complete(

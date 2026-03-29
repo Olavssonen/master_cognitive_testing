@@ -8,6 +8,9 @@ class SessionPathWidget extends StatefulWidget {
   final int totalTests;
   final List<TestDefinition> testRegistry;
   final List<String> testPlan;
+  
+  /// Callback when animations complete
+  final VoidCallback? onAnimationsComplete;
 
   const SessionPathWidget({
     super.key,
@@ -15,6 +18,7 @@ class SessionPathWidget extends StatefulWidget {
     required this.totalTests,
     required this.testRegistry,
     required this.testPlan,
+    this.onAnimationsComplete,
   });
 
   @override
@@ -25,6 +29,7 @@ class _SessionPathWidgetState extends State<SessionPathWidget>
     with TickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _animation;
+  bool _animationReachedSecondary = false;
 
   @override
   void initState() {
@@ -35,6 +40,14 @@ class _SessionPathWidgetState extends State<SessionPathWidget>
     );
     _animation = Tween<double>(begin: 0, end: 1).animate(_animationController);
 
+    // Add listener to call callback when animation reaches 0.9 (when icons turn secondary)
+    _animation.addListener(() {
+      if (_animation.value >= 0.90 && !_animationReachedSecondary) {
+        _animationReachedSecondary = true;
+        widget.onAnimationsComplete?.call();
+      }
+    });
+
     // Start animation on initial load
     _animationController.forward();
   }
@@ -44,6 +57,7 @@ class _SessionPathWidgetState extends State<SessionPathWidget>
     super.didUpdateWidget(oldWidget);
     // If currentIndex changed, trigger new animation
     if (oldWidget.currentIndex != widget.currentIndex) {
+      _animationReachedSecondary = false;
       _animationController.forward(from: 0);
     }
   }

@@ -6,11 +6,39 @@ import 'package:flutter_master_app/widgets/session_path_widget.dart';
 import 'package:flutter_master_app/providers/test_providers.dart';
 import 'package:flutter_master_app/widgets/bottom_button_bar.dart';
 
-class TransitionScreen extends ConsumerWidget {
+class TransitionScreen extends ConsumerStatefulWidget {
   const TransitionScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<TransitionScreen> createState() => _TransitionScreenState();
+}
+
+class _TransitionScreenState extends ConsumerState<TransitionScreen> {
+  bool _animationsComplete = false;
+  late SessionTransition _lastSession;
+
+  @override
+  void initState() {
+    super.initState();
+    _lastSession = ref.read(sessionProvider) as SessionTransition;
+  }
+
+  @override
+  void didUpdateWidget(TransitionScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Check if session changed - if so, reset animations flag
+    final currentSession = ref.read(sessionProvider) as SessionTransition;
+    if (_lastSession.toIndex != currentSession.toIndex || 
+        _lastSession.fromIndex != currentSession.fromIndex) {
+      setState(() {
+        _animationsComplete = false;
+        _lastSession = currentSession;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final s = ref.watch(sessionProvider) as SessionTransition;
     final registry = ref.watch(testRegistryProvider);
     final isInitial = s.fromIndex == -1;
@@ -37,6 +65,11 @@ class TransitionScreen extends ConsumerWidget {
               totalTests: s.plan.length,
               testRegistry: registry,
               testPlan: s.plan,
+              onAnimationsComplete: () {
+                setState(() {
+                  _animationsComplete = true;
+                });
+              },
             ),
           ),
           // Bottom button bar
@@ -46,6 +79,9 @@ class TransitionScreen extends ConsumerWidget {
               onPressed: () => ref.read(sessionProvider.notifier).continueAfterTransition(),
               icon: Icons.arrow_forward,
             ),
+            colorSet: _animationsComplete 
+              ? BottomBarColorSet.secondary 
+              : BottomBarColorSet.primary,
             debugMode: false,
           ),
         ],

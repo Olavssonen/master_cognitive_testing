@@ -57,6 +57,9 @@ class _CounterTestScreenState extends State<CounterTestScreen> {
               type: BottomButtonType.filled,
               icon: Icons.check_circle,
             ),
+            colorSet: counter > 0 
+              ? BottomBarColorSet.secondary 
+              : BottomBarColorSet.primary,
             onAbort: () => widget.run.abort('User aborted'),
             showAbortButton: false, // Set to true to show in normal layout, or use debugMode: true
             // debugMode: true, // Uncomment to show abort button in bottom-right corner

@@ -568,7 +568,7 @@ class _TMTTest extends ConsumerState<TMTTest> {
                 icon: Icons.clear,
               ),
               BottomButton(
-                label: 'Fullfør',
+                label: 'Ferdig',
                 onPressed: () {
                   if (testComplete) {
                     _captureDrawingArea().then((_) {
@@ -595,6 +595,9 @@ class _TMTTest extends ConsumerState<TMTTest> {
                 icon: Icons.check_circle,
               ),
             ],
+            colorSet: testComplete 
+              ? BottomBarColorSet.secondary 
+              : BottomBarColorSet.primary,
             onAbort: () => widget.run.abort('User aborted'),
             useRow: true,
             onSkip: () {

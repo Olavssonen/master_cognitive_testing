@@ -324,6 +324,9 @@ class _TMTTutorialState extends State<TMTTutorial> with TickerProviderStateMixin
                 icon: Icons.check_circle,
               ),
             ],
+            colorSet: tutorialComplete 
+              ? BottomBarColorSet.secondary 
+              : BottomBarColorSet.primary,
             onAbort: widget.onAbort,
             useRow: true,
           ),

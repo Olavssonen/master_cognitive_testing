@@ -3,6 +3,42 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_master_app/theme/app_theme.dart';
 import 'package:flutter_master_app/providers/test_providers.dart';
 
+/// Color palette for the bottom button bar
+/// Defines all colors used for buttons and background
+class BottomBarColorSet {
+  final Color primaryButton;
+  final Color primaryButtonText;
+  final Color primaryButtonDisabled;
+  final Color primaryButtonDisabledText;
+  final Color backgroundColor;
+
+  const BottomBarColorSet({
+    required this.primaryButton,
+    required this.primaryButtonText,
+    required this.primaryButtonDisabled,
+    required this.primaryButtonDisabledText,
+    required this.backgroundColor,
+  });
+
+  /// Primary color set - uses crayolaBlue for active state
+  static const BottomBarColorSet primary = BottomBarColorSet(
+    primaryButton: AppColors.crayolaBlue,
+    primaryButtonText: AppColors.white,
+    primaryButtonDisabled: AppColors.crayolaBlue, // Will be adjusted with alpha in code
+    primaryButtonDisabledText: AppColors.white, // Will be adjusted with alpha in code
+    backgroundColor: AppColors.crayolaBlue, // Will be adjusted with alpha in code
+  );
+
+  /// Secondary color set - uses tropicalTeal for completed/awaiting state
+  static const BottomBarColorSet secondary = BottomBarColorSet(
+    primaryButton: AppColors.tropicalTeal,
+    primaryButtonText: AppColors.white,
+    primaryButtonDisabled: AppColors.tropicalTeal, // Will be adjusted with alpha in code
+    primaryButtonDisabledText: AppColors.white, // Will be adjusted with alpha in code
+    backgroundColor: AppColors.tropicalTeal, // Will be adjusted with alpha in code
+  );
+}
+
 /// Represents a single bottom button configuration
 class BottomButton {
   final String label;
@@ -119,6 +155,12 @@ class BottomButtonBar extends ConsumerWidget {
   /// Expands dynamically if text is longer than minimum width
   final double minButtonWidth;
 
+  /// Color set for the button bar
+  /// Defines the primary button color, text color, and background color
+  /// Use BottomBarColorSet.primary for default blue theme
+  /// Use BottomBarColorSet.secondary for teal theme (indicates completion/awaiting)
+  final BottomBarColorSet colorSet;
+
   const BottomButtonBar({
     super.key,
     this.primaryButton,
@@ -135,6 +177,7 @@ class BottomButtonBar extends ConsumerWidget {
     this.debugMode,
     this.barHeight = 150.0,
     this.minButtonWidth = 120.0,
+    this.colorSet = BottomBarColorSet.primary,
   });
 
   @override
@@ -153,7 +196,7 @@ class BottomButtonBar extends ConsumerWidget {
     final mainContent = Container(
       width: double.infinity,
       height: barHeight,
-      color: AppColors.crayolaBlue.withAlpha((255 * 0.5).toInt()),
+      color: colorSet.backgroundColor.withAlpha((255 * 0.5).toInt()),
       child: Center(
         child: Padding(
           padding: padding,
@@ -297,10 +340,10 @@ class BottomButtonBar extends ConsumerWidget {
       case BottomButtonType.filled:
         buttonWidget = FilledButton(
           style: FilledButton.styleFrom(
-            backgroundColor: AppColors.crayolaBlue,
-            foregroundColor: AppColors.white,
-            disabledBackgroundColor: AppColors.crayolaBlue.withValues(alpha: 0.4),
-            disabledForegroundColor: AppColors.white.withValues(alpha: 0.6),
+            backgroundColor: colorSet.primaryButton,
+            foregroundColor: colorSet.primaryButtonText,
+            disabledBackgroundColor: colorSet.primaryButtonDisabled.withValues(alpha: 0.4),
+            disabledForegroundColor: colorSet.primaryButtonDisabledText.withValues(alpha: 0.6),
           ),
           onPressed: button.enabled ? button.onPressed : null,
           child: buttonContent,
@@ -309,11 +352,11 @@ class BottomButtonBar extends ConsumerWidget {
       case BottomButtonType.outlined:
         buttonWidget = OutlinedButton(
           style: OutlinedButton.styleFrom(
-            side: const BorderSide(color: AppColors.crayolaBlue, width: 2),
-            foregroundColor: AppColors.white,
-            backgroundColor: AppColors.crayolaBlue,
-            disabledBackgroundColor: AppColors.crayolaBlue.withValues(alpha: 0.4),
-            disabledForegroundColor: AppColors.white.withValues(alpha: 0.6),
+            side: BorderSide(color: colorSet.primaryButton, width: 2),
+            foregroundColor: colorSet.primaryButtonText,
+            backgroundColor: colorSet.primaryButton,
+            disabledBackgroundColor: colorSet.primaryButtonDisabled.withValues(alpha: 0.4),
+            disabledForegroundColor: colorSet.primaryButtonDisabledText.withValues(alpha: 0.6),
           ),
           onPressed: button.enabled ? button.onPressed : null,
           child: buttonContent,
