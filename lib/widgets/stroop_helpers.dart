@@ -30,7 +30,7 @@ class StroopLayout {
   );
   
   // Unified button size for both tutorial and test
-  static const double unifiedButtonSize = 100;
+  static const double unifiedButtonSize = 140;
 }
 
 class StroopLayoutConfig {
@@ -86,20 +86,23 @@ class StroopColorButton extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
-              letter,
-              style: TextStyle(
-                fontSize: size * 0.32,
-                fontWeight: FontWeight.bold,
-                color: AppColors.white,
+            if (label == null) ...[
+              // Show letter when no label (test mode)
+              Text(
+                letter,
+                style: TextStyle(
+                  fontSize: size * 0.32,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.white,
+                ),
               ),
-            ),
-            if (label != null) ...[
-              const SizedBox(height: 4),
+            ] else ...[
+              // Show label centered and larger (tutorial mode)
               Text(
                 label!,
                 style: TextStyle(
-                  fontSize: size * 0.15,
+                  fontSize: size * 0.19,
+                  fontWeight: FontWeight.bold,
                   color: AppColors.white,
                 ),
                 textAlign: TextAlign.center,

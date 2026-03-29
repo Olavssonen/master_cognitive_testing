@@ -61,81 +61,56 @@ class _StroopTutorialState extends State<StroopTutorial>
     correctAnswersInStage = 0;
   }
 
+  String? _getButtonLabel(int colorIndex) {
+    final colorNames = StroopColorConstants.colorNames;
+    final colorLetters = StroopColorConstants.colorLetters;
+    
+    if (stage == 0) {
+      // Stage 0: Full word with colored buttons - RØD, BLÅ, GRØNN, GUL
+      return colorNames[colorIndex];
+    } else if (stage == 1) {
+      // Stage 1: Full word with grey buttons - RØD, BLÅ, GRØNN, GUL
+      return colorNames[colorIndex];
+    } else if (stage == 2) {
+      // Stage 2: Without last letter(s) - RØ, BL, GR, GU
+      final abbreviations = ['RØ', 'BL', 'GR', 'GU'];
+      return abbreviations[colorIndex];
+    } else {
+      // Stage 3: Only first letter - Ø, L, R, U (return null to show letter)
+      return null;
+    }
+  }
+
   List<StroopItem> _generateTutorialItems() {
     final colors = StroopColorConstants.colors;
     final colorNames = StroopColorConstants.colorNames;
     final colorLetters = StroopColorConstants.colorLetters;
     final items = <StroopItem>[];
+    final random = Random();
 
-    if (stage == 0) {
-      // Stage 0: All colors in order, word matches color
-      for (int i = 0; i < 4; i++) {
-        items.add(
-          StroopItem(
-            textColor: colors[i],
-            displayWord: colorNames[i],
-            correctLetter: colorLetters[i],
-          ),
-        );
+    // All stages: Ensure each color appears exactly once with mismatched words
+    // This ensures user must press all 4 buttons per tutorial part
+    
+    // Shuffle colors to randomize the order they appear
+    final shuffledColorIndices = List<int>.generate(colors.length, (i) => i);
+    shuffledColorIndices.shuffle(random);
+    
+    for (int i = 0; i < 4; i++) {
+      final colorIndex = shuffledColorIndices[i];
+      
+      // Select a word that doesn't match the color
+      int wordIndex = random.nextInt(colorNames.length);
+      while (wordIndex == colorIndex) {
+        wordIndex = random.nextInt(colorNames.length);
       }
-    } else if (stage == 1) {
-      // Stage 1: Random mismatched items (like real test but with labels)
-      final random = Random();
-      int? previousColorIndex;
-      for (int i = 0; i < 4; i++) {
-        int textColorIndex = random.nextInt(colors.length);
-        
-        // Ensure correct answer doesn't repeat consecutively
-        while (textColorIndex == previousColorIndex) {
-          textColorIndex = random.nextInt(colors.length);
-        }
-        
-        int wordNameIndex = random.nextInt(colorNames.length);
-
-        // Ensure word doesn't match text color
-        while (wordNameIndex == textColorIndex) {
-          wordNameIndex = random.nextInt(colorNames.length);
-        }
-
-        items.add(
-          StroopItem(
-            textColor: colors[textColorIndex],
-            displayWord: colorNames[wordNameIndex],
-            correctLetter: colorLetters[textColorIndex],
-          ),
-        );
-        
-        previousColorIndex = textColorIndex;
-      }
-    } else {
-      // Stage 2: Random mismatched items (like real test)
-      final random = Random();
-      int? previousColorIndex;
-      for (int i = 0; i < 4; i++) {
-        int textColorIndex = random.nextInt(colors.length);
-        
-        // Ensure correct answer doesn't repeat consecutively
-        while (textColorIndex == previousColorIndex) {
-          textColorIndex = random.nextInt(colors.length);
-        }
-        
-        int wordNameIndex = random.nextInt(colorNames.length);
-
-        // Ensure word doesn't match text color
-        while (wordNameIndex == textColorIndex) {
-          wordNameIndex = random.nextInt(colorNames.length);
-        }
-
-        items.add(
-          StroopItem(
-            textColor: colors[textColorIndex],
-            displayWord: colorNames[wordNameIndex],
-            correctLetter: colorLetters[textColorIndex],
-          ),
-        );
-        
-        previousColorIndex = textColorIndex;
-      }
+      
+      items.add(
+        StroopItem(
+          textColor: colors[colorIndex],
+          displayWord: colorNames[wordIndex],
+          correctLetter: colorLetters[colorIndex],
+        ),
+      );
     }
 
     return items;
@@ -163,7 +138,7 @@ class _StroopTutorialState extends State<StroopTutorial>
         correctAnswersInStage++;
         if (correctAnswersInStage >= answersNeededPerStage) {
           // Progress to next stage
-          if (stage < 2) {
+          if (stage < 3) {
             stage++;
             _initializeStage();
             _wordTransitionController.reset();
@@ -234,7 +209,7 @@ class _StroopTutorialState extends State<StroopTutorial>
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                stage < 2 ? 'Bra! Går videre...' : 'Du skjønner det!',
+                stage < 3 ? 'Bra! Går videre...' : 'Du skjønner det!',
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -242,7 +217,7 @@ class _StroopTutorialState extends State<StroopTutorial>
               const SizedBox(height: 40),
               OutlinedButton(
                 onPressed: () => setState(() {
-                  if (stage < 2) {
+                  if (stage < 3) {
                     stage++;
                     _initializeStage();
                     _wordTransitionController.reset();
@@ -281,7 +256,7 @@ class _StroopTutorialState extends State<StroopTutorial>
             FeedbackStroopButton(
               letter: colorLetters[i],
               backgroundColor: stage >= 1 ? AppColors.grey700 : colors[i],
-              label: stage <= 1 ? colorNames[i] : null,
+              label: _getButtonLabel(i),
               size: StroopLayout.unifiedButtonSize,
               onPressed: () => _onButtonPressed(colorLetters[i]),
               feedbackController: _feedbackController,
