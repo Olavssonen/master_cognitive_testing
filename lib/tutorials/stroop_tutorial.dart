@@ -1,23 +1,25 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_master_app/widgets/test_shell.dart';
 import 'package:flutter_master_app/widgets/stroop_helpers.dart';
 import 'package:flutter_master_app/widgets/round_info_screen.dart';
 import 'package:flutter_master_app/theme/app_theme.dart';
 import 'package:flutter_master_app/widgets/bottom_button_bar.dart';
+import 'package:flutter_master_app/providers/language_provider.dart';
 
 /// Tutorial screen for Stroop Test
-class StroopTutorial extends StatefulWidget {
+class StroopTutorial extends ConsumerStatefulWidget {
   final VoidCallback onComplete;
   final VoidCallback? onAbort;
 
   const StroopTutorial({super.key, required this.onComplete, this.onAbort});
 
   @override
-  State<StroopTutorial> createState() => _StroopTutorialState();
+  ConsumerState<StroopTutorial> createState() => _StroopTutorialState();
 }
 
-class _StroopTutorialState extends State<StroopTutorial>
+class _StroopTutorialState extends ConsumerState<StroopTutorial>
     with TickerProviderStateMixin {
   int stage = 0;
   int correctAnswersInStage = 0;
@@ -188,11 +190,11 @@ class _StroopTutorialState extends State<StroopTutorial>
     if (showIntroduction) {
       return TestShell(
         child: RoundInfoScreen(
-          title: 'Runde 1',
-          subtitle: 'Se på fargen, ikke ordet',
+          title: ref.watch(appStringsProvider).round1,
+          bodyText: ref.watch(appStringsProvider).lookAtColorNotWord,
           bottomContent: BottomButtonBar(
             primaryButton: BottomButton(
-              label: 'Start',
+              label: ref.watch(appStringsProvider).start,
               icon: Icons.play_arrow,
               onPressed: () => setState(() => showIntroduction = false),
             ),
@@ -204,13 +206,14 @@ class _StroopTutorialState extends State<StroopTutorial>
     }
 
     if (currentItemIndex >= currentItems.length) {
+      final strings = ref.watch(appStringsProvider);
       return TestShell(
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                stage < 3 ? 'Bra! Går videre...' : 'Du skjønner det!',
+                stage < 3 ? strings.great : strings.gotIt,
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -227,7 +230,7 @@ class _StroopTutorialState extends State<StroopTutorial>
                     widget.onComplete();
                   }
                 }),
-                child: const Text('Fortsett'),
+                child: Text(strings.continueTutorial),
               ),
             ],
           ),

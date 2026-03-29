@@ -3,7 +3,27 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_master_app/models/test_definition.dart';
 import 'package:flutter_master_app/session/session_controller.dart';
 import 'package:flutter_master_app/theme/app_theme.dart';
+import 'package:flutter_master_app/l10n/strings.dart';
 import 'package:flutter_master_app/widgets/bottom_button_bar.dart';
+import 'package:flutter_master_app/providers/language_provider.dart';
+
+/// Helper function to get localized test title
+String getLocalizedTestTitle(String testId, AppStrings strings) {
+  switch (testId) {
+    case 'Counter Test':
+      return strings.counterTest;
+    case 'Trykk 10 Test':
+      return strings.tap10Test;
+    case 'Mini-Cog Test':
+      return strings.cogTest;
+    case 'Trail Making Test':
+      return strings.tmtTest;
+    case 'Stroop Test':
+      return strings.stroopTest;
+    default:
+      return testId;
+  }
+}
 
 class LibraryScreen extends ConsumerStatefulWidget {
   final List<TestDefinition> registry;
@@ -22,6 +42,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
         .where((t) => selectedIds.contains(t.id))
         .map((t) => t.id)
         .toList();
+    final strings = ref.watch(appStringsProvider);
 
     return Scaffold(
       body: Column(
@@ -30,7 +51,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
           Padding(
             padding: const EdgeInsets.all(16),
             child: Text(
-              'Velg oppgaver',
+              strings.selectTests,
               style: TextStyle(
                 fontSize: 48,
                 fontWeight: FontWeight.bold,
@@ -79,7 +100,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                           ),
                         ),
                         title: Text(
-                          t.title,
+                          getLocalizedTestTitle(t.id, strings),
                           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                                 color: selectedIds.contains(t.id)
                                     ? AppColors.white
@@ -134,12 +155,12 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       bottomNavigationBar: BottomButtonBar(
         actionButtons: [
           BottomButton(
-            label: 'Tilbake',
+            label: strings.back,
             onPressed: () => ref.read(sessionProvider.notifier).returnToMenu(),
             icon: Icons.arrow_back,
           ),
           BottomButton(
-            label: 'Start',
+            label: strings.start,
             onPressed: () => ref.read(sessionProvider.notifier).start(plan),
             enabled: plan.isNotEmpty,
             icon: Icons.play_arrow,

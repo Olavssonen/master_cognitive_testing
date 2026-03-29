@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_master_app/models/test_definition.dart';
 import 'package:flutter_master_app/widgets/test_shell.dart';
-import 'package:flutter_master_app/theme/app_theme.dart';
 import 'package:flutter_master_app/widgets/bottom_button_bar.dart';
+import 'package:flutter_master_app/providers/language_provider.dart';
 
 final tap10Test = TestDefinition(
   id: 'Trykk 10 Test',
@@ -11,19 +12,20 @@ final tap10Test = TestDefinition(
   build: (context, run) => Tap10TestScreen(run: run),
 );
 
-class Tap10TestScreen extends StatefulWidget {
+class Tap10TestScreen extends ConsumerStatefulWidget {
   final TestRunContext run;
   const Tap10TestScreen({super.key, required this.run});
 
   @override
-  State<Tap10TestScreen> createState() => _Tap10TestScreenState();
+  ConsumerState<Tap10TestScreen> createState() => _Tap10TestScreenState();
 }
 
-class _Tap10TestScreenState extends State<Tap10TestScreen> {
+class _Tap10TestScreenState extends ConsumerState<Tap10TestScreen> {
   int taps = 0;
 
   @override
   Widget build(BuildContext context) {
+    final strings = ref.watch(appStringsProvider);
     final done = taps >= 10;
 
     return TestShell(
@@ -36,7 +38,7 @@ class _Tap10TestScreenState extends State<Tap10TestScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    'Trykk: $taps / 10',
+                    '${strings.taps}: $taps / 10',
                     style: Theme.of(context).textTheme.headlineMedium,
                   ),
                   const SizedBox(height: 16),
@@ -50,7 +52,7 @@ class _Tap10TestScreenState extends State<Tap10TestScreen> {
           ),
           BottomButtonBar(
             primaryButton: BottomButton(
-              label: 'Fullfør',
+              label: strings.done,
               onPressed: () {
                 widget.run.complete(
                   TestResult(testId: 'tap10', summary: {'taps': taps}),

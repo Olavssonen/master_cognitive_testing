@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_master_app/session/session_controller.dart';
 import 'package:flutter_master_app/theme/app_theme.dart';
 import 'package:flutter_master_app/screens/settings_screen.dart';
+import 'package:flutter_master_app/providers/language_provider.dart';
 import 'dart:math';
 import 'dart:async';
 import 'dart:io';
@@ -180,6 +181,8 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final strings = ref.watch(appStringsProvider);
+    
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       body: SafeArea(
@@ -211,7 +214,7 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
                                   size: Size(constraints.maxWidth, 200),
                                 ),
                                 Text(
-                                  'Hjerneflyt',
+                                  strings.appTitle,
                                   style: TextStyle(
                                     fontSize: 120,
                                     fontWeight: FontWeight.w900,
@@ -248,9 +251,9 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
                         onPressed: () {
                           ref.read(sessionProvider.notifier).enterLibrary();
                         },
-                        child: const Text(
-                          'Spill',
-                          style: TextStyle(fontSize: 34, fontWeight: FontWeight.w600),
+                        child: Text(
+                          strings.play,
+                          style: const TextStyle(fontSize: 34, fontWeight: FontWeight.w600),
                         ),
                       ),
                     ),
@@ -279,9 +282,9 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
                                   ),
                                 );
                               },
-                              child: const Text(
-                                'Innstillinger',
-                                style: TextStyle(fontSize: 16),
+                              child: Text(
+                                strings.settings,
+                                style: const TextStyle(fontSize: 16),
                               ),
                             ),
                           ),
@@ -300,24 +303,24 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
                                 showDialog(
                                   context: context,
                                   builder: (context) => AlertDialog(
-                                    title: const Text('Vil du avslutte?'),
+                                    title: Text(strings.exitConfirm),
                                     actions: [
                                       TextButton(
                                         onPressed: () => Navigator.pop(context),
-                                        child: const Text('Tilbake'),
+                                        child: Text(strings.back),
                                       ),
                                       TextButton(
                                         onPressed: () {
                                           exit(0);
                                         },
-                                        child: const Text('Avslutt', style: TextStyle(color: AppColors.errorRed)),
+                                        child: Text(strings.exit, style: const TextStyle(color: AppColors.errorRed)),
                                       ),
                                     ],
                                   ),
                                 );
                               },
-                              child: const Text(
-                                'Avslutt',
+                              child: Text(
+                                strings.exit,
                                 style: TextStyle(fontSize: 16),
                               ),
                             ),

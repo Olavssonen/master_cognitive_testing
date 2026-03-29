@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_master_app/theme/app_theme.dart';
 import 'package:flutter_master_app/providers/test_providers.dart';
+import 'package:flutter_master_app/providers/language_provider.dart';
 
 /// Color palette for the bottom button bar
 /// Defines all colors used for buttons and background
@@ -184,6 +185,8 @@ class BottomButtonBar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // Use provided debugMode or read from provider (only when needed)
     final bool effectiveDebugMode = debugMode ?? ref.watch(debugModeProvider);
+    final strings = ref.watch(appStringsProvider);
+    final effectiveAbortLabel = abortLabel == 'Avbryt' ? strings.cancel : abortLabel;
     
     final allButtons = _buildButtonList();
 
@@ -264,7 +267,35 @@ class BottomButtonBar extends ConsumerWidget {
       }
     }
 
+    // Build the final widget tree with abort button if needed
+    if (onAbort != null && showAbortButton) {
+      return Column(
+        children: [
+          mainContent,
+          _buildAbortButton(effectiveAbortLabel),
+        ],
+      );
+    }
+
     return mainContent;
+  }
+
+  /// Builds the abort button with red styling
+  /// Now accepts the translated label
+  Widget _buildAbortButton(String label, {String? tooltip}) {
+    return SizedBox(
+      height: buttonHeight,
+      child: TextButton(
+        onPressed: onAbort,
+        style: TextButton.styleFrom(
+          foregroundColor: AppColors.errorRed,
+        ),
+        child: Text(
+          label,
+          style: TextStyle(fontSize: fontSize, fontWeight: FontWeight.w600),
+        ),
+      ),
+    );
   }
 
   /// Builds the button list combining primaryButton and actionButtons
@@ -395,22 +426,6 @@ class BottomButtonBar extends ConsumerWidget {
     );
   }
 
-  /// Builds the abort button with red styling
-  Widget _buildAbortButton() {
-    return SizedBox(
-      height: buttonHeight,
-      child: TextButton(
-        onPressed: onAbort,
-        style: TextButton.styleFrom(
-          foregroundColor: AppColors.errorRed,
-        ),
-        child: Text(
-          abortLabel,
-          style: TextStyle(fontSize: fontSize, fontWeight: FontWeight.w600),
-        ),
-      ),
-    );
-  }
 }
 
 /// Convenience builders for common button bar patterns

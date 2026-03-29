@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_master_app/widgets/test_shell.dart';
 import 'package:flutter_master_app/theme/app_theme.dart';
 import 'package:flutter_master_app/widgets/bottom_button_bar.dart';
+import 'package:flutter_master_app/providers/language_provider.dart';
 
 /// Tutorial screen for Tap 10 Times Test
-class Tap10Tutorial extends StatefulWidget {
+class Tap10Tutorial extends ConsumerStatefulWidget {
   final VoidCallback onComplete;
   const Tap10Tutorial({super.key, required this.onComplete});
 
   @override
-  State<Tap10Tutorial> createState() => _Tap10TutorialState();
+  ConsumerState<Tap10Tutorial> createState() => _Tap10TutorialState();
 }
 
-class _Tap10TutorialState extends State<Tap10Tutorial> {
+class _Tap10TutorialState extends ConsumerState<Tap10Tutorial> {
   int taps = 0;
   final int maxTaps = 5; // Only need 5 taps to complete tutorial
   bool completed = false;
@@ -30,6 +32,7 @@ class _Tap10TutorialState extends State<Tap10Tutorial> {
 
   @override
   Widget build(BuildContext context) {
+    final strings = ref.watch(appStringsProvider);
     final progress = (taps / maxTaps * 100).toStringAsFixed(0);
 
     return Scaffold(
@@ -45,15 +48,14 @@ class _Tap10TutorialState extends State<Tap10Tutorial> {
                   child: Column(
                     children: [
                       Text(
-                        'Slik spiller du',
+                        strings.howToPlay,
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
                               fontWeight: FontWeight.bold,
                             ),
                       ),
                       const SizedBox(height: 12),
-                      const Text(
-                        'Trykk på knappen 10 ganger så raskt du kan. '
-                        'Denne testen måler fingerkraften og kontrollen din.',
+                      Text(
+                        strings.tap10TutorialDesc,
                         textAlign: TextAlign.center,
                       ),
                     ],
@@ -67,7 +69,7 @@ class _Tap10TutorialState extends State<Tap10Tutorial> {
               ),
               const SizedBox(height: 20),
               Text(
-                '$taps / $maxTaps trykk ($progress%)',
+                '$taps / $maxTaps ${strings.tapsLabel} ($progress%)',
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                       fontWeight: FontWeight.bold,
                       color: completed ? AppColors.accent : AppColors.grey800,
@@ -86,13 +88,13 @@ class _Tap10TutorialState extends State<Tap10Tutorial> {
               const SizedBox(height: 40),
               if (!completed)
                 Text(
-                  'Trykk ${maxTaps - taps} ganger til for å fullføre veiledningen.',
+                  '${strings.tapsRemaining} ${maxTaps - taps} ${strings.tapsLabel} ${strings.tap10TapsToGo}.',
                   style: Theme.of(context).textTheme.bodyMedium,
                   textAlign: TextAlign.center,
                 )
               else
                 Text(
-                  'Veiledning fullført!',
+                  strings.tutorialComplete,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                         color: AppColors.accent,
@@ -104,7 +106,7 @@ class _Tap10TutorialState extends State<Tap10Tutorial> {
       ),
       bottomNavigationBar: BottomButtonBar(
         primaryButton: BottomButton(
-          label: 'Fortsett',
+          label: strings.next,
           onPressed: completed ? widget.onComplete : () {},
           enabled: completed,
         ),

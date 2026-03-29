@@ -7,8 +7,10 @@ import 'package:flutter_master_app/widgets/stroop_helpers.dart';
 import 'package:flutter_master_app/widgets/bottom_button_bar.dart';
 import 'package:flutter_master_app/tutorials/stroop_tutorial.dart';
 import 'package:flutter_master_app/providers/test_providers.dart';
+import 'package:flutter_master_app/providers/language_provider.dart';
 import 'package:flutter_master_app/theme/app_theme.dart';
 
+// Quick ref.watch helper for tests
 final stroopTest = TestDefinition(
   id: 'Stroop Test',
   title: 'Farger',
@@ -84,7 +86,7 @@ class _StroopTestScreenState extends ConsumerState<StroopTestScreen> {
   }
 }
 
-class StroopTest extends StatefulWidget {
+class StroopTest extends ConsumerStatefulWidget {
   final TestRunContext run;
   final String stageName;
   final Function(dynamic, bool)? onTestResult;
@@ -99,10 +101,10 @@ class StroopTest extends StatefulWidget {
   });
 
   @override
-  State<StroopTest> createState() => _StroopTestState();
+  ConsumerState<StroopTest> createState() => _StroopTestState();
 }
 
-class _StroopTestState extends State<StroopTest> with TickerProviderStateMixin {
+class _StroopTestState extends ConsumerState<StroopTest> with TickerProviderStateMixin {
   final int numberOfWords = 20; // Configurable number of trials
   
   late List<StroopItem> stroopItems;
@@ -234,6 +236,7 @@ class _StroopTestState extends State<StroopTest> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    final strings = ref.watch(appStringsProvider);
     if (testComplete) {
       return TestShell(
         child: Column(
@@ -245,12 +248,12 @@ class _StroopTestState extends State<StroopTest> with TickerProviderStateMixin {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      'Test Complete!',
+                      strings.testComplete,
                       style: Theme.of(context).textTheme.headlineMedium,
                     ),
                     const SizedBox(height: 20),
                     Text(
-                      'Correct: $correctCount\nWrong: $wrongCount',
+                      '${strings.correctLabel}: $correctCount\n${strings.wrongLabel}: $wrongCount',
                       style: Theme.of(context).textTheme.bodyLarge,
                       textAlign: TextAlign.center,
                     ),
@@ -260,7 +263,7 @@ class _StroopTestState extends State<StroopTest> with TickerProviderStateMixin {
             ),
             BottomButtonBar(
               primaryButton: BottomButton(
-                label: 'Ferdig',
+                label: strings.done,
                 onPressed: _finishTest,
               ),
               onAbort: null,

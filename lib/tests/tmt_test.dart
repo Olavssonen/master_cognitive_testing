@@ -7,11 +7,11 @@ import 'dart:async';
 import 'dart:ui' as ui;
 import 'package:flutter_master_app/models/test_definition.dart';
 import 'package:flutter_master_app/widgets/test_shell.dart';
-import 'package:flutter_master_app/theme/app_theme.dart';
 import 'package:flutter_master_app/widgets/circles_painter.dart';
 import 'package:flutter_master_app/tutorials/tmt_tutorial.dart';
 import 'package:flutter_master_app/widgets/bottom_button_bar.dart';
 import 'package:flutter_master_app/providers/test_providers.dart';
+import 'package:flutter_master_app/providers/language_provider.dart';
 
 final tmtTest = TestDefinition(
   id: 'Trail Making Test',
@@ -562,13 +562,13 @@ class _TMTTest extends ConsumerState<TMTTest> {
           BottomButtonBar(
             actionButtons: [
               BottomButton(
-                label: 'Slett',
+                label: ref.watch(appStringsProvider).clear,
                 onPressed: _clearDrawing,
                 type: BottomButtonType.outlined,
                 icon: Icons.clear,
               ),
               BottomButton(
-                label: 'Ferdig',
+                label: ref.watch(appStringsProvider).done,
                 onPressed: () {
                   if (testComplete) {
                     _captureDrawingArea().then((_) {

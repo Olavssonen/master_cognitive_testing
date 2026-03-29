@@ -5,7 +5,8 @@ import 'package:flutter_master_app/session/session_state.dart';
 import 'package:flutter_master_app/models/test_definition.dart';
 import 'package:flutter_master_app/models/test_result_formatter.dart';
 import 'package:flutter_master_app/widgets/bottom_button_bar.dart';
-import 'package:flutter_master_app/theme/app_theme.dart';
+import 'package:flutter_master_app/providers/language_provider.dart';
+import 'package:flutter_master_app/l10n/strings.dart';
 
 class SummaryScreen extends ConsumerWidget {
   const SummaryScreen({super.key});
@@ -13,6 +14,7 @@ class SummaryScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final s = ref.watch(sessionProvider) as SessionDone;
+    final strings = ref.watch(appStringsProvider);
 
     return Scaffold(
       body: Column(
@@ -23,7 +25,7 @@ class SummaryScreen extends ConsumerWidget {
             child: Row(
               children: [
                 Text(
-                  'Sammendrag',
+                  strings.summary,
                   style: TextStyle(
                     fontSize: 48,
                     fontWeight: FontWeight.bold,
@@ -38,17 +40,17 @@ class SummaryScreen extends ConsumerWidget {
             child: ListView(
               padding: const EdgeInsets.all(16),
               children: [
-                Text('Fullførte ${s.results.length} tester'),
+                Text('${strings.testsCompleted} ${strings.testsCompleted} ${s.results.length} tester'),
                 const SizedBox(height: 12),
                 for (final r in s.results)
-                  _buildTestCard(r),
+                  _buildTestCard(r, strings),
               ],
             ),
           ),
           // Bottom button bar
           BottomButtonBar(
             primaryButton: BottomButton(
-              label: 'Ferdig',
+              label: strings.done,
               onPressed: () => ref.read(sessionProvider.notifier).reset(),
             ),
             onAbort: null,
@@ -59,10 +61,10 @@ class SummaryScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildTestCard(TestResult r) {
+  Widget _buildTestCard(TestResult r, AppStrings strings) {
     final formatter = TestResultFormatterFactory.getFormatter(r.testId);
-    final detailedView = formatter.getDetailedView(r.summary);
-    final textSummary = formatter.getTextSummary(r.summary);
+    final detailedView = formatter.getDetailedView(r.summary, strings);
+    final textSummary = formatter.getTextSummary(r.summary, strings);
 
     // For TMT tests with detailed view, combine text and image in one card
     if (r.testId == 'TMT' && detailedView != null) {

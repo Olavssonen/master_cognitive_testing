@@ -6,9 +6,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_master_app/models/test_definition.dart';
 import 'package:flutter_master_app/widgets/test_shell.dart';
 import 'package:flutter_master_app/widgets/round_info_screen.dart';
-import 'package:flutter_master_app/theme/app_theme.dart';
 import 'package:flutter_master_app/widgets/bottom_button_bar.dart';
 import 'package:flutter_master_app/providers/test_providers.dart';
+import 'package:flutter_master_app/providers/language_provider.dart';
+import 'package:flutter_master_app/theme/app_theme.dart';
 import 'dart:math' as Math;
 
 final cogTest = TestDefinition(
@@ -50,7 +51,7 @@ class _CogTestScreenState extends State<CogTestScreen> {
   }
 }
 
-class MiniCogTestWidget extends StatefulWidget {
+class MiniCogTestWidget extends ConsumerStatefulWidget {
   final TestRunContext run;
   final VoidCallback onAbort;
 
@@ -61,10 +62,10 @@ class MiniCogTestWidget extends StatefulWidget {
   });
 
   @override
-  State<MiniCogTestWidget> createState() => _MiniCogTestWidgetState();
+  ConsumerState<MiniCogTestWidget> createState() => _MiniCogTestWidgetState();
 }
 
-class _MiniCogTestWidgetState extends State<MiniCogTestWidget> {
+class _MiniCogTestWidgetState extends ConsumerState<MiniCogTestWidget> {
   // Phases: 'word_recall_1', 'clock_instruction', 'clock_test', 'word_recall_2', 'completed'
   String _currentPhase = 'word_recall_1';
   
@@ -155,12 +156,12 @@ class _MiniCogTestWidgetState extends State<MiniCogTestWidget> {
     } else if (_currentPhase == 'clock_instruction') {
       return TestShell(
         child: RoundInfoScreen(
-          title: 'Runde 2',
-          subtitle: 'Lag en klokke',
-          bodyText: 'Dra tallene til riktig posisjon',
+          title: ref.watch(appStringsProvider).round2,
+          subtitle: ref.watch(appStringsProvider).clockInstruction,
+          bodyText: ref.watch(appStringsProvider).clockInstruction2,
           bottomContent: BottomButtonBar(
             primaryButton: BottomButton(
-              label: 'Start',
+              label: ref.watch(appStringsProvider).start,
               icon: Icons.play_arrow,
               onPressed: _proceedToClockTestExecution,
             ),
@@ -183,34 +184,35 @@ class _MiniCogTestWidgetState extends State<MiniCogTestWidget> {
   }
 }
 
-class WordRecallPhase1 extends StatefulWidget {
+class WordRecallPhase1 extends ConsumerStatefulWidget {
   final VoidCallback onNext;
-  final VoidCallback onAbort;
+  final VoidCallback? onAbort;
 
   const WordRecallPhase1({
     super.key,
     required this.onNext,
-    required this.onAbort,
+    this.onAbort,
   });
 
   @override
-  State<WordRecallPhase1> createState() => _WordRecallPhase1State();
+  ConsumerState<WordRecallPhase1> createState() => _WordRecallPhase1State();
 }
 
-class _WordRecallPhase1State extends State<WordRecallPhase1> {
+class _WordRecallPhase1State extends ConsumerState<WordRecallPhase1> {
   bool _showingInstructions = true;
 
+  @override
   @override
   Widget build(BuildContext context) {
     if (_showingInstructions) {
       return TestShell(
         child: RoundInfoScreen(
-          title: 'Runde 1',
-          subtitle: 'Hukommelse',
-          bodyText: 'Husk ordene',
+          title: ref.watch(appStringsProvider).round1,
+          subtitle: ref.watch(appStringsProvider).memory,
+          bodyText: ref.watch(appStringsProvider).rememberWords,
           bottomContent: BottomButtonBar(
             primaryButton: BottomButton(
-              label: 'Start',
+              label: ref.watch(appStringsProvider).start,
               onPressed: () => setState(() => _showingInstructions = false),
               icon: Icons.play_arrow,
             ),
@@ -249,7 +251,7 @@ class _WordRecallPhase1State extends State<WordRecallPhase1> {
           ),
           BottomButtonBar(
             primaryButton: BottomButton(
-              label: 'Ferdig',
+              label: ref.watch(appStringsProvider).done,
               onPressed: widget.onNext,
               icon: Icons.check_circle,
             ),
@@ -262,21 +264,21 @@ class _WordRecallPhase1State extends State<WordRecallPhase1> {
   }
 }
 
-class WordRecallPhase2 extends StatefulWidget {
+class WordRecallPhase2 extends ConsumerStatefulWidget {
   final Function(int) onComplete;
-  final VoidCallback onAbort;
+  final VoidCallback? onAbort;
 
   const WordRecallPhase2({
     super.key,
     required this.onComplete,
-    required this.onAbort,
+    this.onAbort,
   });
 
   @override
-  State<WordRecallPhase2> createState() => _WordRecallPhase2State();
+  ConsumerState<WordRecallPhase2> createState() => _WordRecallPhase2State();
 }
 
-class _WordRecallPhase2State extends State<WordRecallPhase2> {
+class _WordRecallPhase2State extends ConsumerState<WordRecallPhase2> {
   late List<String> allWords;
   Set<String> selectedWords = {};
   bool _showingInstructions = true;
@@ -316,12 +318,12 @@ class _WordRecallPhase2State extends State<WordRecallPhase2> {
     if (_showingInstructions) {
       return TestShell(
         child: RoundInfoScreen(
-          title: 'Runde 4',
-          subtitle: 'Hukommelse',
-          bodyText: 'Gjenta ordene du skulle huske',
+          title: ref.watch(appStringsProvider).round4,
+          subtitle: ref.watch(appStringsProvider).memory,
+          bodyText: ref.watch(appStringsProvider).repeatWords,
           bottomContent: BottomButtonBar(
             primaryButton: BottomButton(
-              label: 'Start',
+              label: ref.watch(appStringsProvider).start,
               onPressed: () => setState(() => _showingInstructions = false),
               icon: Icons.play_arrow,
             ),
@@ -396,7 +398,7 @@ class _WordRecallPhase2State extends State<WordRecallPhase2> {
           ),
           BottomButtonBar(
             primaryButton: BottomButton(
-              label: 'Ferdig',
+              label: ref.watch(appStringsProvider).done,
               onPressed: _submitRecall,
               icon: Icons.check_circle,
             ),
@@ -458,9 +460,6 @@ class _ClockTestWidgetState extends ConsumerState<ClockTestWidget> {
   
   // Top boundary: visual separator below the text
   static const double topBoundaryLineHeight = 1.0;
-  
-  // State tracking for the intermediate overlay
-  String _topText = 'Lag en klokke ved å dra tallene til riktig posisjon';
   
   // Two phases: 'numbers', 'hands_instruction', 'hands'
   String _phase = 'numbers';
@@ -728,7 +727,6 @@ class _ClockTestWidgetState extends ConsumerState<ClockTestWidget> {
     if (_phase == 'numbers') {
       // Transition to hands instruction phase
       setState(() {
-        _topText = 'Still klokken til 10 over 11';
         _phase = 'hands_instruction';
       });
     } else if (_phase == 'hands_instruction') {
@@ -782,10 +780,18 @@ class _ClockTestWidgetState extends ConsumerState<ClockTestWidget> {
         // Top section - instructions (tight container with padding)
         Padding(
           padding: const EdgeInsets.only(top: 50, bottom: 8),
-          child: Text(
-            _phase == 'hands' ? 'Still klokken til 10 over 11' : _topText,
-            style: TextStyle(fontSize: 28, fontWeight: FontWeight.w500, color: Theme.of(context).colorScheme.primary),
-          ),
+          child: Builder(builder: (context) {
+            final strings = ref.watch(appStringsProvider);
+            final displayText = _phase == 'hands' 
+              ? strings.clockHandInstruction 
+              : (_phase == 'hands_instruction' 
+                ? strings.clockHandInstruction 
+                : strings.clockInstruction2);
+            return Text(
+              displayText,
+              style: TextStyle(fontSize: 28, fontWeight: FontWeight.w500, color: Theme.of(context).colorScheme.primary),
+            );
+          }),
         ),
         // RepaintBoundary wraps the Stack with clock, overlays, and hands
         Expanded(
@@ -917,7 +923,7 @@ class _ClockTestWidgetState extends ConsumerState<ClockTestWidget> {
         // Abort button - at bottom using BottomButtonBar
         BottomButtonBar(
           primaryButton: BottomButton(
-            label: 'Ferdig',
+            label: ref.watch(appStringsProvider).done,
             onPressed: _submitTest,
             type: BottomButtonType.filled,
             icon: Icons.check_circle,
@@ -932,12 +938,12 @@ class _ClockTestWidgetState extends ConsumerState<ClockTestWidget> {
     if (_phase == 'hands_instruction') {
       return TestShell(
         child: RoundInfoScreen(
-          title: 'Runde 3',
-          subtitle: 'Lag en klokke',
-          bodyText: 'Still klokken til 10 over 11',
+          title: ref.watch(appStringsProvider).round3,
+          subtitle: ref.watch(appStringsProvider).clockInstruction,
+          bodyText: ref.watch(appStringsProvider).clockHandInstruction,
           bottomContent: BottomButtonBar(
             primaryButton: BottomButton(
-              label: 'Start',
+              label: ref.watch(appStringsProvider).start,
               icon: Icons.play_arrow,
               onPressed: _submitTest,
             ),

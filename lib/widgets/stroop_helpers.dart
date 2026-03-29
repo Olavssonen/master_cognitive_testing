@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../theme/app_theme.dart';
+import '../providers/language_provider.dart';
 import 'bottom_button_bar.dart';
 import 'round_info_screen.dart';
 
@@ -117,7 +119,7 @@ class StroopColorButton extends StatelessWidget {
 
 /// Reusable Stroop screen layout widget
 /// Enforces consistent layout structure between tutorial and test
-class StroopScreen extends StatelessWidget {
+class StroopScreen extends ConsumerWidget {
   final String progressText; // e.g., "1/2" or "1/4"
   final Widget middleContent; // The large colored word
   final List<Widget> buttons;
@@ -134,7 +136,9 @@ class StroopScreen extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final strings = ref.watch(appStringsProvider);
+    
     return Column(
       mainAxisSize: MainAxisSize.max,
       children: [
@@ -175,7 +179,7 @@ class StroopScreen extends StatelessWidget {
                   style: TextButton.styleFrom(
                     foregroundColor: AppColors.errorRed,
                   ),
-                  child: const Text('Avbryt'),
+                  child: Text(strings.cancel),
                 )
               else
                 const SizedBox(height: 36), // Maintain spacing when button is hidden
@@ -285,7 +289,7 @@ class StroopWordDisplay extends StatelessWidget {
 }
 
 /// Intermediate screen between tutorial and test
-class StroopIntermediateScreen extends StatelessWidget {
+class StroopIntermediateScreen extends ConsumerWidget {
   final VoidCallback onReplay;
   final VoidCallback onStartTest;
   final VoidCallback? onAbort;
@@ -298,19 +302,20 @@ class StroopIntermediateScreen extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final strings = ref.watch(appStringsProvider);
     return RoundInfoScreen(
-      title: 'Runde 2',
-      subtitle: 'Se på fargen, ikke ordet',
+      title: strings.round2,
+      bodyText: strings.lookAtColorNotWord,
       bottomContent: BottomButtonBar(
         actionButtons: [
           BottomButton(
-            label: 'Prøv igjen',
+            label: strings.retry,
             onPressed: onReplay,
             icon: Icons.refresh,
           ),
           BottomButton(
-            label: 'Start',
+            label: strings.start,
             onPressed: onStartTest,
             icon: Icons.play_arrow,
           ),

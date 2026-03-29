@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_master_app/widgets/test_shell.dart';
 import 'package:flutter_master_app/theme/app_theme.dart';
 import 'package:flutter_master_app/widgets/circles_painter.dart';
 import 'package:flutter_master_app/widgets/bottom_button_bar.dart';
+import 'package:flutter_master_app/providers/language_provider.dart';
 
 /// Tutorial screen for Trail Making Test (TMT)
 /// Uses 3 circles instead of 6 and provides detailed instructions
-class TMTTutorial extends StatefulWidget {
+class TMTTutorial extends ConsumerStatefulWidget {
   final VoidCallback onComplete;
   final VoidCallback? onAbort;
   final CircleMode mode;
@@ -19,10 +21,10 @@ class TMTTutorial extends StatefulWidget {
   });
 
   @override
-  State<TMTTutorial> createState() => _TMTTutorialState();
+  ConsumerState<TMTTutorial> createState() => _TMTTutorialState();
 }
 
-class _TMTTutorialState extends State<TMTTutorial> with TickerProviderStateMixin {
+class _TMTTutorialState extends ConsumerState<TMTTutorial> with TickerProviderStateMixin {
   late CirclesWithNumbers circlesGenerator;
   List<Offset> drawnPoints = [];
   List<String> circlesEntered = [];
@@ -271,6 +273,7 @@ class _TMTTutorialState extends State<TMTTutorial> with TickerProviderStateMixin
 
   @override
   Widget build(BuildContext context) {
+    final strings = ref.watch(appStringsProvider);
     return TestShell(
       child: Column(
         mainAxisSize: MainAxisSize.max,
@@ -311,13 +314,13 @@ class _TMTTutorialState extends State<TMTTutorial> with TickerProviderStateMixin
           BottomButtonBar(
             actionButtons: [
               BottomButton(
-                label: 'Prøv igjen',
+                label: strings.retry,
                 onPressed: _clearDrawing,
                 type: BottomButtonType.outlined,
                 icon: Icons.refresh,
               ),
               BottomButton(
-                label: 'Ferdig',
+                label: strings.done,
                 onPressed: tutorialComplete ? widget.onComplete : () {},
                 enabled: tutorialComplete,
                 type: BottomButtonType.filled,

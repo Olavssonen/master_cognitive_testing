@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_master_app/models/test_definition.dart';
 import 'package:flutter_master_app/widgets/test_shell.dart';
-import 'package:flutter_master_app/theme/app_theme.dart';
 import 'package:flutter_master_app/widgets/bottom_button_bar.dart';
+import 'package:flutter_master_app/providers/language_provider.dart';
 
 final counterTest = TestDefinition(
   id: 'Counter Test',
@@ -11,19 +12,21 @@ final counterTest = TestDefinition(
   build: (context, run) => CounterTestScreen(run: run),
 );
 
-class CounterTestScreen extends StatefulWidget {
+class CounterTestScreen extends ConsumerStatefulWidget {
   final TestRunContext run;
   const CounterTestScreen({super.key, required this.run});
 
   @override
-  State<CounterTestScreen> createState() => _CounterTestScreenState();
+  ConsumerState<CounterTestScreen> createState() => _CounterTestScreenState();
 }
 
-class _CounterTestScreenState extends State<CounterTestScreen> {
+class _CounterTestScreenState extends ConsumerState<CounterTestScreen> {
   int counter = 0;
 
   @override
   Widget build(BuildContext context) {
+    final strings = ref.watch(appStringsProvider);
+    
     return TestShell(
       child: Column(
         mainAxisSize: MainAxisSize.max,
@@ -48,7 +51,7 @@ class _CounterTestScreenState extends State<CounterTestScreen> {
           ),
           BottomButtonBar(
             primaryButton: BottomButton(
-              label: 'Fullfør',
+              label: strings.done,
               onPressed: () {
                 widget.run.complete(
                   TestResult(testId: 'counter', summary: {'counter': counter}),
@@ -61,8 +64,7 @@ class _CounterTestScreenState extends State<CounterTestScreen> {
               ? BottomBarColorSet.secondary 
               : BottomBarColorSet.primary,
             onAbort: () => widget.run.abort('User aborted'),
-            showAbortButton: false, // Set to true to show in normal layout, or use debugMode: true
-            // debugMode: true, // Uncomment to show abort button in bottom-right corner
+            showAbortButton: false,
             onSkip: () {
               widget.run.complete(
                 TestResult(testId: 'counter', summary: {'counter': 0}),

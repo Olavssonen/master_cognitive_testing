@@ -1,0 +1,31 @@
+# Auto detect text files and normalize line endings to LF
+* text=auto
+
+# Swift files
+*.swift text eol=lf
+
+# Flutter/Dart files
+*.dart text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+
+# Gradle files
+*.gradle text eol=lf
+*.properties text eol=lf
+
+# Shell scripts
+*.sh text eol=lf
+gradlew text eol=lf
+
+# XML files
+*.xml text eol=lf
+*.plist text eol=lf
+
+# Binary files
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.keystore binary
+*.jks binary

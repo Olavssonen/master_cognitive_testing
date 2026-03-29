@@ -1,21 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_master_app/widgets/test_shell.dart';
 import 'package:flutter_master_app/widgets/bottom_button_bar.dart';
+import 'package:flutter_master_app/providers/language_provider.dart';
 
 /// Tutorial screen for Counter Test
-class CounterTutorial extends StatefulWidget {
+class CounterTutorial extends ConsumerStatefulWidget {
   final VoidCallback onComplete;
   const CounterTutorial({super.key, required this.onComplete});
 
   @override
-  State<CounterTutorial> createState() => _CounterTutorialState();
+  ConsumerState<CounterTutorial> createState() => _CounterTutorialState();
 }
 
-class _CounterTutorialState extends State<CounterTutorial> {
+class _CounterTutorialState extends ConsumerState<CounterTutorial> {
   int counter = 0;
 
   @override
   Widget build(BuildContext context) {
+    final strings = ref.watch(appStringsProvider);
     return Scaffold(
       body: TestShell(
         child: Center(
@@ -29,15 +32,14 @@ class _CounterTutorialState extends State<CounterTutorial> {
                   child: Column(
                     children: [
                       Text(
-                        'Slik spiller du',
+                        strings.howToPlay,
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
                               fontWeight: FontWeight.bold,
                             ),
                       ),
                       const SizedBox(height: 12),
-                      const Text(
-                        'Trykk enkelt på "+"-knappen så mange ganger du kan. '
-                        'Denne testen måler tappingshastigheten og koordinasjonen din.',
+                      Text(
+                        strings.counterTutorialDesc,
                         textAlign: TextAlign.center,
                       ),
                     ],
@@ -46,7 +48,7 @@ class _CounterTutorialState extends State<CounterTutorial> {
               ),
               const SizedBox(height: 40),
               Text(
-                'Gjeldende telling: $counter',
+                '${strings.currentCount}: $counter',
                 style: Theme.of(context).textTheme.displaySmall?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -56,12 +58,12 @@ class _CounterTutorialState extends State<CounterTutorial> {
                 onPressed: () {
                   setState(() => counter++);
                 },
-                label: const Text('Trykk'),
+                label: Text(strings.tapsRemaining),
                 icon: const Icon(Icons.add),
               ),
               const SizedBox(height: 40),
               Text(
-                'Trykk på knappen ovenfor for å øke telleren.\nNår du er klar, klikk "Fortsett".',
+                strings.readyToContinue,
                 style: Theme.of(context).textTheme.bodyMedium,
                 textAlign: TextAlign.center,
               ),
@@ -71,7 +73,7 @@ class _CounterTutorialState extends State<CounterTutorial> {
       ),
       bottomNavigationBar: BottomButtonBar(
         primaryButton: BottomButton(
-          label: 'Fortsett',
+          label: strings.next,
           onPressed: widget.onComplete,
         ),
         showAbortButton: false,

@@ -1,9 +1,30 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_master_app/models/test_definition.dart';
 import 'package:flutter_master_app/widgets/celebration_particles.dart';
+import 'package:flutter_master_app/l10n/strings.dart';
+import 'package:flutter_master_app/providers/language_provider.dart';
 import '../theme/app_theme.dart';
 
-class SessionPathWidget extends StatefulWidget {
+/// Helper function to get localized test title
+String getLocalizedTestTitle(String testId, AppStrings strings) {
+  switch (testId) {
+    case 'Counter Test':
+      return strings.counterTest;
+    case 'Trykk 10 Test':
+      return strings.tap10Test;
+    case 'Mini-Cog Test':
+      return strings.cogTest;
+    case 'Trail Making Test':
+      return strings.tmtTest;
+    case 'Stroop Test':
+      return strings.stroopTest;
+    default:
+      return testId;
+  }
+}
+
+class SessionPathWidget extends ConsumerStatefulWidget {
   final int currentIndex;
   final int totalTests;
   final List<TestDefinition> testRegistry;
@@ -22,10 +43,10 @@ class SessionPathWidget extends StatefulWidget {
   });
 
   @override
-  State<SessionPathWidget> createState() => _SessionPathWidgetState();
+  ConsumerState<SessionPathWidget> createState() => _SessionPathWidgetState();
 }
 
-class _SessionPathWidgetState extends State<SessionPathWidget>
+class _SessionPathWidgetState extends ConsumerState<SessionPathWidget>
     with TickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _animation;
@@ -70,6 +91,7 @@ class _SessionPathWidgetState extends State<SessionPathWidget>
 
   @override
   Widget build(BuildContext context) {
+    final strings = ref.watch(appStringsProvider);
     return AnimatedBuilder(
       animation: _animation,
       builder: (context, child) {
@@ -82,6 +104,7 @@ class _SessionPathWidgetState extends State<SessionPathWidget>
                 animationProgress: _animation.value,
                 testRegistry: widget.testRegistry,
                 testPlan: widget.testPlan,
+                strings: strings,
               ),
               size: Size.infinite,
             ),
@@ -141,6 +164,7 @@ class SessionPathPainter extends CustomPainter {
   final double animationProgress;
   final List<TestDefinition> testRegistry;
   final List<String> testPlan;
+  final AppStrings strings;
 
   SessionPathPainter({
     required this.currentIndex,
@@ -148,6 +172,7 @@ class SessionPathPainter extends CustomPainter {
     this.animationProgress = 0,
     required this.testRegistry,
     required this.testPlan,
+    required this.strings,
   });
 
   @override
@@ -424,7 +449,7 @@ class SessionPathPainter extends CustomPainter {
         try {
           final testDef = testRegistry.firstWhere((t) => t.id == testId);
           iconData = testDef.icon;
-          testTitle = testDef.title;
+          testTitle = getLocalizedTestTitle(testId, strings);
         } catch (e) {
           // Test not found
         }
@@ -454,20 +479,20 @@ class SessionPathPainter extends CustomPainter {
         
         // Draw start/end labels
         if (i == 0) {
-          // Draw "Start" above the first icon
+          // Draw start label above the first icon
           _drawStartEndLabel(
             canvas,
             positions[i],
-            "Start",
+            strings.start,
             textColor,
             true,
           );
         } else if (i == positions.length - 1) {
-          // Draw "Mål" below the last icon
+          // Draw goal label below the last icon
           _drawStartEndLabel(
             canvas,
             positions[i],
-            "Mål",
+            strings.clockGoalTime,
             textColor,
             false,
           );

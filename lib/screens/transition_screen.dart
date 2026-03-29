@@ -4,6 +4,7 @@ import 'package:flutter_master_app/session/session_controller.dart';
 import 'package:flutter_master_app/session/session_state.dart';
 import 'package:flutter_master_app/widgets/session_path_widget.dart';
 import 'package:flutter_master_app/providers/test_providers.dart';
+import 'package:flutter_master_app/providers/language_provider.dart';
 import 'package:flutter_master_app/widgets/bottom_button_bar.dart';
 
 class TransitionScreen extends ConsumerStatefulWidget {
@@ -41,6 +42,7 @@ class _TransitionScreenState extends ConsumerState<TransitionScreen> {
   Widget build(BuildContext context) {
     final s = ref.watch(sessionProvider) as SessionTransition;
     final registry = ref.watch(testRegistryProvider);
+    final strings = ref.watch(appStringsProvider);
     final isInitial = s.fromIndex == -1;
     final isFinal = s.toIndex == s.fromIndex;
 
@@ -75,7 +77,7 @@ class _TransitionScreenState extends ConsumerState<TransitionScreen> {
           // Bottom button bar
           BottomButtonBar(
             primaryButton: BottomButton(
-              label: 'Start',
+              label: strings.start,
               onPressed: () => ref.read(sessionProvider.notifier).continueAfterTransition(),
               icon: Icons.play_arrow,
             ),
