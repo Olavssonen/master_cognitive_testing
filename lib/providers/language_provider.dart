@@ -4,8 +4,9 @@ import 'package:flutter_master_app/l10n/strings.dart';
 import 'package:flutter_master_app/l10n/strings_en.dart';
 import 'package:flutter_master_app/l10n/strings_no.dart';
 import 'package:flutter_master_app/l10n/strings_es.dart';
+import 'package:flutter_master_app/l10n/strings_se.dart';
 
-enum AppLocale { english, norwegian, spanish }
+enum AppLocale { english, norwegian, spanish, swedish }
 
 class LanguageNotifier extends AsyncNotifier<AppLocale> {
   static const String _languageKey = 'app_language';
@@ -39,6 +40,7 @@ final appStringsProvider = Provider<AppStrings>((ref) {
       return switch (locale) {
         AppLocale.norwegian => NorwegianStrings(),
         AppLocale.spanish => SpanishStrings(),
+        AppLocale.swedish => SwedishStrings(),
         AppLocale.english => EnglishStrings(),
       };
     },

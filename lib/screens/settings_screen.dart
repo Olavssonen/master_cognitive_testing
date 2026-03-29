@@ -155,6 +155,10 @@ class SettingsScreen extends ConsumerWidget {
                                 value: AppLocale.spanish,
                                 child: Text('Español'),
                               ));
+                              items.add(const DropdownMenuItem(
+                                value: AppLocale.swedish,
+                                child: Text('Svenska'),
+                              ));
                             } else if (currentLocale == AppLocale.norwegian) {
                               items.add(const DropdownMenuItem(
                                 value: AppLocale.norwegian,
@@ -168,7 +172,11 @@ class SettingsScreen extends ConsumerWidget {
                                 value: AppLocale.spanish,
                                 child: Text('Español'),
                               ));
-                            } else {
+                              items.add(const DropdownMenuItem(
+                                value: AppLocale.swedish,
+                                child: Text('Svenska'),
+                              ));
+                            } else if (currentLocale == AppLocale.spanish) {
                               items.add(const DropdownMenuItem(
                                 value: AppLocale.spanish,
                                 child: Text('Español'),
@@ -180,6 +188,27 @@ class SettingsScreen extends ConsumerWidget {
                               items.add(const DropdownMenuItem(
                                 value: AppLocale.norwegian,
                                 child: Text('Norsk'),
+                              ));
+                              items.add(const DropdownMenuItem(
+                                value: AppLocale.swedish,
+                                child: Text('Svenska'),
+                              ));
+                            } else {
+                              items.add(const DropdownMenuItem(
+                                value: AppLocale.swedish,
+                                child: Text('Svenska'),
+                              ));
+                              items.add(const DropdownMenuItem(
+                                value: AppLocale.english,
+                                child: Text('English'),
+                              ));
+                              items.add(const DropdownMenuItem(
+                                value: AppLocale.norwegian,
+                                child: Text('Norsk'),
+                              ));
+                              items.add(const DropdownMenuItem(
+                                value: AppLocale.spanish,
+                                child: Text('Español'),
                               ));
                             }
                             
