@@ -457,7 +457,7 @@ class _ClockTestWidgetState extends ConsumerState<ClockTestWidget> {
   double? _topBoundaryY; // Y position where circles should stop at top
   
   // Top boundary: visual separator below the text
-  static const double topBoundaryLineHeight = 4.0;
+  static const double topBoundaryLineHeight = 1.0;
   
   // State tracking for the intermediate overlay
   String _topText = 'Lag en klokke ved å dra tallene til riktig posisjon';
@@ -779,17 +779,12 @@ class _ClockTestWidgetState extends ConsumerState<ClockTestWidget> {
     
     final mainContent = Column(
       children: [
-        // Top section - instructions (takes minimal space)
-        SizedBox(
-          height: 80,
-          child: IgnorePointer(
-            child: Container(
-              alignment: Alignment.center,
-              child: Text(
-                _phase == 'hands' ? 'Still klokken til 10 over 11' : _topText,
-                style: TextStyle(fontSize: 28, fontWeight: FontWeight.w500, color: Theme.of(context).colorScheme.primary),
-              ),
-            ),
+        // Top section - instructions (tight container with padding)
+        Padding(
+          padding: const EdgeInsets.only(top: 50, bottom: 8),
+          child: Text(
+            _phase == 'hands' ? 'Still klokken til 10 over 11' : _topText,
+            style: TextStyle(fontSize: 28, fontWeight: FontWeight.w500, color: Theme.of(context).colorScheme.primary),
           ),
         ),
         // RepaintBoundary wraps the Stack with clock, overlays, and hands
