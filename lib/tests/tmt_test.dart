@@ -12,6 +12,7 @@ import 'package:flutter_master_app/tutorials/tmt_tutorial.dart';
 import 'package:flutter_master_app/widgets/bottom_button_bar.dart';
 import 'package:flutter_master_app/providers/test_providers.dart';
 import 'package:flutter_master_app/providers/language_provider.dart';
+import 'package:flutter_master_app/widgets/points_collected_widget.dart';
 
 final tmtTest = TestDefinition(
   id: 'Trail Making Test',
@@ -251,11 +252,45 @@ class _TMTTest extends ConsumerState<TMTTest> {
     super.dispose();
   }
 
+  void _showPointsAnimation(String circleLabel) {
+    try {
+      // Find the circle with this label
+      final circle = circlesGenerator.circles.firstWhere(
+        (c) => c.label == circleLabel,
+      );
+
+      // Get the RenderBox to convert local coordinates to global
+      final RenderBox? drawingAreaBox =
+          _drawingAreaKey.currentContext?.findRenderObject() as RenderBox?;
+
+      if (drawingAreaBox != null) {
+        // Convert circle center (local to drawing area) to global coordinates
+        final globalPosition = drawingAreaBox.localToGlobal(circle.center);
+
+        // Show the points animation at this position
+        if (mounted) {
+          PointsCollectedWidget.show(
+            context: context,
+            points: 10,
+            position: globalPosition,
+          );
+        }
+      }
+    } catch (e) {
+      // Circle not found or other error - silently ignore
+    }
+  }
+
   void onCircleEntered(String circleLabel, bool isCorrect) {
     // This is called when parent detects a new circle
     // Trigger feedback in the child widget
     _feedbackTrigger?.call(circleLabel, isCorrect);
-    
+
+    // Show points animation for correct circles
+    if (isCorrect) {
+      _showPointsAnimation(circleLabel);
+    }
+
     // Track mistakes - count each wrong circle only once per attempt
     if (!isCorrect && !_mistakesTracked.contains(circleLabel)) {
       setState(() {

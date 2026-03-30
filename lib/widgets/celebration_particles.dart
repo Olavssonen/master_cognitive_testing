@@ -49,6 +49,7 @@ class CelebrationParticleSystem {
     required int count,
     Duration duration = const Duration(milliseconds: 1200),
     List<Color>? colors,
+    double speedMultiplier = 1.0,
   }) {
     final random = math.Random();
     final particleColors =
@@ -56,7 +57,7 @@ class CelebrationParticleSystem {
 
     for (int i = 0; i < count; i++) {
       final angle = (i / count) * 2 * math.pi;
-      final speed = 100 + random.nextDouble() * 150;
+      final speed = (100 + random.nextDouble() * 150) * speedMultiplier;
 
       _particles.add(
         CelebrationParticle(

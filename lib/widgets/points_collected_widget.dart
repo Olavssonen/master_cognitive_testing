@@ -127,7 +127,7 @@ class _PointsCollectedWidgetState extends State<PointsCollectedWidget>
             opacity: _opacity.value,
             child: Text(
               '+${widget.points}',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+              style: Theme.of(context).textTheme.displayMedium?.copyWith(
                     color: AppColors.tropicalTeal,
                     fontWeight: FontWeight.bold,
                   ),
