@@ -13,6 +13,7 @@ import 'package:flutter_master_app/widgets/bottom_button_bar.dart';
 import 'package:flutter_master_app/providers/test_providers.dart';
 import 'package:flutter_master_app/providers/language_provider.dart';
 import 'package:flutter_master_app/widgets/points_collected_widget.dart';
+import 'package:flutter_master_app/theme/app_theme.dart';
 
 final tmtTest = TestDefinition(
   id: 'Trail Making Test',
@@ -306,6 +307,7 @@ class _TMTTest extends ConsumerState<TMTTest> {
             context: context,
             points: points,
             position: globalPosition,
+            color: points < 0 ? AppColors.errorRed : null,
           );
         }
       }

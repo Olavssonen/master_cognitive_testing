@@ -19,12 +19,20 @@ class PointsCollectedWidget extends StatefulWidget {
   /// Duration of the animation (default: 800ms)
   final Duration duration;
 
+  /// Color of the points text (default: tropicalTeal for positive, errorRed for negative)
+  final Color? color;
+
+  /// Font size for the points text (default: displayMedium)
+  final double? fontSize;
+
   const PointsCollectedWidget({
     super.key,
     required this.points,
     required this.position,
     this.onComplete,
     this.duration = const Duration(milliseconds: 800),
+    this.color,
+    this.fontSize,
   });
 
   @override
@@ -39,6 +47,7 @@ class PointsCollectedWidget extends StatefulWidget {
   ///   context: context,
   ///   points: 50,
   ///   position: Offset(renderBox.size.width / 2, renderBox.size.height / 2),
+  ///   color: AppColors.successGreen,
   /// );
   /// ```
   static void show({
@@ -46,6 +55,8 @@ class PointsCollectedWidget extends StatefulWidget {
     required int points,
     required Offset position,
     Duration duration = const Duration(milliseconds: 800),
+    Color? color,
+    double? fontSize,
   }) {
     final overlay = Overlay.of(context);
     late OverlayEntry entry;
@@ -53,12 +64,14 @@ class PointsCollectedWidget extends StatefulWidget {
     entry = OverlayEntry(
       builder: (context) => Positioned(
         left: position.dx - 30, // Center the widget (~60px wide)
-        top: position.dy - 20,
+        top: position.dy, // Start at word position to flow upward from it
         child: IgnorePointer(
           child: PointsCollectedWidget(
             points: points,
             position: Offset.zero,
             duration: duration,
+            color: color,
+            fontSize: fontSize,
             onComplete: () {
               entry.remove();
             },
@@ -118,6 +131,18 @@ class _PointsCollectedWidgetState extends State<PointsCollectedWidget>
 
   @override
   Widget build(BuildContext context) {
+    // Format the text with proper sign
+    final displayText = widget.points < 0 
+      ? '${widget.points}' // Already has minus sign
+      : '+${widget.points}';
+    
+    // Determine color: use provided color, or default based on positive/negative
+    final displayColor = widget.color ?? 
+      (widget.points < 0 ? AppColors.errorRed : AppColors.tropicalTeal);
+    
+    // Get font size - use provided or default to displayMedium
+    final fontSizeValue = widget.fontSize;
+    
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
@@ -126,11 +151,17 @@ class _PointsCollectedWidgetState extends State<PointsCollectedWidget>
           child: Opacity(
             opacity: _opacity.value,
             child: Text(
-              '+${widget.points}',
-              style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                    color: AppColors.tropicalTeal,
+              displayText,
+              style: fontSizeValue != null
+                ? TextStyle(
+                    fontSize: fontSizeValue,
+                    color: displayColor,
                     fontWeight: FontWeight.bold,
-                  ),
+                  )
+                : Theme.of(context).textTheme.displayMedium?.copyWith(
+                      color: displayColor,
+                      fontWeight: FontWeight.bold,
+                    ),
             ),
           ),
         );
