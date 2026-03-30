@@ -10,6 +10,7 @@ import 'package:flutter_master_app/widgets/bottom_button_bar.dart';
 import 'package:flutter_master_app/providers/test_providers.dart';
 import 'package:flutter_master_app/providers/language_provider.dart';
 import 'package:flutter_master_app/theme/app_theme.dart';
+import 'package:flutter_master_app/widgets/points_collected_widget.dart';
 import 'dart:math' as Math;
 
 final cogTest = TestDefinition(
@@ -76,9 +77,15 @@ class _MiniCogTestWidgetState extends ConsumerState<MiniCogTestWidget> {
   int _correctMinuteHand = 0;
   Uint8List? _clockImage;
   
+  // Points tracking
+  int startingSessionPoints = 0;
+  final int maxCogScore = 17; // 3 words + 12 numbers + 2 hands
+  
   @override
   void initState() {
     super.initState();
+    // Capture starting points for this test
+    startingSessionPoints = ref.read(sessionPointsProvider);
   }
 
   void _handleClockTestComplete(Map<String, dynamic> clockScore) {
@@ -121,6 +128,14 @@ class _MiniCogTestWidgetState extends ConsumerState<MiniCogTestWidget> {
   }
 
   void _submitTest() {
+    final totalScore = _correctWords + _correctClockNumbers + _correctHourHand + _correctMinuteHand;
+    
+    // Calculate points dynamically: (score / 17) * 1000
+    final pointsEarned = ((totalScore / maxCogScore) * 1000).round();
+    
+    // Add points to session
+    ref.read(sessionPointsProvider.notifier).addPoints(pointsEarned);
+    
     final score = {
       'word_recall_correct': _correctWords,
       'word_recall_total': 3,
@@ -130,8 +145,9 @@ class _MiniCogTestWidgetState extends ConsumerState<MiniCogTestWidget> {
       'minute_hand_correct': _correctMinuteHand,
       'hands_correct': _correctHourHand + _correctMinuteHand,
       'hands_total': 2,
-      'total_score': _correctWords + _correctClockNumbers + _correctHourHand + _correctMinuteHand,
+      'total_score': totalScore,
       'clock_image': _clockImage,
+      'pointsEarned': pointsEarned,
     };
 
     widget.run.complete(
