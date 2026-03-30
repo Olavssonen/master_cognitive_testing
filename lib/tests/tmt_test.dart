@@ -42,6 +42,7 @@ class _TMTTestFlowProgressionState extends ConsumerState<TMTTestFlowProgression>
       'image': resultData['image'] as Uint8List?,
       'timeSpent': resultData['timeSpent'] as int? ?? 0,
       'mistakes': resultData['mistakes'] as int? ?? 0,
+      'pointsEarned': resultData['pointsEarned'] as int? ?? 0,
     };
   }
 
@@ -90,6 +91,12 @@ class _TMTTestFlowProgressionState extends ConsumerState<TMTTestFlowProgression>
             // Final test complete - save its results and complete the entire progression
             _saveTestResult('mixed_test', resultData, completed);
             
+            // Calculate total points earned from both stages
+            int totalPointsEarned = 0;
+            stageResults.forEach((stage, results) {
+              totalPointsEarned += (results['pointsEarned'] as int?) ?? 0;
+            });
+            
             // Complete with combined results from all stages
             widget.run.complete(
               TestResult(
@@ -98,6 +105,7 @@ class _TMTTestFlowProgressionState extends ConsumerState<TMTTestFlowProgression>
                   'progression_completed': true,
                   'all_stages': stageResults,
                   'final_mode': 'mixed',
+                  'pointsEarned': totalPointsEarned,
                 },
               ),
             );
@@ -179,6 +187,17 @@ class _TMTTest extends ConsumerState<TMTTest> {
   int mistakeCount = 0;
   Set<String> _mistakesTracked = {}; // Track which circles we've already counted as mistakes
   
+  // Debug tracking
+  int lastPointsAwarded = 0;
+  int lastTimeElapsedMs = 0;
+  int lastDeduction = 0;
+  
+  // Time-based points tracking
+  DateTime? lastCircleEnteredTime;
+  
+  // Points tracking for this test stage
+  int startingSessionPoints = 0;
+  
   // Timing variables
   late int timeoutSeconds;
   int remainingSeconds = 0;
@@ -187,6 +206,9 @@ class _TMTTest extends ConsumerState<TMTTest> {
   @override
   void initState() {
     super.initState();
+    // Capture starting points for this test stage
+    startingSessionPoints = ref.read(sessionPointsProvider);
+    
     circlesGenerator = CirclesWithNumbers(
       numberOfCircles: 25,
       mode: widget.mode,
@@ -226,12 +248,17 @@ class _TMTTest extends ConsumerState<TMTTest> {
       if (mounted) {
         _captureDrawingArea().then((_) {
           final timeSpent = timeoutSeconds - remainingSeconds;
+          final currentSessionPoints = ref.read(sessionPointsProvider);
+          final pointsEarned = currentSessionPoints - startingSessionPoints;
+          
           final resultData = {
             'circlesEntered': circlesEntered,
             'image': _capturedImage,
             'timedOut': true,
             'timeSpent': timeSpent,
             'mistakes': mistakeCount,
+            'pointsEarned': pointsEarned,
+            'stageName': widget.stageName,
           };
           
           widget.onTestResult?.call(resultData, testComplete);
@@ -252,7 +279,7 @@ class _TMTTest extends ConsumerState<TMTTest> {
     super.dispose();
   }
 
-  void _showPointsAnimation(String circleLabel) {
+  void _showPointsAnimation(String circleLabel, int points) {
     try {
       // Check if points system is enabled
       final pointsSystemEnabled = ref.watch(pointsSystemEnabledProvider);
@@ -277,7 +304,7 @@ class _TMTTest extends ConsumerState<TMTTest> {
         if (mounted) {
           PointsCollectedWidget.show(
             context: context,
-            points: 10,
+            points: points,
             position: globalPosition,
           );
         }
@@ -285,6 +312,43 @@ class _TMTTest extends ConsumerState<TMTTest> {
     } catch (e) {
       // Circle not found or other error - silently ignore
     }
+  }
+
+  int _calculatePointsForCircle() {
+    const int basePoints = 20;
+    const int pointsDeductionPerQuarterSecond = 1;
+    const Duration quarterSecond = Duration(milliseconds: 250);
+
+    // If this is the first circle, award full points
+    if (lastCircleEnteredTime == null) {
+      lastCircleEnteredTime = DateTime.now();
+      setState(() {
+        lastPointsAwarded = basePoints;
+        lastTimeElapsedMs = 0;
+        lastDeduction = 0;
+      });
+      return basePoints;
+    }
+
+    // Calculate time elapsed since last circle
+    final now = DateTime.now();
+    final timeElapsed = now.difference(lastCircleEnteredTime!);
+    
+    // Calculate deduction: every 0.25 seconds = -1 point
+    final deduction = (timeElapsed.inMilliseconds / quarterSecond.inMilliseconds).toInt();
+    final awardedPoints = (basePoints - deduction).clamp(0, basePoints);
+
+    // Update debug info
+    setState(() {
+      lastPointsAwarded = awardedPoints;
+      lastTimeElapsedMs = timeElapsed.inMilliseconds;
+      lastDeduction = deduction;
+    });
+
+    // Update timestamp for next calculation
+    lastCircleEnteredTime = now;
+
+    return awardedPoints;
   }
 
   void onCircleEntered(String circleLabel, bool isCorrect) {
@@ -296,9 +360,12 @@ class _TMTTest extends ConsumerState<TMTTest> {
     if (isCorrect) {
       final pointsSystemEnabled = ref.watch(pointsSystemEnabledProvider);
       if (pointsSystemEnabled) {
-        ref.read(sessionPointsProvider.notifier).addPoints(10);
+        int awardedPoints = _calculatePointsForCircle();
+        ref.read(sessionPointsProvider.notifier).addPoints(awardedPoints);
+        _showPointsAnimation(circleLabel, awardedPoints);
+      } else {
+        _showPointsAnimation(circleLabel, 0);
       }
-      _showPointsAnimation(circleLabel);
     }
 
     // Track mistakes - count each wrong circle only once per attempt
@@ -509,6 +576,7 @@ class _TMTTest extends ConsumerState<TMTTest> {
       _mistakesTracked.clear(); // Reset mistake tracking for this stroke
       lastCorrectCircle = null;
       testComplete = false;
+      lastCircleEnteredTime = null; // Reset time tracking for new attempt
     });
     // Clear the drawn points in the child widget
     _clearDrawingCallback?.call();
@@ -545,24 +613,41 @@ class _TMTTest extends ConsumerState<TMTTest> {
             Container(
               padding: EdgeInsets.all(12),
               color: Colors.grey[800],
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+              child: Column(
                 children: [
-                  Text(
-                    'Time: ${remainingSeconds}s',
-                    style: TextStyle(
-                      color: remainingSeconds < 20 ? Colors.red : Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Time: ${remainingSeconds}s',
+                        style: TextStyle(
+                          color: remainingSeconds < 20 ? Colors.red : Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(width: 20),
+                      Text(
+                        widget.mode == CircleMode.numbersOnly ? '(Numbers Test)' : '(Mixed Test)',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
                   ),
-                  SizedBox(width: 20),
-                  Text(
-                    widget.mode == CircleMode.numbersOnly ? '(Numbers Test)' : '(Mixed Test)',
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 14,
-                    ),
+                  SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Last Points: +$lastPointsAwarded | Time Elapsed: ${lastTimeElapsedMs}ms | Deduction: -$lastDeduction | Total: ${ref.watch(sessionPointsProvider)}',
+                        style: TextStyle(
+                          color: Colors.yellowAccent,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -622,11 +707,16 @@ class _TMTTest extends ConsumerState<TMTTest> {
                   if (testComplete) {
                     _captureDrawingArea().then((_) {
                       final timeSpent = timeoutSeconds - remainingSeconds;
+                      final currentSessionPoints = ref.read(sessionPointsProvider);
+                      final pointsEarned = currentSessionPoints - startingSessionPoints;
+                      
                       final resultData = {
                         'circlesEntered': circlesEntered,
                         'image': _capturedImage,
                         'timeSpent': timeSpent,
                         'mistakes': mistakeCount,
+                        'pointsEarned': pointsEarned,
+                        'stageName': widget.stageName,
                       };
                       
                       widget.onTestResult?.call(resultData, testComplete);

@@ -75,6 +75,33 @@ class SummaryScreen extends ConsumerWidget {
                             color: AppColors.tropicalTeal,
                           ),
                         ),
+                        const SizedBox(height: 16),
+                        // Per-test scores
+                        for (final r in s.results)
+                          if (r.summary['pointsEarned'] != null)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 4),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    r.testId,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Theme.of(context).colorScheme.primary,
+                                    ),
+                                  ),
+                                  Text(
+                                    '${r.summary['pointsEarned']} pts',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.tropicalTeal,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                       ],
                     ),
                   ),
