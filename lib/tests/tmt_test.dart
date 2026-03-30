@@ -254,6 +254,12 @@ class _TMTTest extends ConsumerState<TMTTest> {
 
   void _showPointsAnimation(String circleLabel) {
     try {
+      // Check if points system is enabled
+      final pointsSystemEnabled = ref.watch(pointsSystemEnabledProvider);
+      if (!pointsSystemEnabled) {
+        return; // Points system disabled, don't show animation
+      }
+
       // Find the circle with this label
       final circle = circlesGenerator.circles.firstWhere(
         (c) => c.label == circleLabel,
@@ -286,8 +292,12 @@ class _TMTTest extends ConsumerState<TMTTest> {
     // Trigger feedback in the child widget
     _feedbackTrigger?.call(circleLabel, isCorrect);
 
-    // Show points animation for correct circles
+    // Add points for correct circles if points system is enabled
     if (isCorrect) {
+      final pointsSystemEnabled = ref.watch(pointsSystemEnabledProvider);
+      if (pointsSystemEnabled) {
+        ref.read(sessionPointsProvider.notifier).addPoints(10);
+      }
       _showPointsAnimation(circleLabel);
     }
 

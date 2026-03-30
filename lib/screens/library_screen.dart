@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_master_app/models/test_definition.dart';
 import 'package:flutter_master_app/session/session_controller.dart';
+import 'package:flutter_master_app/providers/test_providers.dart';
 import 'package:flutter_master_app/theme/app_theme.dart';
 import 'package:flutter_master_app/l10n/strings.dart';
 import 'package:flutter_master_app/widgets/bottom_button_bar.dart';
@@ -161,7 +162,10 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
           ),
           BottomButton(
             label: strings.start,
-            onPressed: () => ref.read(sessionProvider.notifier).start(plan),
+            onPressed: () {
+              ref.read(sessionPointsProvider.notifier).reset();
+              ref.read(sessionProvider.notifier).start(plan);
+            },
             enabled: plan.isNotEmpty,
             icon: Icons.play_arrow,
           ),

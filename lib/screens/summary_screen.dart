@@ -6,6 +6,8 @@ import 'package:flutter_master_app/models/test_definition.dart';
 import 'package:flutter_master_app/models/test_result_formatter.dart';
 import 'package:flutter_master_app/widgets/bottom_button_bar.dart';
 import 'package:flutter_master_app/providers/language_provider.dart';
+import 'package:flutter_master_app/providers/test_providers.dart';
+import 'package:flutter_master_app/theme/app_theme.dart';
 import 'package:flutter_master_app/l10n/strings.dart';
 
 class SummaryScreen extends ConsumerWidget {
@@ -15,6 +17,7 @@ class SummaryScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final s = ref.watch(sessionProvider) as SessionDone;
     final strings = ref.watch(appStringsProvider);
+    final totalPoints = ref.watch(sessionPointsProvider);
 
     return Scaffold(
       body: Column(
@@ -40,6 +43,43 @@ class SummaryScreen extends ConsumerWidget {
             child: ListView(
               padding: const EdgeInsets.all(16),
               children: [
+                // Points Card at top
+                Card(
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(
+                      color: AppColors.lavender,
+                      width: 1,
+                    ),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text(
+                          strings.points,
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w500,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          '$totalPoints',
+                          style: TextStyle(
+                            fontSize: 48,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.tropicalTeal,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
                 Text('${strings.testsCompleted} ${strings.testsCompleted} ${s.results.length} tester'),
                 const SizedBox(height: 12),
                 for (final r in s.results)
@@ -51,7 +91,10 @@ class SummaryScreen extends ConsumerWidget {
           BottomButtonBar(
             primaryButton: BottomButton(
               label: strings.done,
-              onPressed: () => ref.read(sessionProvider.notifier).reset(),
+              onPressed: () {
+                ref.read(sessionPointsProvider.notifier).reset();
+                ref.read(sessionProvider.notifier).reset();
+              },
             ),
             onAbort: null,
             showAbortButton: false,

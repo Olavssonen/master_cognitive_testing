@@ -23,6 +23,40 @@ class DebugModeNotifier extends Notifier<bool> {
   }
 }
 
+final pointsSystemEnabledProvider = NotifierProvider<PointsSystemEnabledNotifier, bool>(PointsSystemEnabledNotifier.new);
+
+class PointsSystemEnabledNotifier extends Notifier<bool> {
+  @override
+  bool build() {
+    return true;
+  }
+
+  void toggle() {
+    state = !state;
+  }
+
+  void set(bool value) {
+    state = value;
+  }
+}
+
+final sessionPointsProvider = NotifierProvider<SessionPointsNotifier, int>(SessionPointsNotifier.new);
+
+class SessionPointsNotifier extends Notifier<int> {
+  @override
+  int build() {
+    return 0;
+  }
+
+  void addPoints(int amount) {
+    state += amount;
+  }
+
+  void reset() {
+    state = 0;
+  }
+}
+
 final testRegistryProvider = Provider<List<TestDefinition>>((ref) {
   final debugMode = ref.watch(debugModeProvider);
   

@@ -10,6 +10,7 @@ class SettingsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final debugMode = ref.watch(debugModeProvider);
+    final pointsSystemEnabled = ref.watch(pointsSystemEnabledProvider);
     final strings = ref.watch(appStringsProvider);
     final languageAsync = ref.watch(languageProvider);
 
@@ -108,12 +109,19 @@ class SettingsScreen extends ConsumerWidget {
                         children: [
                           Text(
                             strings.points,
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.w500,
-                            color: Theme.of(context).colorScheme.primary,
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w500,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
                           ),
-                        ),
+                          Switch(
+                            value: pointsSystemEnabled,
+                            onChanged: (value) {
+                              ref.read(pointsSystemEnabledProvider.notifier).set(value);
+                            },
+                            activeThumbColor: Theme.of(context).colorScheme.primary,
+                          ),
                         ],
                       ),
                     ),
