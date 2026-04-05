@@ -109,7 +109,7 @@ class StroopTest extends ConsumerStatefulWidget {
 }
 
 class _StroopTestState extends ConsumerState<StroopTest> with TickerProviderStateMixin {
-  final int numberOfWords = 20; // Configurable number of trials
+  final int numberOfWords = 25; // Configurable number of trials
   
   late List<StroopItem> stroopItems;
   int currentIndex = 0;
@@ -237,15 +237,15 @@ class _StroopTestState extends ConsumerState<StroopTest> with TickerProviderStat
         return;
       }
       
-      // Show points animation at top portion of screen (higher up)
+      // Show points animation just above the test word (appears to spawn from word)
       if (mounted) {
         final screenSize = MediaQuery.of(context).size;
-        final topPosition = Offset(screenSize.width / 2, screenSize.height * 0.15);
+        final wordPosition = Offset(screenSize.width / 2, screenSize.height * 0.30);
         
         PointsCollectedWidget.show(
           context: context,
           points: points,
-          position: topPosition,
+          position: wordPosition,
           fontSize: 60,
           color: points < 0 ? AppColors.errorRed : null,
         );

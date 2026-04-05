@@ -63,7 +63,7 @@ class PointsCollectedWidget extends StatefulWidget {
 
     entry = OverlayEntry(
       builder: (context) => Positioned(
-        left: position.dx - 30, // Center the widget (~60px wide)
+        left: position.dx - 50, // Center the widget (better for larger fontSize)
         top: position.dy, // Start at word position to flow upward from it
         child: IgnorePointer(
           child: PointsCollectedWidget(
@@ -157,10 +157,12 @@ class _PointsCollectedWidgetState extends State<PointsCollectedWidget>
                     fontSize: fontSizeValue,
                     color: displayColor,
                     fontWeight: FontWeight.bold,
+                    decoration: TextDecoration.none,
                   )
                 : Theme.of(context).textTheme.displayMedium?.copyWith(
                       color: displayColor,
                       fontWeight: FontWeight.bold,
+                      decoration: TextDecoration.none,
                     ),
             ),
           ),
