@@ -187,6 +187,7 @@ class _TMTTest extends ConsumerState<TMTTest> {
   // Mistake tracking
   int mistakeCount = 0;
   Set<String> _mistakesTracked = {}; // Track which circles we've already counted as mistakes
+  bool _mistakeSinceLastCorrect = false; // Track if mistakes occurred since last correct circle
   
   // Debug tracking
   int lastPointsAwarded = 0;
@@ -304,7 +305,7 @@ class _TMTTest extends ConsumerState<TMTTest> {
             context: context,
             points: points,
             position: globalPosition,
-            color: points < 0 ? AppColors.errorRed : null,
+            color: points <= 0 ? AppColors.errorRed : null,
           );
         }
       }
@@ -313,19 +314,21 @@ class _TMTTest extends ConsumerState<TMTTest> {
     }
   }
 
-  int _calculatePointsForCircle() {
+  int _calculatePointsForCircle(bool hadMistakesSinceLastCorrect) {
     // Fixed points: 500 / 25 circles = 20 points per circle per stage
     // Each stage (numbers and mixed) can earn max 500 points, totaling 1000
+    // If there were mistakes before reaching this correct circle, award 0 points
     const int fixedPoints = 20;
+    final int awardedPoints = hadMistakesSinceLastCorrect ? 0 : fixedPoints;
 
     // Update debug info
     setState(() {
-      lastPointsAwarded = fixedPoints;
+      lastPointsAwarded = awardedPoints;
       lastTimeElapsedMs = 0;
       lastDeduction = 0;
     });
 
-    return fixedPoints;
+    return awardedPoints;
   }
 
   void onCircleEntered(String circleLabel, bool isCorrect) {
@@ -337,12 +340,14 @@ class _TMTTest extends ConsumerState<TMTTest> {
     if (isCorrect) {
       final pointsSystemEnabled = ref.watch(pointsSystemEnabledProvider);
       if (pointsSystemEnabled) {
-        int awardedPoints = _calculatePointsForCircle();
+        int awardedPoints = _calculatePointsForCircle(_mistakeSinceLastCorrect);
         ref.read(sessionPointsProvider.notifier).addPoints(awardedPoints);
         _showPointsAnimation(circleLabel, awardedPoints);
       } else {
         _showPointsAnimation(circleLabel, 0);
       }
+      // Reset mistake flag after reaching a correct circle
+      _mistakeSinceLastCorrect = false;
     }
 
     // Track mistakes - count each wrong circle only once per attempt
@@ -351,6 +356,8 @@ class _TMTTest extends ConsumerState<TMTTest> {
         mistakeCount++;
         _mistakesTracked.add(circleLabel);
       });
+      // Set flag to indicate a mistake occurred since the last correct circle
+      _mistakeSinceLastCorrect = true;
     }
   }
 
