@@ -97,14 +97,14 @@ class _RoundInfoScreenState extends State<RoundInfoScreen>
                       widget.title,
                       style: Theme.of(context).textTheme.displayLarge?.copyWith(
                             fontWeight: FontWeight.bold,
-                            color: Theme.of(context).colorScheme.primary,
-                            fontSize: 120,
+                            color: Theme.of(context).colorScheme.secondary,
+                            fontSize: 140,
                           ),
                       textAlign: TextAlign.center,
                     ),
                   ),
                   
-                  // Subtitle - medium size, clear separation
+                  // Subtitle - medium size, secondary color for clear separation
                   if (widget.subtitle != null && widget.subtitle!.isNotEmpty) ...[
                     const SizedBox(height: 180),
                     FadeTransition(
@@ -114,10 +114,7 @@ class _RoundInfoScreenState extends State<RoundInfoScreen>
                         style: Theme.of(context).textTheme.displayMedium?.copyWith(
                               fontWeight: FontWeight.bold,
                               color: Theme.of(context).colorScheme.primary,
-                              decoration: TextDecoration.underline,
-                              decorationColor: Theme.of(context).colorScheme.primary,
-                              decorationThickness: 1.5,
-                              fontSize: 54,
+                              fontSize: 80,
                             ),
                         textAlign: TextAlign.center,
                       ),
@@ -134,7 +131,7 @@ class _RoundInfoScreenState extends State<RoundInfoScreen>
                         style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                               fontWeight: FontWeight.w500,
                               color: Theme.of(context).colorScheme.primary,
-                              fontSize: 46,
+                              fontSize: 50,
                             ),
                         textAlign: TextAlign.center,
                       ),
