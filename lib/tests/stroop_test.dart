@@ -276,8 +276,13 @@ class _StroopTestState extends ConsumerState<StroopTest> with TickerProviderStat
         _wordTransitionController.forward();
         _isProcessing = false;
       } else {
-        testComplete = true;
         _isProcessing = false;
+        // Test is complete - finish immediately without showing result screen
+        Future.microtask(() {
+          if (mounted) {
+            _finishTest();
+          }
+        });
       }
     });
 
@@ -307,43 +312,6 @@ class _StroopTestState extends ConsumerState<StroopTest> with TickerProviderStat
   @override
   Widget build(BuildContext context) {
     final strings = ref.watch(appStringsProvider);
-    if (testComplete) {
-      return TestShell(
-        child: Column(
-          mainAxisSize: MainAxisSize.max,
-          children: [
-            Expanded(
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      strings.testComplete,
-                      style: Theme.of(context).textTheme.headlineMedium,
-                    ),
-                    const SizedBox(height: 20),
-                    Text(
-                      '${strings.correctLabel}: $correctCount\n${strings.wrongLabel}: $wrongCount',
-                      style: Theme.of(context).textTheme.bodyLarge,
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            BottomButtonBar(
-              primaryButton: BottomButton(
-                label: strings.done,
-                onPressed: _finishTest,
-              ),
-              onAbort: null,
-              showAbortButton: false,
-            ),
-          ],
-        ),
-      );
-    }
-
     return TestShell(
       child: StroopScreen(
         progressText: '${currentIndex + 1}/$numberOfWords',
