@@ -682,12 +682,6 @@ class _TMTTest extends ConsumerState<TMTTest> {
           BottomButtonBar(
             actionButtons: [
               BottomButton(
-                label: ref.watch(appStringsProvider).clear,
-                onPressed: _clearDrawing,
-                type: BottomButtonType.outlined,
-                icon: Icons.clear,
-              ),
-              BottomButton(
                 label: ref.watch(appStringsProvider).done,
                 onPressed: () {
                   if (testComplete) {
