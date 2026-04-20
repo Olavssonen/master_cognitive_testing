@@ -286,6 +286,16 @@ class DrawAreaPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    // Draw animated finger path line FIRST (underneath circles)
+    if (circles.isNotEmpty && fingerAnimationController != null && !testComplete && fingerAnimationController!.isAnimating) {
+      // Always animate from the first circle through all remaining ones
+      // This keeps the animation consistent and unaffected by user drawing progress
+      int startIndex = 0;
+      if (startIndex < circles.length) {
+        _drawAnimatedFingerLine(canvas, circles, startIndex, fingerAnimationController!.value);
+      }
+    }
+    
     // Draw circles
     for (final circle in circles) {
       // Check if this circle has been correctly entered
@@ -429,25 +439,120 @@ class DrawAreaPainter extends CustomPainter {
       }
     }
 
-    // Draw animated finger guide from circle 1 to circle 2
-    if (circles.isNotEmpty && circles.length >= 2 && fingerAnimationController != null && !testComplete && fingerAnimationController!.isAnimating) {
-      _drawAnimatedFinger(canvas, circles[0].center, circles[1].center, fingerAnimationController!.value);
+    // Draw animated finger guide showing path through all remaining circles
+    if (circles.isNotEmpty && fingerAnimationController != null && !testComplete && fingerAnimationController!.isAnimating) {
+      // Always animate from the first circle through all remaining ones
+      // This keeps the animation consistent and unaffected by user drawing progress
+      int startIndex = 0;
+      if (startIndex < circles.length) {
+        _drawAnimatedFingerPath(canvas, circles, startIndex, fingerAnimationController!.value);
+      }
     }
   }
 
-  /// Draw an animated icon (Icons.touch_app) moving along a path with fade out at end
-  void _drawAnimatedFinger(Canvas canvas, Offset start, Offset end, double progress) {
-    // Interpolate position along the path
-    final currentPos = Offset.lerp(start, end, progress)!;
+  /// Draw an animated line following the finger path
+  void _drawAnimatedFingerLine(Canvas canvas, List<Circle> circles, int startIndex, double overallProgress) {
+    if (startIndex >= circles.length) return;
     
-    // Calculate fade out: starts at 1.0, fades to 0.0 as progress goes to 1.0
-    // Use a non-linear fade for smoother effect (start fading at 70% progress)
-    final fadeStart = 0.7;
-    double opacity = 1.0;
-    if (progress >= fadeStart) {
-      opacity = 1.0 - ((progress - fadeStart) / (1.0 - fadeStart));
+    // Build path waypoints from startIndex through all remaining circles
+    List<Offset> waypoints = [circles[startIndex].center];
+    for (int i = startIndex + 1; i < circles.length; i++) {
+      waypoints.add(circles[i].center);
     }
+    
+    if (waypoints.length < 1) return;
+    
+    // Calculate total distance for the entire path
+    double totalDistance = 0;
+    List<double> segmentDistances = [];
+    for (int i = 0; i < waypoints.length - 1; i++) {
+      double segmentDist = (waypoints[i + 1] - waypoints[i]).distance;
+      segmentDistances.add(segmentDist);
+      totalDistance += segmentDist;
+    }
+    
+    if (totalDistance <= 0) return;
+    
+    // Calculate how far along the path we should be
+    double distanceToCover = totalDistance * overallProgress;
+    
+    // Draw line from start to current finger position
+    final linePaint = Paint()
+      ..color = AppColors.grey300
+      ..strokeWidth = 6
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+    
+    Offset currentPos = waypoints[0];
+    double accumulatedDistance = 0;
+    
+    // Trace the path and draw segments
+    for (int i = 0; i < segmentDistances.length; i++) {
+      if (accumulatedDistance + segmentDistances[i] >= distanceToCover) {
+        // We're in this segment - draw from waypoint to current position
+        double segmentProgress = (distanceToCover - accumulatedDistance) / segmentDistances[i];
+        currentPos = Offset.lerp(waypoints[i], waypoints[i + 1], segmentProgress)!;
+        canvas.drawLine(waypoints[i], currentPos, linePaint);
+        break;
+      } else {
+        // This segment is complete - draw the full segment
+        canvas.drawLine(waypoints[i], waypoints[i + 1], linePaint);
+        accumulatedDistance += segmentDistances[i];
+      }
+    }
+  }
 
+  /// Draw an animated icon (Icons.touch_app) moving along a complete path through circles
+  void _drawAnimatedFingerPath(Canvas canvas, List<Circle> circles, int startIndex, double overallProgress) {
+    if (startIndex >= circles.length) return;
+    
+    // Build path waypoints from startIndex through all remaining circles
+    List<Offset> waypoints = [circles[startIndex].center];
+    for (int i = startIndex + 1; i < circles.length; i++) {
+      waypoints.add(circles[i].center);
+    }
+    
+    if (waypoints.length < 2) return;
+    
+    // Calculate total distance for the entire path
+    double totalDistance = 0;
+    List<double> segmentDistances = [];
+    for (int i = 0; i < waypoints.length - 1; i++) {
+      double segmentDist = (waypoints[i + 1] - waypoints[i]).distance;
+      segmentDistances.add(segmentDist);
+      totalDistance += segmentDist;
+    }
+    
+    if (totalDistance <= 0) return;
+    
+    // Calculate how far along the path we should be
+    double distanceToCover = totalDistance * overallProgress;
+    Offset currentPos = waypoints[0];
+    
+    // Find which segment we're in and interpolate position
+    double accumulatedDistance = 0;
+    for (int i = 0; i < segmentDistances.length; i++) {
+      if (accumulatedDistance + segmentDistances[i] >= distanceToCover) {
+        // We're in this segment
+        double segmentProgress = (distanceToCover - accumulatedDistance) / segmentDistances[i];
+        currentPos = Offset.lerp(waypoints[i], waypoints[i + 1], segmentProgress)!;
+        break;
+      }
+      accumulatedDistance += segmentDistances[i];
+    }
+    
+    // Calculate fade out: starts fading at 85% progress
+    final fadeStart = 0.85;
+    double opacity = 1.0;
+    if (overallProgress >= fadeStart) {
+      opacity = 1.0 - ((overallProgress - fadeStart) / (1.0 - fadeStart));
+    }
+    
+    _drawFingerIcon(canvas, currentPos, opacity);
+  }
+  
+  /// Helper method to draw the finger icon at a specific position
+  void _drawFingerIcon(Canvas canvas, Offset position, double opacity) {
     // Draw the Icons.touch_app icon using TextPainter
     final iconTextPainter = TextPainter(
       text: TextSpan(
@@ -463,15 +568,15 @@ class DrawAreaPainter extends CustomPainter {
     
     iconTextPainter.layout();
     
-    // Draw icon centered at currentPos with a slight shadow for visibility
+    // Draw icon centered at position with a slight shadow for visibility
     final shadowPaint = Paint()
       ..color = Colors.black.withValues(alpha: 0.2 * opacity)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
     
-    canvas.drawCircle(currentPos, 24, shadowPaint);
+    canvas.drawCircle(position, 24, shadowPaint);
     
     // Draw the icon
-    final iconOffset = currentPos - Offset(iconTextPainter.width / 2, iconTextPainter.height / 2);
+    final iconOffset = position - Offset(iconTextPainter.width / 2, iconTextPainter.height / 2);
     iconTextPainter.paint(canvas, iconOffset);
   }
 

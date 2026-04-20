@@ -45,20 +45,39 @@ class _TMTTutorialState extends ConsumerState<TMTTutorial> with TickerProviderSt
       mode: widget.mode,
     );
     _fingerAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 1800),
+      duration: const Duration(milliseconds: 5000),
       vsync: this,
     );
     
     // Animate with a pause between loops
     _animateWithPause();
   }
+  
+  /// Calculate animation duration based on remaining circles
+  Duration _calculateAnimationDuration() {
+    const baseDuration = 3000; // milliseconds for full path
+    const totalCircles = 4;
+    const totalConnections = totalCircles - 1; // 3 connections for 4 circles
+    
+    // Always animate the full path from start to finish
+    // This keeps duration consistent regardless of user progress
+    int remainingConnections = totalConnections;
+    
+    // Duration scales with remaining connections
+    final duration = (baseDuration * remainingConnections / totalConnections).toInt();
+    
+    return Duration(milliseconds: duration);
+  }
 
   void _animateWithPause() {
+    // Update animation duration based on remaining circles
+    _fingerAnimationController.duration = _calculateAnimationDuration();
+    
     _fingerAnimationController.forward().then((_) {
-      if (mounted && !_firstConnectionMade) {
+      if (mounted && !tutorialComplete) {
         // Add 500ms pause after animation completes
         Future.delayed(const Duration(milliseconds: 500), () {
-          if (mounted && !_firstConnectionMade) {
+          if (mounted && !tutorialComplete) {
             _fingerAnimationController.reset();
             _animateWithPause();
           }
@@ -107,10 +126,9 @@ class _TMTTutorialState extends ConsumerState<TMTTutorial> with TickerProviderSt
         lastCorrectCircle = circlesEntered.last;
       }
 
-      // Stop animation once user has successfully connected circles 1 and 2
-      if (circlesEntered.length >= 2 && !_firstConnectionMade) {
-        _firstConnectionMade = true;
-        _fingerAnimationController.stop();
+      // Continue animation through entire sequence until tutorial is complete
+      if (!tutorialComplete) {
+        // Animation will continue looping and adjust start position based on circlesEntered
       }
 
       if (circlesEntered.isNotEmpty) {
@@ -307,6 +325,8 @@ class _TMTTutorialState extends ConsumerState<TMTTutorial> with TickerProviderSt
                   testComplete: tutorialComplete,
                   lastCorrectCircle: lastCorrectCircle,
                   fingerAnimationController: _fingerAnimationController,
+                  startLabel: strings.start,
+                  stopLabel: strings.stop,
                 );
               }),
             ),
@@ -352,6 +372,8 @@ class DrawAreaWithCircles extends StatefulWidget {
   final bool testComplete;
   final String? lastCorrectCircle;
   final AnimationController? fingerAnimationController;
+  final String? startLabel;
+  final String? stopLabel;
 
   const DrawAreaWithCircles({
     required this.onDrawingUpdated,
@@ -366,6 +388,8 @@ class DrawAreaWithCircles extends StatefulWidget {
     required this.testComplete,
     this.lastCorrectCircle,
     this.fingerAnimationController,
+    this.startLabel,
+    this.stopLabel,
   });
 
   @override
@@ -732,6 +756,8 @@ class _DrawAreaWithCirclesState extends State<DrawAreaWithCircles> with TickerPr
                       : (widget.lastCorrectCircle ?? widget.circlesEntered.last),
                   testComplete: widget.testComplete,
                   correctLineSegments: correctLineSegments,
+                  startLabel: widget.startLabel,
+                  stopLabel: widget.stopLabel,
                 ),
                 size: Size.infinite,
               );
