@@ -193,9 +193,6 @@ class _TMTTest extends ConsumerState<TMTTest> {
   int lastTimeElapsedMs = 0;
   int lastDeduction = 0;
   
-  // Time-based points tracking
-  DateTime? lastCircleEnteredTime;
-  
   // Points tracking for this test stage
   int startingSessionPoints = 0;
   
@@ -317,40 +314,18 @@ class _TMTTest extends ConsumerState<TMTTest> {
   }
 
   int _calculatePointsForCircle() {
-    const int basePoints = 20;
-    const int pointsDeductionPerQuarterSecond = 1;
-    const Duration quarterSecond = Duration(milliseconds: 250);
-
-    // If this is the first circle, award full points
-    if (lastCircleEnteredTime == null) {
-      lastCircleEnteredTime = DateTime.now();
-      setState(() {
-        lastPointsAwarded = basePoints;
-        lastTimeElapsedMs = 0;
-        lastDeduction = 0;
-      });
-      return basePoints;
-    }
-
-    // Calculate time elapsed since last circle
-    final now = DateTime.now();
-    final timeElapsed = now.difference(lastCircleEnteredTime!);
-    
-    // Calculate deduction: every 0.25 seconds = -1 point
-    final deduction = (timeElapsed.inMilliseconds / quarterSecond.inMilliseconds).toInt();
-    final awardedPoints = (basePoints - deduction).clamp(0, basePoints);
+    // Fixed points: 500 / 25 circles = 20 points per circle per stage
+    // Each stage (numbers and mixed) can earn max 500 points, totaling 1000
+    const int fixedPoints = 20;
 
     // Update debug info
     setState(() {
-      lastPointsAwarded = awardedPoints;
-      lastTimeElapsedMs = timeElapsed.inMilliseconds;
-      lastDeduction = deduction;
+      lastPointsAwarded = fixedPoints;
+      lastTimeElapsedMs = 0;
+      lastDeduction = 0;
     });
 
-    // Update timestamp for next calculation
-    lastCircleEnteredTime = now;
-
-    return awardedPoints;
+    return fixedPoints;
   }
 
   void onCircleEntered(String circleLabel, bool isCorrect) {
@@ -578,7 +553,6 @@ class _TMTTest extends ConsumerState<TMTTest> {
       _mistakesTracked.clear(); // Reset mistake tracking for this stroke
       lastCorrectCircle = null;
       testComplete = false;
-      lastCircleEnteredTime = null; // Reset time tracking for new attempt
     });
     // Clear the drawn points in the child widget
     _clearDrawingCallback?.call();

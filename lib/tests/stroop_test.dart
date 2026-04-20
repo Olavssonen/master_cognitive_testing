@@ -127,7 +127,6 @@ class _StroopTestState extends ConsumerState<StroopTest> with TickerProviderStat
   // Points tracking
   int startingSessionPoints = 0;
   late int basePointsPerWord;
-  DateTime? wordStartTime;
   int lastPointsAwarded = 0;
   int lastTimeElapsedMs = 0;
   int lastDeduction = 0;
@@ -151,9 +150,6 @@ class _StroopTestState extends ConsumerState<StroopTest> with TickerProviderStat
     );
     _wordTransitionController.forward(); // Prime it so first word shows
     stroopItems = _generateStroopItems(numberOfWords);
-    
-    // Start timer for first word
-    wordStartTime = DateTime.now();
   }
 
   @override
@@ -202,29 +198,15 @@ class _StroopTestState extends ConsumerState<StroopTest> with TickerProviderStat
   }
   
   int _calculatePointsForAnswer(bool isCorrect) {
-    if (wordStartTime == null) return 0;
-    
-    final now = DateTime.now();
-    final timeElapsedMs = now.difference(wordStartTime!).inMilliseconds;
-    const Duration quarterSecond = Duration(milliseconds: 250);
-    
-    // Time penalty: -1 point for every 250ms
-    int deduction = (timeElapsedMs / quarterSecond.inMilliseconds).floor();
-    
-    int awardedPoints;
-    if (isCorrect) {
-      // Correct: full base points minus time penalty
-      awardedPoints = (basePointsPerWord - deduction).clamp(0, basePointsPerWord);
-    } else {
-      // Wrong: fixed 50% penalty, no time deduction
-      int wrongPenalty = (basePointsPerWord * 0.5).ceil();
-      awardedPoints = -wrongPenalty; // Fixed negative penalty
-    }
+    // Fixed points: 1000 / 25 words = 40 points per word
+    // Correct: 40 points
+    // Wrong: 0 points
+    int awardedPoints = isCorrect ? basePointsPerWord : 0;
     
     // Store debug info
     lastPointsAwarded = awardedPoints;
-    lastTimeElapsedMs = timeElapsedMs;
-    lastDeduction = deduction;
+    lastTimeElapsedMs = 0;
+    lastDeduction = 0;
     
     return awardedPoints;
   }
@@ -247,7 +229,7 @@ class _StroopTestState extends ConsumerState<StroopTest> with TickerProviderStat
           points: points,
           position: wordPosition,
           fontSize: 60,
-          color: points < 0 ? AppColors.errorRed : null,
+          color: points == 0 ? AppColors.errorRed : null,
         );
       }
     } catch (e) {
@@ -290,7 +272,6 @@ class _StroopTestState extends ConsumerState<StroopTest> with TickerProviderStat
 
       if (currentIndex < stroopItems.length - 1) {
         currentIndex++;  // Update item FIRST, before animation
-        wordStartTime = DateTime.now(); // Reset timer for next word
         _wordTransitionController.reset();
         _wordTransitionController.forward();
         _isProcessing = false;
