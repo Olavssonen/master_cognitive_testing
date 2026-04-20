@@ -18,6 +18,7 @@ class SummaryScreen extends ConsumerWidget {
     final s = ref.watch(sessionProvider) as SessionDone;
     final strings = ref.watch(appStringsProvider);
     final totalPoints = ref.watch(sessionPointsProvider);
+    final pointsSystemEnabled = ref.watch(pointsSystemEnabledProvider);
 
     return Scaffold(
       body: Column(
@@ -43,7 +44,8 @@ class SummaryScreen extends ConsumerWidget {
             child: ListView(
               padding: const EdgeInsets.all(16),
               children: [
-                // Points Card at top
+                // Points Card at top - only show if points system is enabled
+                if (pointsSystemEnabled)
                 Card(
                   elevation: 2,
                   shape: RoundedRectangleBorder(
@@ -106,7 +108,8 @@ class SummaryScreen extends ConsumerWidget {
                     ),
                   ),
                 ),
-                const SizedBox(height: 24),
+                if (pointsSystemEnabled)
+                  const SizedBox(height: 24),
                 Text('${strings.testsCompleted} ${strings.testsCompleted} ${s.results.length} tester'),
                 const SizedBox(height: 12),
                 for (final r in s.results)
