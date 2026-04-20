@@ -21,6 +21,7 @@ abstract class AppStrings {
 
   // Button labels
   String get start;
+  String get stop;
   String get done;
   String get cancel;
   String get clear;

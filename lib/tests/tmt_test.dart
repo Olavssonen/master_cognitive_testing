@@ -587,6 +587,7 @@ class _TMTTest extends ConsumerState<TMTTest> {
   @override
   Widget build(BuildContext context) {
     final debugMode = ref.watch(debugModeProvider);
+    final strings = ref.watch(appStringsProvider);
     
     return TestShell(
       child: Column(
@@ -671,6 +672,8 @@ class _TMTTest extends ConsumerState<TMTTest> {
                     circlesEntered: circlesEntered,
                     testComplete: testComplete,
                     lastCorrectCircle: lastCorrectCircle,
+                    startLabel: strings.start,
+                    stopLabel: strings.stop,
                   ),
                 );
               }),
@@ -754,6 +757,8 @@ class DrawAreaWithCircles extends StatefulWidget {
   final List<String> circlesEntered; // Correctly entered circles
   final bool testComplete; // Whether test is complete
   final String? lastCorrectCircle; // Last correctly entered circle label
+  final String? startLabel; // Label for first circle (e.g., "Start")
+  final String? stopLabel; // Label for last circle (e.g., "Stop")
 
   const DrawAreaWithCircles({
     required this.onDrawingUpdated,
@@ -767,6 +772,8 @@ class DrawAreaWithCircles extends StatefulWidget {
     required this.circlesEntered,
     required this.testComplete,
     this.lastCorrectCircle,
+    this.startLabel,
+    this.stopLabel,
   });
 
   @override
@@ -1159,6 +1166,8 @@ class _DrawAreaWithCirclesState extends State<DrawAreaWithCircles>
                       : (widget.lastCorrectCircle ?? widget.circlesEntered.last),
                   testComplete: widget.testComplete,
                   correctLineSegments: correctLineSegments,
+                  startLabel: widget.startLabel,
+                  stopLabel: widget.stopLabel,
                 ),
                 size: Size.infinite,
               );

@@ -42,6 +42,9 @@ class NorwegianStrings extends AppStrings {
   String get start => 'Start';
 
   @override
+  String get stop => 'Stopp';
+
+  @override
   String get done => 'Ferdig';
 
   @override

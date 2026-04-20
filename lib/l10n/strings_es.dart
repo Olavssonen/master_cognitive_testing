@@ -42,6 +42,9 @@ class SpanishStrings extends AppStrings {
   String get start => 'Comenzar';
 
   @override
+  String get stop => 'Parar';
+
+  @override
   String get done => 'Hecho';
 
   @override

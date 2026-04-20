@@ -42,6 +42,9 @@ class EnglishStrings extends AppStrings {
   String get start => 'Start';
 
   @override
+  String get stop => 'Stop';
+
+  @override
   String get done => 'Done';
 
   @override

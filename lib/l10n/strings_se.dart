@@ -42,6 +42,9 @@ class SwedishStrings extends AppStrings {
   String get start => 'Starta';
 
   @override
+  String get stop => 'Stopp';
+
+  @override
   String get done => 'Klart';
 
   @override

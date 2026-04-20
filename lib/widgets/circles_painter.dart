@@ -266,6 +266,8 @@ class DrawAreaPainter extends CustomPainter {
   final String requiredCircle;
   final bool testComplete;
   final Set<int> correctLineSegments; // Indices of points that are part of correct line segments
+  final String? startLabel; // Label for first circle (e.g., "Start")
+  final String? stopLabel; // Label for last circle (e.g., "Stop")
 
   DrawAreaPainter({
     required this.points,
@@ -278,6 +280,8 @@ class DrawAreaPainter extends CustomPainter {
     this.requiredCircle = '1',
     this.testComplete = false,
     this.correctLineSegments = const {},
+    this.startLabel,
+    this.stopLabel,
   });
 
   @override
@@ -365,6 +369,44 @@ class DrawAreaPainter extends CustomPainter {
       final textOffset = circle.center -
           Offset(textPainter.width / 2, textPainter.height / 2);
       textPainter.paint(canvas, textOffset);
+      
+      // Draw start/stop labels above first and last circles
+      if (circles.isNotEmpty) {
+        if (circle == circles.first && startLabel != null) {
+          final labelPainter = TextPainter(
+            text: TextSpan(
+              text: startLabel,
+              style: const TextStyle(
+                color: AppColors.accent,
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            textDirection: TextDirection.ltr,
+          );
+          labelPainter.layout();
+          final labelOffset = circle.center -
+              Offset(labelPainter.width / 2, labelPainter.height + 35);
+          labelPainter.paint(canvas, labelOffset);
+        }
+        if (circle == circles.last && stopLabel != null) {
+          final labelPainter = TextPainter(
+            text: TextSpan(
+              text: stopLabel,
+              style: const TextStyle(
+                color: AppColors.accent,
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            textDirection: TextDirection.ltr,
+          );
+          labelPainter.layout();
+          final labelOffset = circle.center -
+              Offset(labelPainter.width / 2, labelPainter.height + 35);
+          labelPainter.paint(canvas, labelOffset);
+        }
+      }
     }
 
     // Draw the user's drawing
