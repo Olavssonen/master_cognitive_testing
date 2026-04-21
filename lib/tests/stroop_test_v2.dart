@@ -3,9 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_master_app/models/test_definition.dart';
 import 'package:flutter_master_app/widgets/test_shell.dart';
-import 'package:flutter_master_app/widgets/stroop_helpers.dart';
+import 'package:flutter_master_app/widgets/stroop_helpers_v2.dart';
+import 'package:flutter_master_app/tutorials/stroop_tutorial_v2.dart';
+import 'package:flutter_master_app/widgets/round_info_screen.dart';
 import 'package:flutter_master_app/widgets/bottom_button_bar.dart';
-import 'package:flutter_master_app/tutorials/stroop_tutorial.dart';
 import 'package:flutter_master_app/providers/test_providers.dart';
 import 'package:flutter_master_app/providers/language_provider.dart';
 import 'package:flutter_master_app/theme/app_theme.dart';
@@ -46,7 +47,7 @@ class _StroopTestScreenStateV2 extends ConsumerState<StroopTestScreenV2> {
     
     switch (stage) {
       case 0:
-        return StroopTutorial(
+        return StroopTutorialV2(
           onComplete: () {
             setState(() => stage = 1);
           },
@@ -54,7 +55,7 @@ class _StroopTestScreenStateV2 extends ConsumerState<StroopTestScreenV2> {
         );
       case 1:
         return TestShell(
-          child: StroopIntermediateScreen(
+          child: StroopIntermediateScreenV2(
             onReplay: () {
               setState(() => stage = 0);
             },
@@ -65,7 +66,7 @@ class _StroopTestScreenStateV2 extends ConsumerState<StroopTestScreenV2> {
           ),
         );
       case 2:
-        return StroopTestV2(
+        return StroopTestContentV2(
           run: widget.run,
           stageName: 'stroop_test_v2',
           onTestResult: (result, completed) {
@@ -90,13 +91,13 @@ class _StroopTestScreenStateV2 extends ConsumerState<StroopTestScreenV2> {
   }
 }
 
-class StroopTestV2 extends ConsumerStatefulWidget {
+class StroopTestContentV2 extends ConsumerStatefulWidget {
   final TestRunContext run;
   final String stageName;
   final Function(dynamic, bool)? onTestResult;
   final VoidCallback? onAbort;
 
-  const StroopTestV2({
+  const StroopTestContentV2({
     super.key,
     required this.run,
     this.stageName = 'stroop_test_v2',
@@ -105,20 +106,20 @@ class StroopTestV2 extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<StroopTestV2> createState() => _StroopTestStateV2();
+  ConsumerState<StroopTestContentV2> createState() => _StroopTestStateV2();
 }
 
-class _StroopTestStateV2 extends ConsumerState<StroopTestV2> with TickerProviderStateMixin {
+class _StroopTestStateV2 extends ConsumerState<StroopTestContentV2> with TickerProviderStateMixin {
   final int numberOfWords = 25; // Configurable number of trials
   
-  late List<StroopItem> stroopItems;
+  late List<StroopItemV2> stroopItems;
   int currentIndex = 0;
   int correctCount = 0;
   int wrongCount = 0;
   bool testComplete = false;
 
   // Feedback state
-  String? feedbackLetter;
+  IconData? feedbackSymbol;
   Color? feedbackColor;
   late AnimationController _feedbackController;
   late AnimationController _wordTransitionController;
@@ -159,13 +160,13 @@ class _StroopTestStateV2 extends ConsumerState<StroopTestV2> with TickerProvider
     super.dispose();
   }
 
-  List<StroopItem> _generateStroopItems(int count) {
-    final colors = StroopColorConstants.colors;
-    final colorNames = StroopColorConstants.colorNames;
-    final colorLetters = StroopColorConstants.colorLetters;
+  List<StroopItemV2> _generateStroopItems(int count) {
+    final colors = StroopColorConstantsV2.colors;
+    final colorNames = StroopColorConstantsV2.colorNames;
+    final colorSymbols = StroopColorConstantsV2.colorSymbols;
 
     final random = Random();
-    final List<StroopItem> items = [];
+    final List<StroopItemV2> items = [];
     int? previousColorIndex;
 
     for (int i = 0; i < count; i++) {
@@ -184,10 +185,10 @@ class _StroopTestStateV2 extends ConsumerState<StroopTestV2> with TickerProvider
       }
 
       items.add(
-        StroopItem(
+        StroopItemV2(
           textColor: colors[textColorIndex],
           displayWord: colorNames[wordNameIndex],
-          correctLetter: colorLetters[textColorIndex],
+          correctSymbol: colorSymbols[textColorIndex],
         ),
       );
       
@@ -237,15 +238,15 @@ class _StroopTestStateV2 extends ConsumerState<StroopTestV2> with TickerProvider
     }
   }
 
-  void _onButtonPressed(String letter) async {
+  void _onButtonPressed(IconData symbol) async {
     if (testComplete || _isProcessing) return;
 
     _isProcessing = true;
     final currentItem = stroopItems[currentIndex];
-    final isCorrect = letter == currentItem.correctLetter;
+    final isCorrect = symbol == currentItem.correctSymbol;
 
     setState(() {
-      feedbackLetter = letter;
+      feedbackSymbol = symbol;
       feedbackColor = isCorrect ? AppColors.successGreen : AppColors.errorRed;
     });
 
@@ -288,7 +289,7 @@ class _StroopTestStateV2 extends ConsumerState<StroopTestV2> with TickerProvider
 
     if (mounted) {
       setState(() {
-        feedbackLetter = null;
+        feedbackSymbol = null;
         feedbackColor = null;
       });
     }
@@ -311,29 +312,29 @@ class _StroopTestStateV2 extends ConsumerState<StroopTestV2> with TickerProvider
 
   @override
   Widget build(BuildContext context) {
-    final strings = ref.watch(appStringsProvider);
+    final colorSymbols = StroopColorConstantsV2.colorSymbols;
     return TestShell(
-      child: StroopScreen(
+      child: StroopScreenV2(
         progressText: '${currentIndex + 1}/$numberOfWords',
-        middleContent: StroopWordDisplay(
+        middleContent: StroopWordDisplayV2(
           word: stroopItems[currentIndex].displayWord,
           style: TextStyle(
-            fontSize: StroopLayout.test.middleTextSize,
+            fontSize: StroopLayoutV2.test.middleTextSize,
             fontWeight: FontWeight.bold,
             color: stroopItems[currentIndex].textColor,
           ),
           animationController: _wordTransitionController,
         ),
         buttons: [
-          for (final letter in StroopColorConstants.colorLetters)
-            FeedbackStroopButton(
-              letter: letter,
+          for (final symbol in colorSymbols)
+            FeedbackStroopButtonV2(
+              symbol: symbol,
               backgroundColor: AppColors.grey700,
-              onPressed: () => _onButtonPressed(letter),
+              onPressed: () => _onButtonPressed(symbol),
               feedbackController: _feedbackController,
-              feedbackLetter: feedbackLetter,
+              feedbackSymbol: feedbackSymbol,
               feedbackColor: feedbackColor,
-              size: StroopLayout.unifiedButtonSize,
+              size: StroopLayoutV2.unifiedButtonSize,
             ),
         ],
         bottomButton: null,
@@ -342,4 +343,46 @@ class _StroopTestStateV2 extends ConsumerState<StroopTestV2> with TickerProvider
     );
   }
 
+}
+
+/// Intermediate screen between tutorial and test
+class StroopIntermediateScreenV2 extends ConsumerWidget {
+  final VoidCallback onReplay;
+  final VoidCallback onStartTest;
+  final VoidCallback? onAbort;
+
+  const StroopIntermediateScreenV2({
+    super.key,
+    required this.onReplay,
+    required this.onStartTest,
+    this.onAbort,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final strings = ref.watch(appStringsProvider);
+    
+    return RoundInfoScreen(
+      title: strings.round2,
+      subtitle: strings.stroopTest,
+      bodyText: strings.lookAtColorNotWord,
+      bottomContent: BottomButtonBar(
+        actionButtons: [
+          BottomButton(
+            label: strings.retry,
+            onPressed: onReplay,
+            icon: Icons.refresh,
+          ),
+          BottomButton(
+            label: strings.start,
+            onPressed: onStartTest,
+            icon: Icons.play_arrow,
+          ),
+        ],
+        onAbort: onAbort,
+        showAbortButton: false,
+        useRow: true,
+      ),
+    );
+  }
 }
