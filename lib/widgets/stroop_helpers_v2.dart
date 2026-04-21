@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../theme/app_theme.dart';
 import '../providers/language_provider.dart';
+import 'test_shell.dart';
+import 'bottom_button_bar.dart';
 
 /// Centralized constants for Stroop Test V2 (with symbols)
 class StroopColorConstantsV2 {
@@ -260,6 +262,172 @@ class StroopWordDisplayV2 extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+/// Example screen showing correct and incorrect answers for Stroop Test V2
+class StroopExampleScreenV2 extends ConsumerWidget {
+  final VoidCallback onContinue;
+
+  const StroopExampleScreenV2({
+    super.key,
+    required this.onContinue,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final strings = ref.watch(appStringsProvider);
+    final colors = StroopColorConstantsV2.colors;
+    final colorNames = StroopColorConstantsV2.colorNames;
+
+    // Example: "BLÅ" (Blue word) displayed in YELLOW color
+    final wordIndex = 1;      // BLÅ
+    final displayColorIndex = 3; // GUL (Yellow)
+    final word = colorNames[wordIndex];
+    final displayColor = colors[displayColorIndex];
+
+
+    return TestShell(
+      child: Column(
+        mainAxisSize: MainAxisSize.max,
+        children: [
+          // Top 1/3: Title and Instructions
+          Expanded(
+            flex: 1,
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Title
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Text(
+                      'Here is an example:',
+                      style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.crayolaBlue,
+                            fontSize: 64,
+                          ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  // Instructions
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Text(
+                      strings.lookAtColorNotWord,
+                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.crayolaBlue,
+                            fontSize: 40,
+                          ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          // Bottom 2/3: Example content
+          Expanded(
+            flex: 2,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                const SizedBox(height: 100),
+                // The word in wrong color
+                Text(
+                  word,
+                  style: TextStyle(
+                    fontSize: StroopLayoutV2.test.middleTextSize, // Same as actual test (80)
+                    fontWeight: FontWeight.bold,
+                    color: displayColor,
+                  ),
+                ),
+                const SizedBox(height: 80),
+                // Two options side by side
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Correct answer (actual color shown with checkmark)
+                    Column(
+                      children: [
+                        Container(
+                          width: 120,
+                          height: 120,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: displayColor, // Yellow
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        Text(
+                          'CORRECT',
+                          style: TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.successGreen,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Icon(
+                          Icons.check,
+                          color: AppColors.successGreen,
+                          size: 48,
+                          semanticLabel: 'Correct',
+                        ),
+                      ],
+                    ),
+                    const SizedBox(width: 96),
+                    // Incorrect answer (what the word says with X)
+                    Column(
+                      children: [
+                        Container(
+                          width: 120,
+                          height: 120,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: colors[wordIndex], // Blue (what it says)
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        Text(
+                          'WRONG',
+                          style: TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.errorRed,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Icon(
+                          Icons.close,
+                          color: AppColors.errorRed,
+                          size: 48,
+                          semanticLabel: 'Wrong',
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          // Bottom button bar
+          BottomButtonBar(
+            primaryButton: BottomButton(
+              label: ref.watch(appStringsProvider).continueTutorial,
+              icon: Icons.arrow_forward,
+              onPressed: onContinue,
+            ),
+            onAbort: null,
+            showAbortButton: false,
+            colorSet: BottomBarColorSet.primary,
+          ),
+        ],
+      ),
     );
   }
 }

@@ -27,6 +27,7 @@ class _StroopTutorialStateV2 extends ConsumerState<StroopTutorialV2>
   late List<StroopItemV2> currentItems;
   int currentItemIndex = 0;
   bool showIntroduction = true;
+  bool showExamples = false;
 
   // Feedback state
   IconData? feedbackSymbol;
@@ -177,13 +178,23 @@ class _StroopTutorialStateV2 extends ConsumerState<StroopTutorialV2>
             primaryButton: BottomButton(
               label: ref.watch(appStringsProvider).start,
               icon: Icons.play_arrow,
-              onPressed: () => setState(() => showIntroduction = false),
+              onPressed: () => setState(() {
+                showIntroduction = false;
+                showExamples = true;
+              }),
             ),
             onAbort: null,
             showAbortButton: false,
             colorSet: BottomBarColorSet.secondary,
           ),
         ),
+      );
+    }
+
+    // Show examples screen
+    if (showExamples) {
+      return StroopExampleScreenV2(
+        onContinue: () => setState(() => showExamples = false),
       );
     }
 
