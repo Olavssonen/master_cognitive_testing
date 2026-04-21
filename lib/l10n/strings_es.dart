@@ -283,5 +283,27 @@ class SpanishStrings extends AppStrings {
 
   @override
   String get errorMessage => 'Error: ';
+
+  // Stroop Test V2 - Color words and UI
+  @override
+  String get hereIsAnExample => 'Aquí hay un ejemplo:';
+
+  @override
+  String get correctOption => 'CORRECTO';
+
+  @override
+  String get wrongOption => 'INCORRECTO';
+
+  @override
+  String get colorRed => 'Rojo';
+
+  @override
+  String get colorBlue => 'Azul';
+
+  @override
+  String get colorGreen => 'Verde';
+
+  @override
+  String get colorYellow => 'Amarillo';
 }
 

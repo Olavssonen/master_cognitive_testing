@@ -162,7 +162,13 @@ class _StroopTestStateV2 extends ConsumerState<StroopTestContentV2> with TickerP
 
   List<StroopItemV2> _generateStroopItems(int count) {
     final colors = StroopColorConstantsV2.colors;
-    final colorNames = StroopColorConstantsV2.colorNames;
+    final strings = ref.read(appStringsProvider);
+    final colorNames = StroopColorConstantsV2.getColorNames(
+      strings.colorRed.toUpperCase(),
+      strings.colorBlue.toUpperCase(),
+      strings.colorGreen.toUpperCase(),
+      strings.colorYellow.toUpperCase(),
+    );
     final colorSymbols = StroopColorConstantsV2.colorSymbols;
 
     final random = Random();

@@ -114,4 +114,13 @@ abstract class AppStrings {
   String get completed;
   String get incomplete;
   String get errorMessage;
+
+  // Stroop Test V2 - Color words and UI
+  String get hereIsAnExample;
+  String get correctOption;
+  String get wrongOption;
+  String get colorRed;
+  String get colorBlue;
+  String get colorGreen;
+  String get colorYellow;
 }

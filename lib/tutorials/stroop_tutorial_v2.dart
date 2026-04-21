@@ -66,7 +66,13 @@ class _StroopTutorialStateV2 extends ConsumerState<StroopTutorialV2>
 
   List<StroopItemV2> _generateTutorialItems() {
     final colors = StroopColorConstantsV2.colors;
-    final colorNames = StroopColorConstantsV2.colorNames;
+    final strings = ref.read(appStringsProvider);
+    final colorNames = StroopColorConstantsV2.getColorNames(
+      strings.colorRed.toUpperCase(),
+      strings.colorBlue.toUpperCase(),
+      strings.colorGreen.toUpperCase(),
+      strings.colorYellow.toUpperCase(),
+    );
     final colorSymbols = StroopColorConstantsV2.colorSymbols;
     final items = <StroopItemV2>[];
     final random = Random();

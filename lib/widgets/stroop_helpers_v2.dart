@@ -15,7 +15,11 @@ class StroopColorConstantsV2 {
     Color(0xFFFBC02D), // Yellow
   ];
 
-  static const List<String> colorNames = ['RØD', 'BLÅ', 'GRØNN', 'GUL'];
+  // Dynamic color names based on language provider
+  static List<String> getColorNames(String colorRed, String colorBlue, String colorGreen, String colorYellow) {
+    return [colorRed, colorBlue, colorGreen, colorYellow];
+  }
+
   static const List<IconData> colorSymbols = [
     Icons.favorite_border,  // Heart for Red
     Icons.water_drop,       // Droplet for Blue
@@ -279,14 +283,18 @@ class StroopExampleScreenV2 extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final strings = ref.watch(appStringsProvider);
     final colors = StroopColorConstantsV2.colors;
-    final colorNames = StroopColorConstantsV2.colorNames;
+    final colorNames = StroopColorConstantsV2.getColorNames(
+      strings.colorRed.toUpperCase(),
+      strings.colorBlue.toUpperCase(),
+      strings.colorGreen.toUpperCase(),
+      strings.colorYellow.toUpperCase(),
+    );
 
-    // Example: "BLÅ" (Blue word) displayed in YELLOW color
-    final wordIndex = 1;      // BLÅ
-    final displayColorIndex = 3; // GUL (Yellow)
+    // Example: Blue word displayed in YELLOW color
+    final wordIndex = 1;      // Blue
+    final displayColorIndex = 3; // Yellow
     final word = colorNames[wordIndex];
     final displayColor = colors[displayColorIndex];
-
 
     return TestShell(
       child: Column(
@@ -303,7 +311,7 @@ class StroopExampleScreenV2 extends ConsumerWidget {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
                     child: Text(
-                      'Here is an example:',
+                      strings.hereIsAnExample,
                       style: Theme.of(context).textTheme.headlineLarge?.copyWith(
                             fontWeight: FontWeight.bold,
                             color: AppColors.crayolaBlue,
@@ -364,7 +372,7 @@ class StroopExampleScreenV2 extends ConsumerWidget {
                         ),
                         const SizedBox(height: 20),
                         Text(
-                          'CORRECT',
+                          strings.correctOption,
                           style: TextStyle(
                             fontSize: 28,
                             fontWeight: FontWeight.bold,
@@ -376,7 +384,7 @@ class StroopExampleScreenV2 extends ConsumerWidget {
                           Icons.check,
                           color: AppColors.successGreen,
                           size: 48,
-                          semanticLabel: 'Correct',
+                          semanticLabel: strings.correct,
                         ),
                       ],
                     ),
@@ -394,7 +402,7 @@ class StroopExampleScreenV2 extends ConsumerWidget {
                         ),
                         const SizedBox(height: 20),
                         Text(
-                          'WRONG',
+                          strings.wrongOption,
                           style: TextStyle(
                             fontSize: 28,
                             fontWeight: FontWeight.bold,
@@ -406,7 +414,7 @@ class StroopExampleScreenV2 extends ConsumerWidget {
                           Icons.close,
                           color: AppColors.errorRed,
                           size: 48,
-                          semanticLabel: 'Wrong',
+                          semanticLabel: strings.wrong,
                         ),
                       ],
                     ),

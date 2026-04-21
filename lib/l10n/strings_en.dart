@@ -283,4 +283,26 @@ class EnglishStrings extends AppStrings {
 
   @override
   String get errorMessage => 'Error: ';
+
+  // Stroop Test V2 - Color words and UI
+  @override
+  String get hereIsAnExample => 'Here is an example:';
+
+  @override
+  String get correctOption => 'CORRECT';
+
+  @override
+  String get wrongOption => 'WRONG';
+
+  @override
+  String get colorRed => 'Red';
+
+  @override
+  String get colorBlue => 'Blue';
+
+  @override
+  String get colorGreen => 'Green';
+
+  @override
+  String get colorYellow => 'Yellow';
 }

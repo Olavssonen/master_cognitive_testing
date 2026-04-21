@@ -283,4 +283,26 @@ class NorwegianStrings extends AppStrings {
 
   @override
   String get errorMessage => 'Feil: ';
+
+  // Stroop Test V2 - Color words and UI
+  @override
+  String get hereIsAnExample => 'Her er et eksempel:';
+
+  @override
+  String get correctOption => 'RIKTIG';
+
+  @override
+  String get wrongOption => 'FEIL';
+
+  @override
+  String get colorRed => 'Rød';
+
+  @override
+  String get colorBlue => 'Blå';
+
+  @override
+  String get colorGreen => 'Grønn';
+
+  @override
+  String get colorYellow => 'Gul';
 }

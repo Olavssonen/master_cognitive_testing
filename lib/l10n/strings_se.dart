@@ -283,4 +283,26 @@ class SwedishStrings extends AppStrings {
 
   @override
   String get errorMessage => 'Fel: ';
+
+  // Stroop Test V2 - Color words and UI
+  @override
+  String get hereIsAnExample => 'Här är ett exempel:';
+
+  @override
+  String get correctOption => 'RÄTT';
+
+  @override
+  String get wrongOption => 'FEL';
+
+  @override
+  String get colorRed => 'Röd';
+
+  @override
+  String get colorBlue => 'Blå';
+
+  @override
+  String get colorGreen => 'Grön';
+
+  @override
+  String get colorYellow => 'Gul';
 }
