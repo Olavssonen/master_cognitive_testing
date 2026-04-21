@@ -13,8 +13,8 @@ import 'package:flutter_master_app/widgets/points_collected_widget.dart';
 
 // Quick ref.watch helper for tests
 final stroopTest = TestDefinition(
-  id: 'Stroop Test',
-  title: 'Farger',
+  id: 'Stroop Test - Old',
+  title: 'Colors (Old)',
   icon: Icons.color_lens,
   build: (context, run) => StroopTestScreen(run: run),
 );
@@ -73,7 +73,7 @@ class _StroopTestScreenState extends ConsumerState<StroopTestScreen> {
             final pointsEarned = (result['pointsEarned'] as int?) ?? 0;
             widget.run.complete(
               TestResult(
-                testId: 'stroop',
+                testId: 'stroop_old',
                 summary: {
                   'progression_completed': true,
                   'all_stages': stageResults,

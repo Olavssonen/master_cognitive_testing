@@ -63,19 +63,19 @@ class SwedishStrings extends AppStrings {
   String get skip => 'Hoppa över';
 
   @override
-  String get counterTest => 'Räknare';
+  String get counterTest => 'Räkna';
 
   @override
-  String get tap10Test => 'Tryck 10';
+  String get tap10Test => 'Trycka';
 
   @override
-  String get cogTest => 'Klocka';
+  String get cogTest => 'Minne';
 
   @override
-  String get tmtTest => 'Trail Making';
+  String get tmtTest => 'Ritning';
 
   @override
-  String get stroopTest => 'Stroop';
+  String get stroopTest => 'Färger';
 
   @override
   String get round1 => 'Omgång 1';

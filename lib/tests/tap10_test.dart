@@ -8,7 +8,7 @@ import 'package:flutter_master_app/providers/test_providers.dart';
 
 final tap10Test = TestDefinition(
   id: 'Trykk 10 Test',
-  title: 'Trykking',
+  title: 'Tap',
   icon: Icons.touch_app,
   build: (context, run) => Tap10TestScreen(run: run),
 );

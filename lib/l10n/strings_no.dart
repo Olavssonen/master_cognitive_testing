@@ -63,10 +63,10 @@ class NorwegianStrings extends AppStrings {
   String get skip => 'Hopp over';
 
   @override
-  String get counterTest => 'Teller';
+  String get counterTest => 'Telle';
 
   @override
-  String get tap10Test => 'Trykk 10';
+  String get tap10Test => 'Trykk';
 
   @override
   String get cogTest => 'Hukommelse';

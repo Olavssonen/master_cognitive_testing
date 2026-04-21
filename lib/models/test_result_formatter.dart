@@ -39,7 +39,7 @@ class Tap10TestFormatter implements TestResultFormatter {
   Widget? getDetailedView(Map<String, dynamic> summary, AppStrings strings) => null;
 }
 
-/// Stroop Test Formatter
+/// Stroop Test Formatter (Old - Debug Only)
 class StroopTestFormatter implements TestResultFormatter {
   @override
   Text getTextSummary(Map<String, dynamic> summary, AppStrings strings) {
@@ -73,7 +73,7 @@ class StroopTestFormatter implements TestResultFormatter {
   Widget? getDetailedView(Map<String, dynamic> summary, AppStrings strings) => null;
 }
 
-/// Stroop Test V2 Formatter
+/// Stroop Test Formatter (Main Version - V2 with Symbols)
 class StroopTestFormatterV2 implements TestResultFormatter {
   @override
   Text getTextSummary(Map<String, dynamic> summary, AppStrings strings) {
@@ -375,8 +375,8 @@ class TestResultFormatterFactory {
       'counter' => CounterTestFormatter(),
       'tap10' => Tap10TestFormatter(),
       'cog' => CogTestFormatter(),
-      'stroop' => StroopTestFormatter(),
-      'stroop_v2' => StroopTestFormatterV2(),
+      'stroop' => StroopTestFormatterV2(),
+      'stroop_old' => StroopTestFormatter(),
       'TMT' => TMTTestFormatter(),
       _ => _DefaultFormatter(),
     };

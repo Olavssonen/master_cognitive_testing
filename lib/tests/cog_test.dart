@@ -15,7 +15,7 @@ import 'dart:math' as Math;
 
 final cogTest = TestDefinition(
   id: 'Mini-Cog Test',
-  title: 'Hukommelse',
+  title: 'Memory',
   icon: Icons.schedule,
   build: (context, run) => CogTestScreen(run: run),
 );

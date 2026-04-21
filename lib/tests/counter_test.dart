@@ -8,7 +8,7 @@ import 'package:flutter_master_app/providers/test_providers.dart';
 
 final counterTest = TestDefinition(
   id: 'Counter Test',
-  title: 'Telling',
+  title: 'Count',
   icon: Icons.exposure_plus_1,
   build: (context, run) => CounterTestScreen(run: run),
 );

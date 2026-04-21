@@ -68,15 +68,14 @@ final testRegistryProvider = Provider<List<TestDefinition>>((ref) {
       tap10Test,
       cogTest,
       tmtTest,
-      stroopTest,
       stroopTestV2,
+      stroopTest,  // Old version - debug only
     ];
   } else {
-    // Debug mode OFF: only stroop, tmt, and cog available
+    // Debug mode OFF: only stroop (v2), tmt, and cog available
     return [
       cogTest,
       tmtTest,
-      stroopTest,
       stroopTestV2,
     ];
   }

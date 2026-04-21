@@ -63,19 +63,19 @@ class SpanishStrings extends AppStrings {
   String get skip => 'Omitir';
 
   @override
-  String get counterTest => 'Contador';
+  String get counterTest => 'Contar';
 
   @override
-  String get tap10Test => 'Toque 10';
+  String get tap10Test => 'Tocar';
 
   @override
-  String get cogTest => 'Reloj';
+  String get cogTest => 'Memoria';
 
   @override
-  String get tmtTest => 'Trazado de Caminos';
+  String get tmtTest => 'Conectar';
 
   @override
-  String get stroopTest => 'Stroop';
+  String get stroopTest => 'Colores';
 
   @override
   String get round1 => 'Ronda 1';

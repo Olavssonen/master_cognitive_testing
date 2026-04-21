@@ -63,19 +63,19 @@ class EnglishStrings extends AppStrings {
   String get skip => 'Skip';
 
   @override
-  String get counterTest => 'Counter';
+  String get counterTest => 'Count';
 
   @override
-  String get tap10Test => 'Tap 10';
+  String get tap10Test => 'Tap';
 
   @override
-  String get cogTest => 'Clock';
+  String get cogTest => 'Memory';
 
   @override
-  String get tmtTest => 'Trail Making';
+  String get tmtTest => 'Connect';
 
   @override
-  String get stroopTest => 'Stroop';
+  String get stroopTest => 'Colors';
 
   @override
   String get round1 => 'Round 1';

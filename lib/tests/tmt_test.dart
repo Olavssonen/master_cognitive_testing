@@ -17,7 +17,7 @@ import 'package:flutter_master_app/theme/app_theme.dart';
 
 final tmtTest = TestDefinition(
   id: 'Trail Making Test',
-  title: 'Tegning',
+  title: 'Connect',
   icon: Icons.draw,
   build: (context, run) => TMTTestFlowProgression(run: run),
 );

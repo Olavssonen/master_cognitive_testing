@@ -21,8 +21,8 @@ String getLocalizedTestTitle(String testId, AppStrings strings) {
       return strings.tmtTest;
     case 'Stroop Test':
       return strings.stroopTest;
-    case 'Stroop Test V2':
-      return '${strings.stroopTest} V2';
+    case 'Stroop Test - Old':
+      return '${strings.stroopTest} (Old)';
     default:
       return testId;
   }
