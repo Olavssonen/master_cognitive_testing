@@ -4,6 +4,7 @@ import 'package:flutter_master_app/tests/counter_test.dart';
 import 'package:flutter_master_app/tests/tap10_test.dart';
 import 'package:flutter_master_app/tests/tmt_test.dart';
 import 'package:flutter_master_app/tests/stroop_test.dart';
+import 'package:flutter_master_app/tests/stroop_test_v2.dart';
 import 'package:flutter_master_app/tests/cog_test.dart';
 
 final debugModeProvider = NotifierProvider<DebugModeNotifier, bool>(DebugModeNotifier.new);
@@ -68,6 +69,7 @@ final testRegistryProvider = Provider<List<TestDefinition>>((ref) {
       cogTest,
       tmtTest,
       stroopTest,
+      stroopTestV2,
     ];
   } else {
     // Debug mode OFF: only stroop, tmt, and cog available
@@ -75,6 +77,7 @@ final testRegistryProvider = Provider<List<TestDefinition>>((ref) {
       cogTest,
       tmtTest,
       stroopTest,
+      stroopTestV2,
     ];
   }
 });

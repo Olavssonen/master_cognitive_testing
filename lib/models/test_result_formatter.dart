@@ -73,6 +73,40 @@ class StroopTestFormatter implements TestResultFormatter {
   Widget? getDetailedView(Map<String, dynamic> summary, AppStrings strings) => null;
 }
 
+/// Stroop Test V2 Formatter
+class StroopTestFormatterV2 implements TestResultFormatter {
+  @override
+  Text getTextSummary(Map<String, dynamic> summary, AppStrings strings) {
+    final allStages = summary['all_stages'] as Map<String, dynamic>? ?? {};
+    final stageInfo = <String>[];
+
+    for (final entry in allStages.entries) {
+      final stageData = entry.value as Map<String, dynamic>? ?? {};
+      final completed = stageData['completed'] as bool? ?? false;
+      final statusText = completed ? strings.completed : strings.incomplete;
+
+      // Extract correct/wrong counts if available
+      final result = stageData['result'] as Map<String, dynamic>?;
+      if (result != null) {
+        final correct = result['correct'] as int? ?? 0;
+        final wrong = result['wrong'] as int? ?? 0;
+        final accuracy = result['accuracy'] as String? ?? '0.0';
+        stageInfo.add(
+          '${entry.key}: $statusText\n'
+          '  ${strings.correct}: $correct | ${strings.wrong}: $wrong | ${strings.accuracy_label}: $accuracy%',
+        );
+      } else {
+        stageInfo.add('${entry.key}: $statusText');
+      }
+    }
+
+    return Text(stageInfo.isNotEmpty ? stageInfo.join('\n') : strings.testComplete);
+  }
+
+  @override
+  Widget? getDetailedView(Map<String, dynamic> summary, AppStrings strings) => null;
+}
+
 /// TMT Test Formatter
 class TMTTestFormatter implements TestResultFormatter {
   String _translateStageName(String stageName, AppStrings strings) {
@@ -342,6 +376,7 @@ class TestResultFormatterFactory {
       'tap10' => Tap10TestFormatter(),
       'cog' => CogTestFormatter(),
       'stroop' => StroopTestFormatter(),
+      'stroop_v2' => StroopTestFormatterV2(),
       'TMT' => TMTTestFormatter(),
       _ => _DefaultFormatter(),
     };
