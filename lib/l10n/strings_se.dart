@@ -255,6 +255,9 @@ class SwedishStrings extends AppStrings {
   String get wordsRemembered => 'Ord återkallelse';
 
   @override
+  String get tmtCardTitle => 'Spårtest';
+
+  @override
   String get totalScoreLabel => 'Totalt Poäng';
 
   @override

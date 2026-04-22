@@ -255,6 +255,9 @@ class EnglishStrings extends AppStrings {
   String get wordsRemembered => 'Words Remembered';
 
   @override
+  String get tmtCardTitle => 'Trail Making Test';
+
+  @override
   String get totalScoreLabel => 'Total Score';
 
   @override

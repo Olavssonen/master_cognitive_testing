@@ -255,6 +255,9 @@ class SpanishStrings extends AppStrings {
   String get wordsRemembered => 'Palabras Recordadas';
 
   @override
+  String get tmtCardTitle => 'Prueba de Trazado';
+
+  @override
   String get totalScoreLabel => 'Puntuación Total';
 
   @override

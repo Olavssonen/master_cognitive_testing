@@ -330,17 +330,75 @@ class SummaryScreen extends ConsumerWidget {
 
     // For TMT tests with detailed view, combine text and image in one card
     if (r.testId == 'TMT' && detailedView != null) {
+      final allStages = r.summary['all_stages'] as Map<String, dynamic>? ?? {};
+
       return Card(
+        elevation: 2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(
+            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
+            width: 1,
+          ),
+        ),
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Text(
-                r.testId,
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                strings.tmtCardTitle,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 24),
+              // Numbers stage section
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  strings.numberStage,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              ...[
+                if (allStages['numbers_test'] != null)
+                  ..._buildTMTStageRows(
+                    allStages['numbers_test'] as Map<String, dynamic>,
+                    strings,
+                    context,
+                  ),
+              ],
+              const SizedBox(height: 24),
+              // Letters/Mixed stage section
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  strings.letterStage,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              ...[
+                if (allStages['mixed_test'] != null)
+                  ..._buildTMTStageRows(
+                    allStages['mixed_test'] as Map<String, dynamic>,
+                    strings,
+                    context,
+                  ),
+              ],
+              const SizedBox(height: 24),
               detailedView,
             ],
           ),
@@ -369,5 +427,72 @@ class SummaryScreen extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  List<Widget> _buildTMTStageRows(
+    Map<String, dynamic> stageData,
+    AppStrings strings,
+    BuildContext context,
+  ) {
+    final timeSpent = stageData['timeSpent'] as int? ?? 0;
+    final mistakes = stageData['mistakes'] as int? ?? 0;
+    
+    // Format time: convert seconds to m:ss format
+    final minutes = timeSpent ~/ 60;
+    final seconds = timeSpent % 60;
+    final timeText = '$minutes:${seconds.toString().padLeft(2, '0')}';
+
+    return [
+      Container(
+        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        margin: const EdgeInsets.symmetric(vertical: 2),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              strings.time,
+              style: TextStyle(
+                fontSize: 16,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ),
+            Text(
+              timeText,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.secondary,
+              ),
+            ),
+          ],
+        ),
+      ),
+      Container(
+        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        margin: const EdgeInsets.symmetric(vertical: 2),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              strings.mistakes,
+              style: TextStyle(
+                fontSize: 16,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ),
+            Text(
+              '$mistakes',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.secondary,
+              ),
+            ),
+          ],
+        ),
+      ),
+    ];
   }
 }

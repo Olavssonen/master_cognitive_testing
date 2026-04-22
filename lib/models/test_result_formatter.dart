@@ -155,10 +155,10 @@ class TMTTestFormatter implements TestResultFormatter {
 
   @override
   Widget? getDetailedView(Map<String, dynamic> summary, AppStrings strings, BuildContext context) {
-    return _buildCombinedTMTView(summary, strings);
+    return _buildCombinedTMTView(summary, strings, context);
   }
 
-  Widget _buildCombinedTMTView(Map<String, dynamic> summary, AppStrings strings) {
+  Widget _buildCombinedTMTView(Map<String, dynamic> summary, AppStrings strings, BuildContext context) {
     final allStages = summary['all_stages'] as Map<String, dynamic>? ?? {};
 
     final images = <String, Uint8List>{};
@@ -183,39 +183,12 @@ class TMTTestFormatter implements TestResultFormatter {
       );
     }
 
-    // Build text summary
-    final stageInfo = <String>[];
-    for (final entry in allStages.entries) {
-      final stageData = entry.value as Map<String, dynamic>? ?? {};
-      final completed = stageData['completed'] as bool? ?? false;
-      final statusText = completed ? strings.completed : strings.incomplete;
-
-      // Show circle count, time, and mistakes for TMT tests
-      final circlesOrder = stageData['circlesOrder'] as List<dynamic>?;
-      final timeSpent = stageData['timeSpent'] as int? ?? 0;
-      final mistakes = stageData['mistakes'] as int? ?? 0;
-      final timeText = _formatTime(timeSpent);
-      final mistakeText = mistakes > 0 ? ' | ${strings.mistakes}: $mistakes' : '';
-      
-      if (circlesOrder != null && circlesOrder.isNotEmpty) {
-        stageInfo.add('${_translateStageName(entry.key, strings)}: $statusText (${circlesOrder.length} ${strings.circles}) - ${strings.time}: $timeText$mistakeText');
-      } else {
-        stageInfo.add('${_translateStageName(entry.key, strings)}: $statusText - ${strings.time}: $timeText$mistakeText');
-      }
-    }
-
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Top: Text results (left-aligned)
-          Text(
-            stageInfo.isNotEmpty ? stageInfo.join('\n') : strings.testComplete,
-            style: const TextStyle(fontSize: 14),
-          ),
-          const SizedBox(height: 24),
-          // Bottom: Drawing results (centered)
+          // Drawing results (centered)
           Center(
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
@@ -230,7 +203,10 @@ class TMTTestFormatter implements TestResultFormatter {
                         children: [
                           Text(
                             _translateStageName(entry.key, strings),
-                            style: const TextStyle(fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
                           ),
                           const SizedBox(height: 8),
                           Container(
