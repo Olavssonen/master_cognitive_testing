@@ -78,32 +78,36 @@ class SummaryScreen extends ConsumerWidget {
                           ),
                         ),
                         const SizedBox(height: 16),
-                        // Per-test scores
-                        for (final r in s.results)
-                          if (r.summary['pointsEarned'] != null)
-                            Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 4),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    r.testId,
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: Theme.of(context).colorScheme.primary,
+                        // Per-test scores with alternating backgrounds
+                        ...[
+                          for (int i = 0; i < s.results.length; i++)
+                            if (s.results[i].summary['pointsEarned'] != null)
+                              Container(
+                                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                                margin: const EdgeInsets.symmetric(vertical: 2),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      s.results[i].testId,
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        color: Theme.of(context).colorScheme.primary,
+                                      ),
                                     ),
-                                  ),
-                                  Text(
-                                    '${r.summary['pointsEarned']} pts',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
-                                      color: AppColors.tropicalTeal,
+                                    Text(
+                                      '${s.results[i].summary['pointsEarned']} pts',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: Theme.of(context).colorScheme.secondary,
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
-                            ),
+                        ],
                       ],
                     ),
                   ),
