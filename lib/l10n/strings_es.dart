@@ -255,6 +255,12 @@ class SpanishStrings extends AppStrings {
   String get wordsRemembered => 'Palabras Recordadas';
 
   @override
+  String get stroopCardTitle => 'Prueba de Stroop';
+
+  @override
+  String get totalWordsLabel => 'Total de palabras';
+
+  @override
   String get tmtCardTitle => 'Prueba de Trazado';
 
   @override

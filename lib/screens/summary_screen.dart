@@ -90,7 +90,7 @@ class SummaryScreen extends ConsumerWidget {
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
                                     Text(
-                                      s.results[i].testId,
+                                      _getLocalizedResultTitle(s.results[i].testId, strings),
                                       style: TextStyle(
                                         fontSize: 16,
                                         color: Theme.of(context).colorScheme.primary,
@@ -172,7 +172,7 @@ class SummaryScreen extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Text(
-                strings.miniCogCardTitle,
+                strings.cogTest,
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w500,
@@ -328,6 +328,130 @@ class SummaryScreen extends ConsumerWidget {
       );
     }
 
+    // For Stroop V2, use a dedicated summary card with the same visual standard
+    if (r.testId == 'stroop') {
+      final allStages = r.summary['all_stages'] as Map<String, dynamic>? ?? {};
+      final stageData = allStages['stroop_test_v2'] as Map<String, dynamic>? ?? {};
+      final result = stageData['result'] as Map<String, dynamic>? ?? {};
+
+      final correct = result['correct'] as int? ?? 0;
+      final wrong = result['wrong'] as int? ?? 0;
+      final totalWords = result['total_words'] as int? ?? 25;
+      final accuracy = result['accuracy'] as String? ?? '0.0';
+
+      return Card(
+        elevation: 2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(
+            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
+            width: 1,
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(
+                strings.stroopTest,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                '$accuracy%',
+                style: TextStyle(
+                  fontSize: 48,
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.secondary,
+                ),
+              ),
+              const SizedBox(height: 24),
+              Container(
+                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                margin: const EdgeInsets.symmetric(vertical: 2),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      strings.correct,
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                    Text(
+                      '$correct',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.secondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                margin: const EdgeInsets.symmetric(vertical: 2),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      strings.wrong,
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                    Text(
+                      '$wrong',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.secondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                margin: const EdgeInsets.symmetric(vertical: 2),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      strings.totalWordsLabel,
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                    Text(
+                      '$totalWords',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.secondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     // For TMT tests with detailed view, combine text and image in one card
     if (r.testId == 'TMT' && detailedView != null) {
       final allStages = r.summary['all_stages'] as Map<String, dynamic>? ?? {};
@@ -347,7 +471,7 @@ class SummaryScreen extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Text(
-                strings.tmtCardTitle,
+                strings.tmtTest,
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w500,
@@ -494,5 +618,24 @@ class SummaryScreen extends ConsumerWidget {
         ),
       ),
     ];
+  }
+
+  String _getLocalizedResultTitle(String testId, AppStrings strings) {
+    switch (testId) {
+      case 'counter':
+        return strings.counterTest;
+      case 'tap10':
+        return strings.tap10Test;
+      case 'cog':
+        return strings.cogTest;
+      case 'TMT':
+        return strings.tmtTest;
+      case 'stroop':
+        return strings.stroopTest;
+      case 'stroop_old':
+        return '${strings.stroopTest} (Old)';
+      default:
+        return testId;
+    }
   }
 }

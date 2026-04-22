@@ -234,13 +234,54 @@ class CirclesWithNumbers {
       }
     }
 
-    for (int i = 0; i < circleKeys.length && i < numberOfCircles; i++) {
-      final key = circleKeys[i];
+    final keysToUse = circleKeys.take(numberOfCircles).toList();
+
+    // Fit the validated paper layout into a safe drawing area with one uniform
+    // scale factor so all relative placements are preserved.
+    final rawOffsets = <Offset>[];
+    for (final key in keysToUse) {
+      final pos = mixedPositions[key];
+      if (pos != null) {
+        rawOffsets.add(Offset(pos["x"]! * width, pos["y"]! * height));
+      }
+    }
+
+    if (rawOffsets.isEmpty) {
+      return;
+    }
+
+    final minRawX = rawOffsets.map((p) => p.dx).reduce(min);
+    final maxRawX = rawOffsets.map((p) => p.dx).reduce(max);
+    final minRawY = rawOffsets.map((p) => p.dy).reduce(min);
+    final maxRawY = rawOffsets.map((p) => p.dy).reduce(max);
+
+    final rawWidth = max(1.0, maxRawX - minRawX);
+    final rawHeight = max(1.0, maxRawY - minRawY);
+
+    final leftPadding = circleRadius + 8.0;
+    final rightPadding = circleRadius + 8.0;
+    final topPadding = max(circleRadius + 8.0, 78.0);
+    final bottomPadding = circleRadius + 8.0;
+
+    final safeWidth = max(1.0, width - leftPadding - rightPadding);
+    final safeHeight = max(1.0, height - topPadding - bottomPadding);
+
+    final fitScale = min(safeWidth / rawWidth, safeHeight / rawHeight);
+    final scale = min(1.0, fitScale);
+
+    final scaledWidth = rawWidth * scale;
+    final scaledHeight = rawHeight * scale;
+    final offsetX = leftPadding + (safeWidth - scaledWidth) / 2 - minRawX * scale;
+    final offsetY = topPadding + (safeHeight - scaledHeight) / 2 - minRawY * scale;
+
+    for (final key in keysToUse) {
       final pos = mixedPositions[key];
 
       if (pos != null) {
-        final screenX = pos["x"]! * width;
-        final screenY = pos["y"]! * height;
+        final rawX = pos["x"]! * width;
+        final rawY = pos["y"]! * height;
+        final screenX = (rawX * scale) + offsetX;
+        final screenY = (rawY * scale) + offsetY;
 
         circles.add(
           Circle(

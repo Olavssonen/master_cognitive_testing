@@ -255,6 +255,12 @@ class NorwegianStrings extends AppStrings {
   String get wordsRemembered => 'Ord husket';
 
   @override
+  String get stroopCardTitle => 'Stroop-test';
+
+  @override
+  String get totalWordsLabel => 'Totalt antall ord';
+
+  @override
   String get tmtCardTitle => 'Tegning av stier';
 
   @override

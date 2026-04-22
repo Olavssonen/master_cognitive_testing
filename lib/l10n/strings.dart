@@ -89,6 +89,8 @@ abstract class AppStrings {
   String get clockDrawing;
   String get miniCogCardTitle;
   String get wordsRemembered;
+  String get stroopCardTitle;
+  String get totalWordsLabel;
   String get tmtCardTitle;
   String get totalScoreLabel;
 
