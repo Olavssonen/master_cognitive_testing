@@ -12,7 +12,7 @@ final debugModeProvider = NotifierProvider<DebugModeNotifier, bool>(DebugModeNot
 class DebugModeNotifier extends Notifier<bool> {
   @override
   bool build() {
-    return true;
+    return false;
   }
 
   void toggle() {

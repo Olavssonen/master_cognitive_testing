@@ -228,6 +228,9 @@ class NorwegianStrings extends AppStrings {
   String get letterStage => 'Bokstaver';
 
   @override
+  String get tmtCirclesHit => 'Sirkler truffet';
+
+  @override
   String get miniCogScore => 'Mini-Cog poengsum';
 
   @override

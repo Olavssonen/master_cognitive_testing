@@ -80,6 +80,7 @@ abstract class AppStrings {
   String get noDrawingsFound;
   String get numberStage;
   String get letterStage;
+  String get tmtCirclesHit;
   String get miniCogScore;
   String get wordRecall;
   String get clockNumbers;

@@ -558,6 +558,9 @@ class SummaryScreen extends ConsumerWidget {
     AppStrings strings,
     BuildContext context,
   ) {
+    final circlesOrder = stageData['circlesOrder'] as List<dynamic>? ?? [];
+    final circlesHit = circlesOrder.length;
+    const totalCircles = 25;
     final timeSpent = stageData['timeSpent'] as int? ?? 0;
     final mistakes = stageData['mistakes'] as int? ?? 0;
     
@@ -583,6 +586,31 @@ class SummaryScreen extends ConsumerWidget {
             ),
             Text(
               timeText,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.secondary,
+              ),
+            ),
+          ],
+        ),
+      ),
+      Container(
+        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        margin: const EdgeInsets.symmetric(vertical: 2),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              strings.tmtCirclesHit,
+              style: TextStyle(
+                fontSize: 16,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ),
+            Text(
+              '$circlesHit/$totalCircles',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,

@@ -228,6 +228,9 @@ class SpanishStrings extends AppStrings {
   String get letterStage => 'Letras';
 
   @override
+  String get tmtCirclesHit => 'Círculos tocados';
+
+  @override
   String get miniCogScore => 'Puntuación Mini-Cog';
 
   @override

@@ -228,6 +228,9 @@ class SwedishStrings extends AppStrings {
   String get letterStage => 'BokstÃ¤ver';
 
   @override
+  String get tmtCirclesHit => 'Cirklar träffade';
+
+  @override
   String get miniCogScore => 'Mini-Cog-poÃ¤ng';
 
   @override

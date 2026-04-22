@@ -228,6 +228,9 @@ class EnglishStrings extends AppStrings {
   String get letterStage => 'Letters';
 
   @override
+  String get tmtCirclesHit => 'Circles hit';
+
+  @override
   String get miniCogScore => 'Mini-Cog Score';
 
   @override

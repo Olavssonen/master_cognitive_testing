@@ -196,6 +196,7 @@ class _TMTTest extends ConsumerState<TMTTest> {
   
   // Points tracking for this test stage
   int startingSessionPoints = 0;
+  bool _completionHandled = false;
   
   // Timing variables
   late int timeoutSeconds;
@@ -238,38 +239,53 @@ class _TMTTest extends ConsumerState<TMTTest> {
   }
   
   void _completeTestDueToTimeout() {
+    _completeAndAdvance(timedOut: true, delayBeforeCapture: const Duration(milliseconds: 500));
+  }
+
+  Future<void> _completeAndAdvance({
+    required bool timedOut,
+    Duration delayBeforeCapture = Duration.zero,
+  }) async {
+    if (_completionHandled) return;
+    _completionHandled = true;
+
+    if (!mounted) return;
+
     setState(() {
       testComplete = true;
     });
-    
-    // Auto-complete after a short delay
-    Future.delayed(Duration(milliseconds: 500), () {
-      if (mounted) {
-        _captureDrawingArea().then((_) {
-          final timeSpent = timeoutSeconds - remainingSeconds;
-          final currentSessionPoints = ref.read(sessionPointsProvider);
-          final pointsEarned = currentSessionPoints - startingSessionPoints;
-          
-          final resultData = {
-            'circlesEntered': circlesEntered,
-            'image': _capturedImage,
-            'timedOut': true,
-            'timeSpent': timeSpent,
-            'mistakes': mistakeCount,
-            'pointsEarned': pointsEarned,
-            'stageName': widget.stageName,
-          };
-          
-          widget.onTestResult?.call(resultData, testComplete);
 
-          if (widget.onNextStage != null) {
-            widget.onNextStage!();
-          } else {
-            widget.onCompletion?.call(resultData, testComplete);
-          }
-        });
-      }
-    });
+    if (delayBeforeCapture > Duration.zero) {
+      await Future.delayed(delayBeforeCapture);
+    }
+
+    if (!mounted) return;
+
+    await _captureDrawingArea();
+
+    if (!mounted) return;
+
+    final timeSpent = timeoutSeconds - remainingSeconds;
+    final currentSessionPoints = ref.read(sessionPointsProvider);
+    final pointsEarned = currentSessionPoints - startingSessionPoints;
+
+    final resultData = {
+      'circlesEntered': circlesEntered,
+      'image': _capturedImage,
+      'timedOut': timedOut,
+      'timeSpent': timeSpent,
+      'mistakes': mistakeCount,
+      'pointsEarned': pointsEarned,
+      'stageName': widget.stageName,
+    };
+
+    widget.onTestResult?.call(resultData, testComplete);
+
+    if (widget.onNextStage != null) {
+      widget.onNextStage!();
+    } else {
+      widget.onCompletion?.call(resultData, testComplete);
+    }
   }
   
   @override
@@ -685,28 +701,7 @@ class _TMTTest extends ConsumerState<TMTTest> {
                 label: ref.watch(appStringsProvider).done,
                 onPressed: () {
                   if (testComplete) {
-                    _captureDrawingArea().then((_) {
-                      final timeSpent = timeoutSeconds - remainingSeconds;
-                      final currentSessionPoints = ref.read(sessionPointsProvider);
-                      final pointsEarned = currentSessionPoints - startingSessionPoints;
-                      
-                      final resultData = {
-                        'circlesEntered': circlesEntered,
-                        'image': _capturedImage,
-                        'timeSpent': timeSpent,
-                        'mistakes': mistakeCount,
-                        'pointsEarned': pointsEarned,
-                        'stageName': widget.stageName,
-                      };
-                      
-                      widget.onTestResult?.call(resultData, testComplete);
-
-                      if (widget.onNextStage != null) {
-                        widget.onNextStage!();
-                      } else {
-                        widget.onCompletion?.call(resultData, testComplete);
-                      }
-                    });
+                    _completeAndAdvance(timedOut: false);
                   }
                 },
                 enabled: testComplete,
@@ -720,12 +715,15 @@ class _TMTTest extends ConsumerState<TMTTest> {
             onAbort: debugMode ? () => widget.run.abort('User aborted') : null,
             useRow: true,
             onSkip: () {
+              if (_completionHandled) return;
+              _completionHandled = true;
+
               final resultData = {
                 'circlesEntered': <String>[],
                 'timeSpent': 0,
                 'mistakes': 0,
               };
-              
+
               if (widget.onNextStage != null) {
                 widget.onNextStage!();
               } else {
