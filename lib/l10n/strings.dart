@@ -87,6 +87,8 @@ abstract class AppStrings {
   String get minuteHand;
   String get clockHands;
   String get clockDrawing;
+  String get miniCogCardTitle;
+  String get wordsRemembered;
   String get totalScoreLabel;
 
   // COG Test - Words to remember

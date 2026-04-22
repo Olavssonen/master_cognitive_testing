@@ -249,6 +249,12 @@ class SpanishStrings extends AppStrings {
   String get clockDrawing => 'Reloj';
 
   @override
+  String get miniCogCardTitle => 'Mini-Cog';
+
+  @override
+  String get wordsRemembered => 'Palabras Recordadas';
+
+  @override
   String get totalScoreLabel => 'Puntuación Total';
 
   @override

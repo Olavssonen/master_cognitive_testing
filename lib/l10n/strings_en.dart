@@ -249,6 +249,12 @@ class EnglishStrings extends AppStrings {
   String get clockDrawing => 'Clock';
 
   @override
+  String get miniCogCardTitle => 'Mini-Cog';
+
+  @override
+  String get wordsRemembered => 'Words Remembered';
+
+  @override
   String get totalScoreLabel => 'Total Score';
 
   @override

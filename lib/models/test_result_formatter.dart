@@ -10,7 +10,7 @@ abstract class TestResultFormatter {
   Text getTextSummary(Map<String, dynamic> summary, AppStrings strings);
 
   /// Returns optional widget to display below the text summary (e.g., images)
-  Widget? getDetailedView(Map<String, dynamic> summary, AppStrings strings) {
+  Widget? getDetailedView(Map<String, dynamic> summary, AppStrings strings, BuildContext context) {
     return null;
   }
 }
@@ -24,7 +24,7 @@ class CounterTestFormatter implements TestResultFormatter {
   }
 
   @override
-  Widget? getDetailedView(Map<String, dynamic> summary, AppStrings strings) => null;
+  Widget? getDetailedView(Map<String, dynamic> summary, AppStrings strings, BuildContext context) => null;
 }
 
 /// Tap10 Test Formatter
@@ -36,7 +36,7 @@ class Tap10TestFormatter implements TestResultFormatter {
   }
 
   @override
-  Widget? getDetailedView(Map<String, dynamic> summary, AppStrings strings) => null;
+  Widget? getDetailedView(Map<String, dynamic> summary, AppStrings strings, BuildContext context) => null;
 }
 
 /// Stroop Test Formatter (Old - Debug Only)
@@ -70,7 +70,7 @@ class StroopTestFormatter implements TestResultFormatter {
   }
 
   @override
-  Widget? getDetailedView(Map<String, dynamic> summary, AppStrings strings) => null;
+  Widget? getDetailedView(Map<String, dynamic> summary, AppStrings strings, BuildContext context) => null;
 }
 
 /// Stroop Test Formatter (Main Version - V2 with Symbols)
@@ -104,7 +104,7 @@ class StroopTestFormatterV2 implements TestResultFormatter {
   }
 
   @override
-  Widget? getDetailedView(Map<String, dynamic> summary, AppStrings strings) => null;
+  Widget? getDetailedView(Map<String, dynamic> summary, AppStrings strings, BuildContext context) => null;
 }
 
 /// TMT Test Formatter
@@ -154,7 +154,7 @@ class TMTTestFormatter implements TestResultFormatter {
   }
 
   @override
-  Widget? getDetailedView(Map<String, dynamic> summary, AppStrings strings) {
+  Widget? getDetailedView(Map<String, dynamic> summary, AppStrings strings, BuildContext context) {
     return _buildCombinedTMTView(summary, strings);
   }
 
@@ -312,7 +312,7 @@ class CogTestFormatter implements TestResultFormatter {
   }
 
   @override
-  Widget? getDetailedView(Map<String, dynamic> summary, AppStrings strings) {
+  Widget? getDetailedView(Map<String, dynamic> summary, AppStrings strings, BuildContext context) {
     var image = summary['clock_image'];
     
     if (image == null) {
@@ -340,7 +340,11 @@ class CogTestFormatter implements TestResultFormatter {
           children: [
             Text(
               strings.clockDrawing,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              style: TextStyle(
+                fontWeight: FontWeight.bold, 
+                fontSize: 16,
+                color: Theme.of(context).colorScheme.primary,
+              ),
             ),
             const SizedBox(height: 12),
             Container(
@@ -391,5 +395,5 @@ class _DefaultFormatter implements TestResultFormatter {
   }
 
   @override
-  Widget? getDetailedView(Map<String, dynamic> summary, AppStrings strings) => null;
+  Widget? getDetailedView(Map<String, dynamic> summary, AppStrings strings, BuildContext context) => null;
 }

@@ -249,6 +249,12 @@ class SwedishStrings extends AppStrings {
   String get clockDrawing => 'Klocka';
 
   @override
+  String get miniCogCardTitle => 'Mini-Cog';
+
+  @override
+  String get wordsRemembered => 'Ord återkallelse';
+
+  @override
   String get totalScoreLabel => 'Totalt Poäng';
 
   @override

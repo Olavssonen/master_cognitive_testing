@@ -249,6 +249,12 @@ class NorwegianStrings extends AppStrings {
   String get clockDrawing => 'Klokke';
 
   @override
+  String get miniCogCardTitle => 'Mini-Cog';
+
+  @override
+  String get wordsRemembered => 'Ord husket';
+
+  @override
   String get totalScoreLabel => 'Totalpoeng';
 
   @override

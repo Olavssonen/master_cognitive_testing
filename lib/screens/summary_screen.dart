@@ -114,10 +114,8 @@ class SummaryScreen extends ConsumerWidget {
                 ),
                 if (pointsSystemEnabled)
                   const SizedBox(height: 24),
-                Text('${strings.testsCompleted} ${strings.testsCompleted} ${s.results.length} tester'),
-                const SizedBox(height: 12),
                 for (final r in s.results)
-                  _buildTestCard(r, strings),
+                  _buildTestCard(r, strings, context),
               ],
             ),
           ),
@@ -138,10 +136,197 @@ class SummaryScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildTestCard(TestResult r, AppStrings strings) {
+  Widget _buildTestCard(TestResult r, AppStrings strings, BuildContext context) {
     final formatter = TestResultFormatterFactory.getFormatter(r.testId);
-    final detailedView = formatter.getDetailedView(r.summary, strings);
+    final detailedView = formatter.getDetailedView(r.summary, strings, context);
     final textSummary = formatter.getTextSummary(r.summary, strings);
+
+    // For Mini-Cog tests, use standard formatted layout
+    if (r.testId == 'cog') {
+      final wordRecallCorrect = r.summary['word_recall_correct'] as int? ?? 0;
+      final wordRecallTotal = r.summary['word_recall_total'] as int? ?? 3;
+      final correctNumbers = r.summary['correct_numbers'] as int? ?? 0;
+      final totalNumbers = r.summary['total_numbers'] as int? ?? 12;
+      final hourHandCorrect = r.summary['hour_hand_correct'] as int? ?? 0;
+      final minuteHandCorrect = r.summary['minute_hand_correct'] as int? ?? 0;
+      final handsCorrect = r.summary['hands_correct'] as int? ?? 0;
+      final handsTotal = r.summary['hands_total'] as int? ?? 2;
+      final totalScore = r.summary['total_score'] as int? ?? 0;
+      final miniCogScore = r.summary['word_recall_correct'] as int? ?? 0;
+
+      final hourHandStatus = hourHandCorrect == 1 ? '✓' : '✗';
+      final minuteHandStatus = minuteHandCorrect == 1 ? '✓' : '✗';
+
+      return Card(
+        elevation: 2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(
+            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
+            width: 1,
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(
+                strings.miniCogCardTitle,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                '$miniCogScore/5',
+                style: TextStyle(
+                  fontSize: 48,
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.secondary,
+                ),
+              ),
+              const SizedBox(height: 24),
+              // Word Recall Section
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  strings.wordRecall,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Container(
+                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                margin: const EdgeInsets.symmetric(vertical: 2),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      strings.wordsRemembered,
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                    Text(
+                      '$wordRecallCorrect/$wordRecallTotal',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.secondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+              // Clock Section
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  strings.clockDrawing,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              ...[
+                Container(
+                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                  margin: const EdgeInsets.symmetric(vertical: 2),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        strings.clockNumbers,
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
+                      Text(
+                        '$correctNumbers/$totalNumbers',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).colorScheme.secondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                  margin: const EdgeInsets.symmetric(vertical: 2),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        strings.hourHand.replaceAll(RegExp(r'\s*\(\d+\)'), ''),
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
+                      Text(
+                        hourHandStatus,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).colorScheme.secondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                  margin: const EdgeInsets.symmetric(vertical: 2),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        strings.minuteHand.replaceAll(RegExp(r'\s*\(\d+\)'), ''),
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
+                      Text(
+                        minuteHandStatus,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).colorScheme.secondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+              if (detailedView != null) ...[
+                const SizedBox(height: 16),
+                detailedView,
+              ],
+            ],
+          ),
+        ),
+      );
+    }
 
     // For TMT tests with detailed view, combine text and image in one card
     if (r.testId == 'TMT' && detailedView != null) {
