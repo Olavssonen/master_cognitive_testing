@@ -23,7 +23,7 @@ class _StroopTutorialStateV2 extends ConsumerState<StroopTutorialV2>
     with TickerProviderStateMixin {
   int stage = 0;
   int correctAnswersInStage = 0;
-  final int answersNeededPerStage = 4;
+  final int answersNeededPerStage = 8;
   late List<StroopItemV2> currentItems;
   int currentItemIndex = 0;
   bool showIntroduction = true;
@@ -77,22 +77,31 @@ class _StroopTutorialStateV2 extends ConsumerState<StroopTutorialV2>
     final items = <StroopItemV2>[];
     final random = Random();
 
-    // All stages: Ensure each color appears exactly once with mismatched words
-    // This ensures user must press all 4 buttons per tutorial part
-    
-    // Shuffle colors to randomize the order they appear
-    final shuffledColorIndices = List<int>.generate(colors.length, (i) => i);
-    shuffledColorIndices.shuffle(random);
-    
-    for (int i = 0; i < 4; i++) {
-      final colorIndex = shuffledColorIndices[i];
-      
+    // Build an 8-item sequence for each tutorial part.
+    // First guarantee each color appears once, then add four more items
+    // while avoiding consecutive repeats.
+    final colorSequence = <int>[];
+
+    final shuffledColorIndices = List<int>.generate(colors.length, (i) => i)
+      ..shuffle(random);
+    colorSequence.addAll(shuffledColorIndices);
+
+    while (colorSequence.length < 8) {
+      final previousColorIndex = colorSequence.last;
+      final availableColorIndices = List<int>.generate(
+        colors.length,
+        (i) => i,
+      ).where((index) => index != previousColorIndex).toList()..shuffle(random);
+      colorSequence.add(availableColorIndices.first);
+    }
+
+    for (final colorIndex in colorSequence) {
       // Select a word that doesn't match the color
       int wordIndex = random.nextInt(colorNames.length);
       while (wordIndex == colorIndex) {
         wordIndex = random.nextInt(colorNames.length);
       }
-      
+
       items.add(
         StroopItemV2(
           textColor: colors[colorIndex],
@@ -127,7 +136,8 @@ class _StroopTutorialStateV2 extends ConsumerState<StroopTutorialV2>
         correctAnswersInStage++;
         if (correctAnswersInStage >= answersNeededPerStage) {
           // Progress to next stage
-          if (stage < 1) { // Only 2 stages (0 and 1) for V2
+          if (stage < 1) {
+            // Only 2 stages (0 and 1) for V2
             stage++;
             _initializeStage();
             _wordTransitionController.reset();
@@ -141,13 +151,13 @@ class _StroopTutorialStateV2 extends ConsumerState<StroopTutorialV2>
             widget.onComplete();
           }
         } else {
-          currentItemIndex++;  // Update item FIRST, before animation
+          currentItemIndex++; // Update item FIRST, before animation
           _wordTransitionController.reset();
           _wordTransitionController.forward();
           _isProcessing = false;
         }
       });
-      
+
       if (mounted) {
         setState(() {
           feedbackSymbol = null;
@@ -161,7 +171,7 @@ class _StroopTutorialStateV2 extends ConsumerState<StroopTutorialV2>
         _wordTransitionController.forward();
         _isProcessing = false;
       });
-      
+
       if (mounted) {
         setState(() {
           feedbackSymbol = null;
@@ -214,8 +224,8 @@ class _StroopTutorialStateV2 extends ConsumerState<StroopTutorialV2>
               Text(
                 stage < 1 ? strings.great : strings.gotIt,
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 40),
               OutlinedButton(
