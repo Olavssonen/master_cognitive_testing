@@ -151,8 +151,10 @@ class SummaryScreen extends ConsumerWidget {
       final minuteHandCorrect = r.summary['minute_hand_correct'] as int? ?? 0;
       final handsCorrect = r.summary['hands_correct'] as int? ?? 0;
       final handsTotal = r.summary['hands_total'] as int? ?? 2;
-      final totalScore = r.summary['total_score'] as int? ?? 0;
-      final miniCogScore = r.summary['word_recall_correct'] as int? ?? 0;
+      final hasPerfectClock =
+          correctNumbers == totalNumbers && handsCorrect == handsTotal;
+      final miniCogScore =
+          (wordRecallCorrect + (hasPerfectClock ? 2 : 0)).clamp(0, 5).toInt();
 
       final hourHandStatus = hourHandCorrect == 1 ? '✓' : '✗';
       final minuteHandStatus = minuteHandCorrect == 1 ? '✓' : '✗';
