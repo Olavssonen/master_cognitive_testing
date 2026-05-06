@@ -16,15 +16,20 @@ class StroopColorConstantsV2 {
   ];
 
   // Dynamic color names based on language provider
-  static List<String> getColorNames(String colorRed, String colorBlue, String colorGreen, String colorYellow) {
+  static List<String> getColorNames(
+    String colorRed,
+    String colorBlue,
+    String colorGreen,
+    String colorYellow,
+  ) {
     return [colorRed, colorBlue, colorGreen, colorYellow];
   }
 
   static const List<IconData> colorSymbols = [
-    Icons.favorite_border,  // Heart for Red
-    Icons.water_drop,       // Droplet for Blue
-    Icons.eco,              // Leaf/plant for Green
-    Icons.sunny,            // Sun for Yellow
+    Icons.favorite_border, // Heart for Red
+    Icons.water_drop, // Droplet for Blue
+    Icons.eco, // Leaf/plant for Green
+    Icons.sunny, // Sun for Yellow
   ];
 }
 
@@ -35,11 +40,8 @@ class StroopLayoutV2 {
     middleTextSize: 90,
   );
 
-  static const test = StroopLayoutConfig(
-    buttonSize: 100,
-    middleTextSize: 80,
-  );
-  
+  static const test = StroopLayoutConfig(buttonSize: 100, middleTextSize: 80);
+
   // Unified button size for both tutorial and test
   static const double unifiedButtonSize = 140;
 }
@@ -88,15 +90,9 @@ class StroopSymbolButton extends StatelessWidget {
       width: size,
       height: size,
       child: FilledButton(
-        style: FilledButton.styleFrom(
-          backgroundColor: backgroundColor,
-        ),
+        style: FilledButton.styleFrom(backgroundColor: backgroundColor),
         onPressed: onPressed,
-        child: Icon(
-          symbol,
-          size: size * 0.45,
-          color: Colors.white,
-        ),
+        child: Icon(symbol, size: size * 0.45, color: Colors.white),
       ),
     );
   }
@@ -123,7 +119,7 @@ class StroopScreenV2 extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final strings = ref.watch(appStringsProvider);
-    
+
     return Column(
       mainAxisSize: MainAxisSize.max,
       children: [
@@ -136,11 +132,7 @@ class StroopScreenV2 extends ConsumerWidget {
           ),
         ),
         // Expanded center section with colored word
-        Expanded(
-          child: Center(
-            child: middleContent,
-          ),
-        ),
+        Expanded(child: Center(child: middleContent)),
         // Buttons section
         Padding(
           padding: const EdgeInsets.all(16.0),
@@ -157,7 +149,10 @@ class StroopScreenV2 extends ConsumerWidget {
           child: Column(
             children: [
               if (bottomButton != null) bottomButton! else const SizedBox(),
-              if (bottomButton != null) const SizedBox(height: 12) else const SizedBox(),
+              if (bottomButton != null)
+                const SizedBox(height: 12)
+              else
+                const SizedBox(),
               if (onAbort != null)
                 TextButton(
                   onPressed: onAbort,
@@ -167,7 +162,9 @@ class StroopScreenV2 extends ConsumerWidget {
                   child: Text(strings.cancel),
                 )
               else
-                const SizedBox(height: 36), // Maintain spacing when button is hidden
+                const SizedBox(
+                  height: 36,
+                ), // Maintain spacing when button is hidden
             ],
           ),
         ),
@@ -206,7 +203,10 @@ class FeedbackStroopButtonV2 extends StatelessWidget {
         if (feedbackSymbol == symbol && feedbackColor != null)
           ScaleTransition(
             scale: Tween<double>(begin: 1.0, end: 1.3).animate(
-              CurvedAnimation(parent: feedbackController, curve: Curves.easeOut),
+              CurvedAnimation(
+                parent: feedbackController,
+                curve: Curves.easeOut,
+              ),
             ),
             child: Opacity(
               opacity: (1.0 - feedbackController.value).clamp(0.0, 1.0),
@@ -274,15 +274,20 @@ class StroopWordDisplayV2 extends StatelessWidget {
 class StroopExampleScreenV2 extends ConsumerWidget {
   final VoidCallback onContinue;
 
-  const StroopExampleScreenV2({
-    super.key,
-    required this.onContinue,
-  });
+  const StroopExampleScreenV2({super.key, required this.onContinue});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final strings = ref.watch(appStringsProvider);
     final colors = StroopColorConstantsV2.colors;
+    final colorSymbols = StroopColorConstantsV2.colorSymbols;
+    final primaryColor = Theme.of(context).colorScheme.primary;
+    final instructionStyle = Theme.of(context).textTheme.headlineSmall
+        ?.copyWith(
+          fontWeight: FontWeight.bold,
+          color: primaryColor,
+          fontSize: 40,
+        );
     final colorNames = StroopColorConstantsV2.getColorNames(
       strings.colorRed.toUpperCase(),
       strings.colorBlue.toUpperCase(),
@@ -291,7 +296,7 @@ class StroopExampleScreenV2 extends ConsumerWidget {
     );
 
     // Example: Blue word displayed in YELLOW color
-    final wordIndex = 1;      // Blue
+    final wordIndex = 1; // Blue
     final displayColorIndex = 3; // Yellow
     final word = colorNames[wordIndex];
     final displayColor = colors[displayColorIndex];
@@ -300,37 +305,116 @@ class StroopExampleScreenV2 extends ConsumerWidget {
       child: Column(
         mainAxisSize: MainAxisSize.max,
         children: [
-          // Top 1/3: Title and Instructions
           Expanded(
-            flex: 1,
-            child: Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  // Title
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: Text(
-                      strings.hereIsAnExample,
-                      style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.crayolaBlue,
-                            fontSize: 64,
-                          ),
-                      textAlign: TextAlign.center,
-                    ),
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: Text(
+                          strings.hereIsAnExample,
+                          style: Theme.of(context).textTheme.headlineLarge
+                              ?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: primaryColor,
+                                fontSize: 64,
+                              ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: Text(
+                          strings.lookAtColorNotWord,
+                          style: instructionStyle,
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 16),
-                  // Instructions
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: Text(
-                      strings.lookAtColorNotWord,
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.crayolaBlue,
-                            fontSize: 40,
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        word,
+                        style: TextStyle(
+                          fontSize: StroopLayoutV2.test.middleTextSize,
+                          fontWeight: FontWeight.bold,
+                          color: displayColor,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Column(
+                            children: [
+                              StroopSymbolButton(
+                                symbol: colorSymbols[displayColorIndex],
+                                backgroundColor: displayColor,
+                                size: StroopLayoutV2.unifiedButtonSize,
+                                onPressed: () {},
+                              ),
+                              const SizedBox(height: 18),
+                              Text(
+                                strings.correctOption,
+                                style: TextStyle(
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.successGreen,
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              Icon(
+                                Icons.check,
+                                color: AppColors.successGreen,
+                                size: 48,
+                                semanticLabel: strings.correct,
+                              ),
+                            ],
                           ),
+                          const SizedBox(width: 64),
+                          Column(
+                            children: [
+                              StroopSymbolButton(
+                                symbol: colorSymbols[wordIndex],
+                                backgroundColor: colors[wordIndex],
+                                size: StroopLayoutV2.unifiedButtonSize,
+                                onPressed: () {},
+                              ),
+                              const SizedBox(height: 18),
+                              Text(
+                                strings.wrongOption,
+                                style: TextStyle(
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.errorRed,
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              Icon(
+                                Icons.close,
+                                color: AppColors.errorRed,
+                                size: 48,
+                                semanticLabel: strings.wrong,
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                    child: Text(
+                      'Press continue to give it a try\nbefore the game begins',
+                      style: instructionStyle,
                       textAlign: TextAlign.center,
                     ),
                   ),
@@ -338,92 +422,6 @@ class StroopExampleScreenV2 extends ConsumerWidget {
               ),
             ),
           ),
-          // Bottom 2/3: Example content
-          Expanded(
-            flex: 2,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                const SizedBox(height: 100),
-                // The word in wrong color
-                Text(
-                  word,
-                  style: TextStyle(
-                    fontSize: StroopLayoutV2.test.middleTextSize, // Same as actual test (80)
-                    fontWeight: FontWeight.bold,
-                    color: displayColor,
-                  ),
-                ),
-                const SizedBox(height: 80),
-                // Two options side by side
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Correct answer (actual color shown with checkmark)
-                    Column(
-                      children: [
-                        Container(
-                          width: 120,
-                          height: 120,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: displayColor, // Yellow
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        Text(
-                          strings.correctOption,
-                          style: TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.successGreen,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        Icon(
-                          Icons.check,
-                          color: AppColors.successGreen,
-                          size: 48,
-                          semanticLabel: strings.correct,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(width: 96),
-                    // Incorrect answer (what the word says with X)
-                    Column(
-                      children: [
-                        Container(
-                          width: 120,
-                          height: 120,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: colors[wordIndex], // Blue (what it says)
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        Text(
-                          strings.wrongOption,
-                          style: TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.errorRed,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        Icon(
-                          Icons.close,
-                          color: AppColors.errorRed,
-                          size: 48,
-                          semanticLabel: strings.wrong,
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          // Bottom button bar
           BottomButtonBar(
             primaryButton: BottomButton(
               label: ref.watch(appStringsProvider).continueTutorial,
