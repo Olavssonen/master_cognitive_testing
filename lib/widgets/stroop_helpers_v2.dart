@@ -104,6 +104,7 @@ class StroopScreenV2 extends ConsumerWidget {
   final String progressText; // e.g., "1/2" or "1/4"
   final Widget middleContent; // The large colored word
   final List<Widget> buttons;
+  final Widget? buttonsOverlay; // Optional overlay shown above buttons
   final VoidCallback? onAbort;
   final Widget? bottomButton; // Optional Continue/Submit Results button
 
@@ -112,6 +113,7 @@ class StroopScreenV2 extends ConsumerWidget {
     required this.progressText,
     required this.middleContent,
     required this.buttons,
+    this.buttonsOverlay,
     this.onAbort,
     this.bottomButton,
   });
@@ -136,11 +138,18 @@ class StroopScreenV2 extends ConsumerWidget {
         // Buttons section
         Padding(
           padding: const EdgeInsets.all(16.0),
-          child: Wrap(
-            spacing: 16,
-            runSpacing: 16,
-            alignment: WrapAlignment.center,
-            children: buttons,
+          child: Stack(
+            clipBehavior: Clip.none,
+            alignment: Alignment.center,
+            children: [
+              Wrap(
+                spacing: 16,
+                runSpacing: 16,
+                alignment: WrapAlignment.center,
+                children: buttons,
+              ),
+              if (buttonsOverlay != null) IgnorePointer(child: buttonsOverlay!),
+            ],
           ),
         ),
         // Bottom action button and abort

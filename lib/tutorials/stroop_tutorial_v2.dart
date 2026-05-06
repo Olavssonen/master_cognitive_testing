@@ -293,102 +293,121 @@ class _StroopTutorialStateV2 extends ConsumerState<StroopTutorialV2>
           ),
           animationController: _wordTransitionController,
         ),
-        buttons: [
-          for (int i = 0; i < colorSymbols.length; i++)
-            SizedBox(
-              width: StroopLayoutV2.unifiedButtonSize,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (showButtonGuidance)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 16.0),
-                      child: Column(
+        buttonsOverlay: showButtonGuidance
+            ? Transform.translate(
+                offset: const Offset(0, -140),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    for (int i = 0; i < colorSymbols.length; i++)
+                      Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 10,
-                            ),
-                            decoration: BoxDecoration(
-                              color:
-                                  colorSymbols[i] == currentItem.correctSymbol
-                                  ? AppColors.successGreen.withOpacity(0.2)
-                                  : AppColors.errorRed.withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(999),
-                              border: Border.all(
-                                color:
-                                    colorSymbols[i] == currentItem.correctSymbol
-                                    ? AppColors.successGreen
-                                    : AppColors.errorRed,
-                                width: 2,
-                              ),
-                            ),
-                            child: SizedBox(
-                              height: 30,
-                              child: FittedBox(
-                                fit: BoxFit.scaleDown,
-                                child: Text(
-                                  colorSymbols[i] == currentItem.correctSymbol
-                                      ? strings.correctOption
-                                      : strings.wrongOption,
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
+                          if (i > 0) const SizedBox(width: 16),
+                          SizedBox(
+                            width: StroopLayoutV2.unifiedButtonSize,
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 10,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color:
+                                        colorSymbols[i] ==
+                                            currentItem.correctSymbol
+                                        ? AppColors.successGreen.withOpacity(
+                                            0.2,
+                                          )
+                                        : AppColors.errorRed.withOpacity(0.2),
+                                    borderRadius: BorderRadius.circular(999),
+                                    border: Border.all(
+                                      color:
+                                          colorSymbols[i] ==
+                                              currentItem.correctSymbol
+                                          ? AppColors.successGreen
+                                          : AppColors.errorRed,
+                                      width: 2,
+                                    ),
+                                  ),
+                                  child: SizedBox(
+                                    height: 30,
+                                    child: FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      child: Text(
+                                        colorSymbols[i] ==
+                                                currentItem.correctSymbol
+                                            ? strings.correctOption
+                                            : strings.wrongOption,
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          fontSize: 24,
+                                          fontWeight: FontWeight.bold,
+                                          color:
+                                              colorSymbols[i] ==
+                                                  currentItem.correctSymbol
+                                              ? AppColors.successGreen
+                                              : AppColors.errorRed,
+                                          letterSpacing: 0.8,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+                                AnimatedBuilder(
+                                  animation: _guidanceArrowController,
+                                  child: Icon(
+                                    Icons.keyboard_double_arrow_down,
                                     color:
                                         colorSymbols[i] ==
                                             currentItem.correctSymbol
                                         ? AppColors.successGreen
                                         : AppColors.errorRed,
-                                    letterSpacing: 0.8,
+                                    size: 36,
                                   ),
+                                  builder: (context, child) {
+                                    final wave =
+                                        (sin(
+                                              _guidanceArrowController.value *
+                                                  pi *
+                                                  2,
+                                            ) +
+                                            1) /
+                                        2;
+                                    return Transform.translate(
+                                      offset: Offset(0, 10 * wave),
+                                      child: Opacity(
+                                        opacity: 0.35 + (0.65 * wave),
+                                        child: child,
+                                      ),
+                                    );
+                                  },
                                 ),
-                              ),
+                              ],
                             ),
-                          ),
-                          const SizedBox(height: 10),
-                          AnimatedBuilder(
-                            animation: _guidanceArrowController,
-                            child: Icon(
-                              Icons.keyboard_double_arrow_down,
-                              color:
-                                  colorSymbols[i] == currentItem.correctSymbol
-                                  ? AppColors.successGreen
-                                  : AppColors.errorRed,
-                              size: 36,
-                            ),
-                            builder: (context, child) {
-                              final wave =
-                                  (sin(
-                                        _guidanceArrowController.value * pi * 2,
-                                      ) +
-                                      1) /
-                                  2;
-                              return Transform.translate(
-                                offset: Offset(0, 10 * wave),
-                                child: Opacity(
-                                  opacity: 0.35 + (0.65 * wave),
-                                  child: child,
-                                ),
-                              );
-                            },
                           ),
                         ],
                       ),
-                    ),
-                  FeedbackStroopButtonV2(
-                    symbol: colorSymbols[i],
-                    backgroundColor: stage >= 1 ? AppColors.grey700 : colors[i],
-                    size: StroopLayoutV2.unifiedButtonSize,
-                    onPressed: () => _onButtonPressed(colorSymbols[i]),
-                    feedbackController: _feedbackController,
-                    feedbackSymbol: feedbackSymbol,
-                    feedbackColor: feedbackColor,
-                  ),
-                ],
+                  ],
+                ),
+              )
+            : null,
+        buttons: [
+          for (int i = 0; i < colorSymbols.length; i++)
+            SizedBox(
+              width: StroopLayoutV2.unifiedButtonSize,
+              child: FeedbackStroopButtonV2(
+                symbol: colorSymbols[i],
+                backgroundColor: stage >= 1 ? AppColors.grey700 : colors[i],
+                size: StroopLayoutV2.unifiedButtonSize,
+                onPressed: () => _onButtonPressed(colorSymbols[i]),
+                feedbackController: _feedbackController,
+                feedbackSymbol: feedbackSymbol,
+                feedbackColor: feedbackColor,
               ),
             ),
         ],
