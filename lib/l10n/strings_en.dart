@@ -154,7 +154,7 @@ class EnglishStrings extends AppStrings {
 
   @override
   String get repeatWords => 'Repeat the words you should remember';
-  
+
   @override
   String get clockInstruction2 => "Place the numbers in the correct position";
 
@@ -162,10 +162,12 @@ class EnglishStrings extends AppStrings {
   String get howToPlay => 'How to Play';
 
   @override
-  String get counterTutorialDesc => 'Tap the \'+\' button as many times as you can. This test measures your tapping speed and coordination.';
+  String get counterTutorialDesc =>
+      'Tap the \'+\' button as many times as you can. This test measures your tapping speed and coordination.';
 
   @override
-  String get tap10TutorialDesc => 'Tap the button 10 times as fast as you can. This test measures your finger strength and control.';
+  String get tap10TutorialDesc =>
+      'Tap the button 10 times as fast as you can. This test measures your finger strength and control.';
 
   @override
   String get currentCount => 'Current count';
@@ -180,7 +182,8 @@ class EnglishStrings extends AppStrings {
   String get tutorialComplete => 'Tutorial Complete!';
 
   @override
-  String get readyToContinue => 'Press the button above to increase the counter.\nWhen ready, click "Next".';
+  String get readyToContinue =>
+      'Press the button above to increase the counter.\nWhen ready, click "Next".';
 
   @override
   String get retry => 'Try Again';
@@ -311,6 +314,10 @@ class EnglishStrings extends AppStrings {
 
   @override
   String get wrongOption => 'WRONG';
+
+  @override
+  String get stroopExampleContinueInstruction =>
+      'Press continue to try it out\nbefore the game begins';
 
   @override
   String get colorRed => 'Red';

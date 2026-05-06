@@ -125,6 +125,7 @@ abstract class AppStrings {
   String get hereIsAnExample;
   String get correctOption;
   String get wrongOption;
+  String get stroopExampleContinueInstruction;
   String get colorRed;
   String get colorBlue;
   String get colorGreen;

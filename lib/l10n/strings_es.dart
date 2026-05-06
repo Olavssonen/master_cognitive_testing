@@ -162,10 +162,12 @@ class SpanishStrings extends AppStrings {
   String get howToPlay => 'Cómo Jugar';
 
   @override
-  String get counterTutorialDesc => 'Toque el botón \'+\' tantas veces como pueda. Esta prueba mide su velocidad de toque y coordinación.';
+  String get counterTutorialDesc =>
+      'Toque el botón \'+\' tantas veces como pueda. Esta prueba mide su velocidad de toque y coordinación.';
 
   @override
-  String get tap10TutorialDesc => 'Toque el botón 10 veces lo más rápido que pueda. Esta prueba mide la fuerza y control de su dedo.';
+  String get tap10TutorialDesc =>
+      'Toque el botón 10 veces lo más rápido que pueda. Esta prueba mide la fuerza y control de su dedo.';
 
   @override
   String get currentCount => 'Conteo actual';
@@ -180,7 +182,8 @@ class SpanishStrings extends AppStrings {
   String get tutorialComplete => '¡Tutorial Completado!';
 
   @override
-  String get readyToContinue => 'Presione el botón de arriba para aumentar el contador.\nCuando esté listo, haga clic en "Siguiente".';
+  String get readyToContinue =>
+      'Presione el botón de arriba para aumentar el contador.\nCuando esté listo, haga clic en "Siguiente".';
 
   @override
   String get retry => 'Intentar de Nuevo';
@@ -313,6 +316,10 @@ class SpanishStrings extends AppStrings {
   String get wrongOption => 'INCORRECTO';
 
   @override
+  String get stroopExampleContinueInstruction =>
+      'Pulsa continuar para probarlo\nante de que empiece el juego';
+
+  @override
   String get colorRed => 'Rojo';
 
   @override
@@ -324,4 +331,3 @@ class SpanishStrings extends AppStrings {
   @override
   String get colorYellow => 'Amarillo';
 }
-

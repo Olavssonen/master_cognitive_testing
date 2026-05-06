@@ -413,7 +413,7 @@ class StroopExampleScreenV2 extends ConsumerWidget {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 24.0),
                     child: Text(
-                      'Press continue to give it a try\nbefore the game begins',
+                      strings.stroopExampleContinueInstruction,
                       style: instructionStyle,
                       textAlign: TextAlign.center,
                     ),

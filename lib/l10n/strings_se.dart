@@ -162,10 +162,12 @@ class SwedishStrings extends AppStrings {
   String get howToPlay => 'Hur Man Spelar';
 
   @override
-  String get counterTutorialDesc => 'Tryck på "+"-knappen så många gånger du kan. Det här testet mäter din tryckhastighet och koordination.';
+  String get counterTutorialDesc =>
+      'Tryck på "+"-knappen så många gånger du kan. Det här testet mäter din tryckhastighet och koordination.';
 
   @override
-  String get tap10TutorialDesc => 'Tryck på knappen 10 gånger så fort du kan. Det här testet mäter din fingerkraft och kontroll.';
+  String get tap10TutorialDesc =>
+      'Tryck på knappen 10 gånger så fort du kan. Det här testet mäter din fingerkraft och kontroll.';
 
   @override
   String get currentCount => 'Aktuell räkning';
@@ -180,7 +182,8 @@ class SwedishStrings extends AppStrings {
   String get tutorialComplete => 'Självstudier Slutförd!';
 
   @override
-  String get readyToContinue => 'Tryck på knappen ovan för att öka räknaren.\nNär du är redo, klicka på "Nästa".';
+  String get readyToContinue =>
+      'Tryck på knappen ovan för att öka räknaren.\nNär du är redo, klicka på "Nästa".';
 
   @override
   String get retry => 'Försök Igen';
@@ -311,6 +314,10 @@ class SwedishStrings extends AppStrings {
 
   @override
   String get wrongOption => 'FEL';
+
+  @override
+  String get stroopExampleContinueInstruction =>
+      'Tryck på fortsätt för att prova det\ninnan spelet börjar';
 
   @override
   String get colorRed => 'Röd';

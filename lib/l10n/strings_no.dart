@@ -154,7 +154,7 @@ class NorwegianStrings extends AppStrings {
 
   @override
   String get repeatWords => 'Gjenta ordene du skulle huske';
-  
+
   @override
   String get clockInstruction2 => "Dra tallene til riktig posisjon";
 
@@ -162,10 +162,12 @@ class NorwegianStrings extends AppStrings {
   String get howToPlay => 'Slik spiller du';
 
   @override
-  String get counterTutorialDesc => 'Trykk enkelt på "+"-knappen så mange ganger du kan. Denne testen måler tappingshastigheten og koordinasjonen din.';
+  String get counterTutorialDesc =>
+      'Trykk enkelt på "+"-knappen så mange ganger du kan. Denne testen måler tappingshastigheten og koordinasjonen din.';
 
   @override
-  String get tap10TutorialDesc => 'Trykk på knappen 10 ganger så raskt du kan. Denne testen måler fingerkraften og kontrollen din.';
+  String get tap10TutorialDesc =>
+      'Trykk på knappen 10 ganger så raskt du kan. Denne testen måler fingerkraften og kontrollen din.';
 
   @override
   String get currentCount => 'Gjeldende telling';
@@ -180,7 +182,8 @@ class NorwegianStrings extends AppStrings {
   String get tutorialComplete => 'Veiledning fullført!';
 
   @override
-  String get readyToContinue => 'Trykk på knappen ovenfor for å øke telleren.\nNår du er klar, klikk "Neste".';
+  String get readyToContinue =>
+      'Trykk på knappen ovenfor for å øke telleren.\nNår du er klar, klikk "Neste".';
 
   @override
   String get retry => 'Prøv igjen';
@@ -311,6 +314,10 @@ class NorwegianStrings extends AppStrings {
 
   @override
   String get wrongOption => 'FEIL';
+
+  @override
+  String get stroopExampleContinueInstruction =>
+      'Trykk fortsett for å prøve det\nfør spillet begynner';
 
   @override
   String get colorRed => 'Rød';
