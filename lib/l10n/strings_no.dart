@@ -320,6 +320,13 @@ class NorwegianStrings extends AppStrings {
       'Trykk fortsett for å prøve det\nfør spillet begynner';
 
   @override
+  String get stroopTransitionHarderTitle => 'Nå blir det\nlitt vanskeligere';
+
+  @override
+  String get stroopTransitionSymbolsInstruction =>
+      'Knappene mister fargene sine,\nse på symbolene';
+
+  @override
   String get colorRed => 'Rød';
 
   @override

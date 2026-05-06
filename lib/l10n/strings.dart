@@ -126,6 +126,8 @@ abstract class AppStrings {
   String get correctOption;
   String get wrongOption;
   String get stroopExampleContinueInstruction;
+  String get stroopTransitionHarderTitle;
+  String get stroopTransitionSymbolsInstruction;
   String get colorRed;
   String get colorBlue;
   String get colorGreen;

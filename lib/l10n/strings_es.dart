@@ -320,6 +320,13 @@ class SpanishStrings extends AppStrings {
       'Pulsa continuar para probarlo\nante de que empiece el juego';
 
   @override
+  String get stroopTransitionHarderTitle => 'Ahora será\nun poco más difícil';
+
+  @override
+  String get stroopTransitionSymbolsInstruction =>
+      'Los botones perderán sus colores,\nmira los símbolos';
+
+  @override
   String get colorRed => 'Rojo';
 
   @override

@@ -320,6 +320,13 @@ class SwedishStrings extends AppStrings {
       'Tryck på fortsätt för att prova det\ninnan spelet börjar';
 
   @override
+  String get stroopTransitionHarderTitle => 'Nu blir det\nlite svårare';
+
+  @override
+  String get stroopTransitionSymbolsInstruction =>
+      'Knapparna kommer att förlora sina färger,\ntitta på symbolerna';
+
+  @override
   String get colorRed => 'Röd';
 
   @override

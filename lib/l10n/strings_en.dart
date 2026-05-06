@@ -320,6 +320,13 @@ class EnglishStrings extends AppStrings {
       'Press continue to try it out\nbefore the game begins';
 
   @override
+  String get stroopTransitionHarderTitle => 'Now it will become\na bit harder';
+
+  @override
+  String get stroopTransitionSymbolsInstruction =>
+      'The buttons will lose their colors,\nlook at the symbols';
+
+  @override
   String get colorRed => 'Red';
 
   @override

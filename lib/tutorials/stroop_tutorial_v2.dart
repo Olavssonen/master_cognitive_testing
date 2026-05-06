@@ -28,6 +28,7 @@ class _StroopTutorialStateV2 extends ConsumerState<StroopTutorialV2>
   int currentItemIndex = 0;
   bool showIntroduction = true;
   bool showExamples = false;
+  bool showPreGreyTransition = false;
   bool showButtonGuidance = true;
   int consecutiveWrongAnswers = 0;
 
@@ -149,11 +150,8 @@ class _StroopTutorialStateV2 extends ConsumerState<StroopTutorialV2>
         if (correctAnswersInStage >= answersNeededPerStage) {
           // Progress to next stage
           if (stage < 1) {
-            // Only 2 stages (0 and 1) for V2
-            stage++;
-            _initializeStage();
-            _wordTransitionController.reset();
-            _wordTransitionController.forward();
+            // Show transition explanation before stage 2 (grey buttons)
+            showPreGreyTransition = true;
             feedbackSymbol = null;
             feedbackColor = null;
             _isProcessing = false;
@@ -230,6 +228,18 @@ class _StroopTutorialStateV2 extends ConsumerState<StroopTutorialV2>
     if (showExamples) {
       return StroopExampleScreenV2(
         onContinue: () => setState(() => showExamples = false),
+      );
+    }
+
+    if (showPreGreyTransition) {
+      return _StroopPreGreyTransitionScreen(
+        onContinue: () => setState(() {
+          showPreGreyTransition = false;
+          stage = 1;
+          _initializeStage();
+          _wordTransitionController.reset();
+          _wordTransitionController.forward();
+        }),
       );
     }
 
@@ -383,6 +393,141 @@ class _StroopTutorialStateV2 extends ConsumerState<StroopTutorialV2>
             ),
         ],
         onAbort: widget.onAbort,
+      ),
+    );
+  }
+}
+
+class _StroopPreGreyTransitionScreen extends ConsumerWidget {
+  final VoidCallback onContinue;
+
+  const _StroopPreGreyTransitionScreen({required this.onContinue});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final primaryColor = Theme.of(context).colorScheme.primary;
+    final strings = ref.watch(appStringsProvider);
+    final symbols = StroopColorConstantsV2.colorSymbols;
+    final colors = StroopColorConstantsV2.colors;
+    final buttonSize = StroopLayoutV2.unifiedButtonSize;
+    const demoSpacing = 16.0;
+    final instructionStyle = Theme.of(context).textTheme.headlineSmall
+        ?.copyWith(
+          fontWeight: FontWeight.bold,
+          color: primaryColor,
+          fontSize: 40,
+        );
+
+    Widget buildSymbolRow(Color Function(int) colorForIndex) {
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (int i = 0; i < symbols.length; i++)
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (i > 0) const SizedBox(width: demoSpacing),
+                SizedBox(
+                  width: buttonSize,
+                  child: Center(
+                    child: StroopSymbolButton(
+                      symbol: symbols[i],
+                      backgroundColor: colorForIndex(i),
+                      size: buttonSize,
+                      onPressed: () {},
+                    ),
+                  ),
+                ),
+              ],
+            ),
+        ],
+      );
+    }
+
+    return TestShell(
+      child: Column(
+        children: [
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: Text(
+                          strings.stroopTransitionHarderTitle,
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.headlineLarge
+                              ?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: primaryColor,
+                                fontSize: 64,
+                              ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: Text(
+                          strings.stroopTransitionSymbolsInstruction,
+                          textAlign: TextAlign.center,
+                          style: instructionStyle,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      buildSymbolRow((index) => colors[index]),
+                      const SizedBox(height: 4),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          for (int i = 0; i < symbols.length; i++)
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (i > 0) const SizedBox(width: demoSpacing),
+                                SizedBox(
+                                  width: buttonSize,
+                                  child: const Center(
+                                    child: Icon(
+                                      Icons.keyboard_double_arrow_down,
+                                      color: AppColors.crayolaBlue,
+                                      size: 46,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      buildSymbolRow((index) => AppColors.grey700),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+          BottomButtonBar(
+            primaryButton: BottomButton(
+              label: strings.continueTutorial,
+              icon: Icons.arrow_forward,
+              onPressed: onContinue,
+            ),
+            onAbort: null,
+            showAbortButton: false,
+            colorSet: BottomBarColorSet.primary,
+          ),
+        ],
       ),
     );
   }
