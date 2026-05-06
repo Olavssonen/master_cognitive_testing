@@ -49,85 +49,96 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
 
     return Scaffold(
       body: Column(
-        children: [
-          const SizedBox(height: 60),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Text(
-              strings.selectTests,
-              style: TextStyle(
-                fontSize: 48,
-                fontWeight: FontWeight.bold,
-                color: AppColors.crayolaBlue,
+            children: [
+              const SizedBox(height: 60),
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  strings.selectTests,
+                  style: TextStyle(
+                    fontSize: 48,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.crayolaBlue,
+                  ),
+                ),
               ),
-            ),
-          ),
-          const SizedBox(height: 40),
-          Expanded(
-            child: ListView(
-              children: [
-                for (final t in widget.registry)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                    child: Card(
-                      elevation: 2,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        side: BorderSide(
+              const SizedBox(height: 40),
+              Expanded(
+                child: ListView(
+                  children: [
+                    for (final t in widget.registry)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        child: Card(
+                          elevation: 2,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            side: BorderSide(
+                              color: selectedIds.contains(t.id)
+                                  ? AppColors.crayolaBlue
+                                  : AppColors.lavender,
+                              width: selectedIds.contains(t.id) ? 3 : 1,
+                            ),
+                          ),
                           color: selectedIds.contains(t.id)
                               ? AppColors.crayolaBlue
-                              : AppColors.lavender,
-                          width: selectedIds.contains(t.id) ? 3 : 1,
-                        ),
-                      ),
-                      color: selectedIds.contains(t.id)
-                          ? AppColors.crayolaBlue
-                          : AppColors.white,
-                      child: ListTile(
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                        leading: Container(
-                          width: 60,
-                          height: 60,
-                          decoration: BoxDecoration(
-                            color: selectedIds.contains(t.id)
-                                ? AppColors.white
-                                : AppColors.lavender,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Icon(
-                            t.icon,
-                            color: selectedIds.contains(t.id)
-                                ? AppColors.crayolaBlue
-                                : AppColors.crayolaBlue,
-                            size: 32,
-                          ),
-                        ),
-                        title: Text(
-                          getLocalizedTestTitle(t.id, strings),
-                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                              : AppColors.white,
+                          child: ListTile(
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                            leading: Container(
+                              width: 60,
+                              height: 60,
+                              decoration: BoxDecoration(
                                 color: selectedIds.contains(t.id)
                                     ? AppColors.white
-                                    : AppColors.crayolaBlue,
-                                fontWeight: FontWeight.w600,
+                                    : AppColors.lavender,
+                                borderRadius: BorderRadius.circular(10),
                               ),
-                        ),
-                        trailing: Material(
-                          color: Colors.transparent,
-                          child: Checkbox(
-                            activeColor: selectedIds.contains(t.id)
-                                ? AppColors.white
-                                : AppColors.crayolaBlue,
-                            checkColor: selectedIds.contains(t.id)
-                                ? AppColors.crayolaBlue
-                                : AppColors.white,
-                            side: !selectedIds.contains(t.id)
-                                ? const BorderSide(
-                                    color: AppColors.crayolaBlue,
-                                    width: 2,
-                                  )
-                                : BorderSide.none,
-                            value: selectedIds.contains(t.id),
-                            onChanged: (_) {
+                              child: Icon(
+                                t.icon,
+                                color: selectedIds.contains(t.id)
+                                    ? AppColors.crayolaBlue
+                                    : AppColors.crayolaBlue,
+                                size: 32,
+                              ),
+                            ),
+                            title: Text(
+                              getLocalizedTestTitle(t.id, strings),
+                              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                    color: selectedIds.contains(t.id)
+                                        ? AppColors.white
+                                        : AppColors.crayolaBlue,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                            ),
+                            trailing: Material(
+                              color: Colors.transparent,
+                              child: Checkbox(
+                                activeColor: selectedIds.contains(t.id)
+                                    ? AppColors.white
+                                    : AppColors.crayolaBlue,
+                                checkColor: selectedIds.contains(t.id)
+                                    ? AppColors.crayolaBlue
+                                    : AppColors.white,
+                                side: !selectedIds.contains(t.id)
+                                    ? const BorderSide(
+                                        color: AppColors.crayolaBlue,
+                                        width: 2,
+                                      )
+                                    : BorderSide.none,
+                                value: selectedIds.contains(t.id),
+                                onChanged: (_) {
+                                  setState(() {
+                                    if (selectedIds.contains(t.id)) {
+                                      selectedIds.remove(t.id);
+                                    } else {
+                                      selectedIds.add(t.id);
+                                    }
+                                  });
+                                },
+                              ),
+                            ),
+                            onTap: () {
                               setState(() {
                                 if (selectedIds.contains(t.id)) {
                                   selectedIds.remove(t.id);
@@ -138,23 +149,12 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                             },
                           ),
                         ),
-                        onTap: () {
-                          setState(() {
-                            if (selectedIds.contains(t.id)) {
-                              selectedIds.remove(t.id);
-                            } else {
-                              selectedIds.add(t.id);
-                            }
-                          });
-                        },
                       ),
-                    ),
-                  ),
-              ],
-            ),
+                  ],
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
       bottomNavigationBar: BottomButtonBar(
         actionButtons: [
           BottomButton(

@@ -59,7 +59,7 @@ class _TransitionScreenState extends ConsumerState<TransitionScreen> {
 
     return Scaffold(
       body: Column(
-        children: [
+            children: [
           // Session path widget
           Expanded(
             child: SessionPathWidget(
@@ -86,8 +86,8 @@ class _TransitionScreenState extends ConsumerState<TransitionScreen> {
               : BottomBarColorSet.primary,
             debugMode: false,
           ),
-        ],
-      ),
+            ],
+          ),
     );
   }
 }

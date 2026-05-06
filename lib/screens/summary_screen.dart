@@ -22,7 +22,7 @@ class SummaryScreen extends ConsumerWidget {
 
     return Scaffold(
       body: Column(
-        children: [
+            children: [
           // Custom header with blue title
           Padding(
             padding: const EdgeInsets.all(16),
@@ -131,8 +131,8 @@ class SummaryScreen extends ConsumerWidget {
             onAbort: null,
             showAbortButton: false,
           ),
-        ],
-      ),
+            ],
+          ),
     );
   }
 

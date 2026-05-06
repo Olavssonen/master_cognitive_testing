@@ -186,155 +186,162 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       body: SafeArea(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0),
-            child: Column(
-              children: [
-                // Top 2/3 - Title section
-                Expanded(
-                  flex: 2,
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        // Title with particle effect
-                        LayoutBuilder(
-                          builder: (context, constraints) {
-                            WidgetsBinding.instance.addPostFrameCallback((_) {
-                              particleCenter = Offset(constraints.maxWidth / 2, 100);
-                            });
-                            
-                            return Stack(
-                              alignment: Alignment.center,
-                              children: [
-                                CustomPaint(
-                                  painter: ParticlePainter(particles),
-                                  size: Size(constraints.maxWidth, 200),
-                                ),
-                                Text(
-                                  strings.appTitle,
-                                  style: TextStyle(
-                                    fontSize: 120,
-                                    fontWeight: FontWeight.w900,
-                                    color: Theme.of(context).colorScheme.secondary,
-                                    height: 1.2,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                              ],
-                            );
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                
-                // Bottom 1/3 - Buttons section
-                Expanded(
-                  flex: 1,
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                    // Start Test Button - Large
-                    SizedBox(
-                      width: 350,
-                      height: 75,
-                      child: FilledButton(
-                        style: FilledButton.styleFrom(
-                          backgroundColor: Theme.of(context).colorScheme.secondary,
-                          foregroundColor: Theme.of(context).colorScheme.onSecondary,
-                        ),
-                        onPressed: () {
-                          ref.read(sessionProvider.notifier).enterLibrary();
-                        },
-                        child: Text(
-                          strings.play,
-                          style: const TextStyle(fontSize: 34, fontWeight: FontWeight.w600),
+        child: Stack(
+          children: [
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                child: Column(
+                  children: [
+                    // Top 2/3 - Title section
+                    Expanded(
+                      flex: 2,
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            // Title with particle effect
+                            LayoutBuilder(
+                              builder: (context, constraints) {
+                                WidgetsBinding.instance.addPostFrameCallback((_) {
+                                  particleCenter = Offset(constraints.maxWidth / 2, 100);
+                                });
+
+                                return Stack(
+                                  alignment: Alignment.center,
+                                  children: [
+                                    CustomPaint(
+                                      painter: ParticlePainter(particles),
+                                      size: Size(constraints.maxWidth, 200),
+                                    ),
+                                    Text(
+                                      strings.appTitle,
+                                      style: TextStyle(
+                                        fontSize: 120,
+                                        fontWeight: FontWeight.w900,
+                                        color: Theme.of(context).colorScheme.secondary,
+                                        height: 1.2,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ],
+                                );
+                              },
+                            ),
+                          ],
                         ),
                       ),
                     ),
-                    const SizedBox(height: 24),
-                    
-                    // Other buttons - Normal width
-                    SizedBox(
-                      width: 250,
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          // Settings Button
-                          SizedBox(
-                            width: double.infinity,
-                            height: 50,
-                            child: FilledButton(
-                              style: FilledButton.styleFrom(
-                                backgroundColor: Theme.of(context).colorScheme.primary,
-                                foregroundColor: Theme.of(context).colorScheme.onSecondary,
-                              ),
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => const SettingsScreen(),
-                                  ),
-                                );
-                              },
-                              child: Text(
-                                strings.settings,
-                                style: const TextStyle(fontSize: 16),
+
+                    // Bottom 1/3 - Buttons section
+                    Expanded(
+                      flex: 1,
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            // Start Test Button - Large
+                            SizedBox(
+                              width: 350,
+                              height: 75,
+                              child: FilledButton(
+                                style: FilledButton.styleFrom(
+                                  backgroundColor: Theme.of(context).colorScheme.secondary,
+                                  foregroundColor: Theme.of(context).colorScheme.onSecondary,
+                                ),
+                                onPressed: () {
+                                  ref.read(sessionProvider.notifier).enterLibrary();
+                                },
+                                child: Text(
+                                  strings.play,
+                                  style: const TextStyle(fontSize: 34, fontWeight: FontWeight.w600),
+                                ),
                               ),
                             ),
-                          ),
-                          const SizedBox(height: 16),
-                          
-                          // Quit Button
-                          SizedBox(
-                            width: double.infinity,
-                            height: 50,
-                            child: FilledButton(
-                              style: FilledButton.styleFrom(
-                                backgroundColor: Theme.of(context).colorScheme.primary,
-                                foregroundColor: Theme.of(context).colorScheme.onSecondary,
-                              ),
-                              onPressed: () {
-                                showDialog(
-                                  context: context,
-                                  builder: (context) => AlertDialog(
-                                    title: Text(strings.exitConfirm),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () => Navigator.pop(context),
-                                        child: Text(strings.back),
+                            const SizedBox(height: 24),
+
+                            // Other buttons - Normal width
+                            SizedBox(
+                              width: 250,
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  // Settings Button
+                                  SizedBox(
+                                    width: double.infinity,
+                                    height: 50,
+                                    child: FilledButton(
+                                      style: FilledButton.styleFrom(
+                                        backgroundColor: Theme.of(context).colorScheme.primary,
+                                        foregroundColor: Theme.of(context).colorScheme.onSecondary,
                                       ),
-                                      TextButton(
-                                        onPressed: () {
-                                          exit(0);
-                                        },
-                                        child: Text(strings.exit, style: const TextStyle(color: AppColors.errorRed)),
+                                      onPressed: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => const SettingsScreen(),
+                                          ),
+                                        );
+                                      },
+                                      child: Text(
+                                        strings.settings,
+                                        style: const TextStyle(fontSize: 16),
                                       ),
-                                    ],
+                                    ),
                                   ),
-                                );
-                              },
-                              child: Text(
-                                strings.exit,
-                                style: TextStyle(fontSize: 16),
+                                  const SizedBox(height: 12),
+
+                                  // Quit Button
+                                  SizedBox(
+                                    width: double.infinity,
+                                    height: 50,
+                                    child: FilledButton(
+                                      style: FilledButton.styleFrom(
+                                        backgroundColor: Theme.of(context).colorScheme.primary,
+                                        foregroundColor: Theme.of(context).colorScheme.onSecondary,
+                                      ),
+                                      onPressed: () {
+                                        showDialog(
+                                          context: context,
+                                          builder: (context) => AlertDialog(
+                                            title: Text(strings.exitConfirm),
+                                            actions: [
+                                              TextButton(
+                                                onPressed: () => Navigator.pop(context),
+                                                child: Text(strings.back),
+                                              ),
+                                              TextButton(
+                                                onPressed: () {
+                                                  exit(0);
+                                                },
+                                                child: Text(
+                                                  strings.exit,
+                                                  style: const TextStyle(color: AppColors.errorRed),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      },
+                                      child: Text(
+                                        strings.exit,
+                                        style: const TextStyle(fontSize: 16),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ],
-                    ),
-                  ),
                 ),
-              ],
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );
