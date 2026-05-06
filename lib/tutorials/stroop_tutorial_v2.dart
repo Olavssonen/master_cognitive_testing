@@ -28,12 +28,15 @@ class _StroopTutorialStateV2 extends ConsumerState<StroopTutorialV2>
   int currentItemIndex = 0;
   bool showIntroduction = true;
   bool showExamples = false;
+  bool showButtonGuidance = true;
+  int consecutiveWrongAnswers = 0;
 
   // Feedback state
   IconData? feedbackSymbol;
   Color? feedbackColor;
   late AnimationController _feedbackController;
   late AnimationController _wordTransitionController;
+  late AnimationController _guidanceArrowController;
   bool _isProcessing = false;
 
   @override
@@ -47,6 +50,10 @@ class _StroopTutorialStateV2 extends ConsumerState<StroopTutorialV2>
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
+    _guidanceArrowController = AnimationController(
+      duration: const Duration(milliseconds: 1100),
+      vsync: this,
+    )..repeat();
     _wordTransitionController.forward(); // Prime it so first word shows
     _initializeStage();
   }
@@ -55,6 +62,7 @@ class _StroopTutorialStateV2 extends ConsumerState<StroopTutorialV2>
   void dispose() {
     _feedbackController.dispose();
     _wordTransitionController.dispose();
+    _guidanceArrowController.dispose();
     super.dispose();
   }
 
@@ -62,6 +70,8 @@ class _StroopTutorialStateV2 extends ConsumerState<StroopTutorialV2>
     currentItems = _generateTutorialItems();
     currentItemIndex = 0;
     correctAnswersInStage = 0;
+    showButtonGuidance = true;
+    consecutiveWrongAnswers = 0;
   }
 
   List<StroopItemV2> _generateTutorialItems() {
@@ -134,6 +144,8 @@ class _StroopTutorialStateV2 extends ConsumerState<StroopTutorialV2>
     if (isCorrect) {
       setState(() {
         correctAnswersInStage++;
+        showButtonGuidance = false;
+        consecutiveWrongAnswers = 0;
         if (correctAnswersInStage >= answersNeededPerStage) {
           // Progress to next stage
           if (stage < 1) {
@@ -167,6 +179,13 @@ class _StroopTutorialStateV2 extends ConsumerState<StroopTutorialV2>
     } else {
       // Wrong answer - show feedback but don't progress
       setState(() {
+        if (!showButtonGuidance) {
+          consecutiveWrongAnswers++;
+          if (consecutiveWrongAnswers >= 2) {
+            showButtonGuidance = true;
+            consecutiveWrongAnswers = 0;
+          }
+        }
         _wordTransitionController.reset();
         _wordTransitionController.forward();
         _isProcessing = false;
@@ -250,6 +269,7 @@ class _StroopTutorialStateV2 extends ConsumerState<StroopTutorialV2>
     final currentItem = currentItems[currentItemIndex];
     final colors = StroopColorConstantsV2.colors;
     final colorSymbols = StroopColorConstantsV2.colorSymbols;
+    final strings = ref.watch(appStringsProvider);
 
     return TestShell(
       child: StroopScreenV2(
@@ -265,14 +285,101 @@ class _StroopTutorialStateV2 extends ConsumerState<StroopTutorialV2>
         ),
         buttons: [
           for (int i = 0; i < colorSymbols.length; i++)
-            FeedbackStroopButtonV2(
-              symbol: colorSymbols[i],
-              backgroundColor: stage >= 1 ? AppColors.grey700 : colors[i],
-              size: StroopLayoutV2.unifiedButtonSize,
-              onPressed: () => _onButtonPressed(colorSymbols[i]),
-              feedbackController: _feedbackController,
-              feedbackSymbol: feedbackSymbol,
-              feedbackColor: feedbackColor,
+            SizedBox(
+              width: StroopLayoutV2.unifiedButtonSize,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (showButtonGuidance)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 16.0),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 10,
+                            ),
+                            decoration: BoxDecoration(
+                              color:
+                                  colorSymbols[i] == currentItem.correctSymbol
+                                  ? AppColors.successGreen.withOpacity(0.2)
+                                  : AppColors.errorRed.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(999),
+                              border: Border.all(
+                                color:
+                                    colorSymbols[i] == currentItem.correctSymbol
+                                    ? AppColors.successGreen
+                                    : AppColors.errorRed,
+                                width: 2,
+                              ),
+                            ),
+                            child: SizedBox(
+                              height: 30,
+                              child: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: Text(
+                                  colorSymbols[i] == currentItem.correctSymbol
+                                      ? strings.correctOption
+                                      : strings.wrongOption,
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                    color:
+                                        colorSymbols[i] ==
+                                            currentItem.correctSymbol
+                                        ? AppColors.successGreen
+                                        : AppColors.errorRed,
+                                    letterSpacing: 0.8,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          AnimatedBuilder(
+                            animation: _guidanceArrowController,
+                            child: Icon(
+                              Icons.keyboard_double_arrow_down,
+                              color:
+                                  colorSymbols[i] == currentItem.correctSymbol
+                                  ? AppColors.successGreen
+                                  : AppColors.errorRed,
+                              size: 36,
+                            ),
+                            builder: (context, child) {
+                              final wave =
+                                  (sin(
+                                        _guidanceArrowController.value * pi * 2,
+                                      ) +
+                                      1) /
+                                  2;
+                              return Transform.translate(
+                                offset: Offset(0, 10 * wave),
+                                child: Opacity(
+                                  opacity: 0.35 + (0.65 * wave),
+                                  child: child,
+                                ),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  FeedbackStroopButtonV2(
+                    symbol: colorSymbols[i],
+                    backgroundColor: stage >= 1 ? AppColors.grey700 : colors[i],
+                    size: StroopLayoutV2.unifiedButtonSize,
+                    onPressed: () => _onButtonPressed(colorSymbols[i]),
+                    feedbackController: _feedbackController,
+                    feedbackSymbol: feedbackSymbol,
+                    feedbackColor: feedbackColor,
+                  ),
+                ],
+              ),
             ),
         ],
         onAbort: widget.onAbort,
