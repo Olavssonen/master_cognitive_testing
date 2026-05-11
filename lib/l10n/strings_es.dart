@@ -337,4 +337,16 @@ class SpanishStrings extends AppStrings {
 
   @override
   String get colorYellow => 'Amarillo';
+
+  @override
+  String get tmtFinishEarlyTitle => '¿Terminar Ahora?';
+
+  @override
+  String get tmtFinishEarlyMessage => 'Todavía tienes tiempo. ¿Estás seguro de que quieres terminar?';
+
+  @override
+  String get continueTest => 'Continuar';
+
+  @override
+  String get quit => 'Salir';
 }

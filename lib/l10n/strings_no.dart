@@ -337,4 +337,16 @@ class NorwegianStrings extends AppStrings {
 
   @override
   String get colorYellow => 'Gul';
+
+  @override
+  String get tmtFinishEarlyTitle => 'Avslutte Nå?';
+
+  @override
+  String get tmtFinishEarlyMessage => 'Du har fortsatt tid igjen. Er du sikker på at du vil avslutte?';
+
+  @override
+  String get continueTest => 'Fortsett';
+
+  @override
+  String get quit => 'Avslutt';
 }

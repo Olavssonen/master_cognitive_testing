@@ -337,4 +337,16 @@ class SwedishStrings extends AppStrings {
 
   @override
   String get colorYellow => 'Gul';
+
+  @override
+  String get tmtFinishEarlyTitle => 'Avsluta Nu?';
+
+  @override
+  String get tmtFinishEarlyMessage => 'Du har fortfarande tid kvar. Är du säker på att du vill avsluta?';
+
+  @override
+  String get continueTest => 'Fortsätt';
+
+  @override
+  String get quit => 'Avsluta';
 }

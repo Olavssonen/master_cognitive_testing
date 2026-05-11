@@ -242,6 +242,73 @@ class _TMTTest extends ConsumerState<TMTTest> {
     _completeAndAdvance(timedOut: true, delayBeforeCapture: const Duration(milliseconds: 500));
   }
 
+  Future<void> _showFinishConfirmationDialog(BuildContext context, WidgetRef ref) async {
+    final strings = ref.read(appStringsProvider);
+    
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          backgroundColor: Theme.of(dialogContext).colorScheme.surface,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          title: Text(
+            strings.tmtFinishEarlyTitle,
+            style: TextStyle(
+              fontSize: 32,
+              fontWeight: FontWeight.bold,
+              color: Theme.of(dialogContext).colorScheme.primary,
+            ),
+          ),
+          content: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16.0),
+            child: Text(
+              strings.tmtFinishEarlyMessage,
+              style: TextStyle(
+                fontSize: 24,
+                color: Theme.of(dialogContext).colorScheme.onSurface,
+                height: 1.4,
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+              },
+              child: Text(
+                strings.continueTest,
+                style: TextStyle(
+                  fontSize: 22,
+                  color: Theme.of(dialogContext).colorScheme.primary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+                if (mounted) {
+                  _completeAndAdvance(timedOut: false);
+                }
+              },
+              child: Text(
+                strings.quit,
+                style: TextStyle(
+                  fontSize: 22,
+                  color: Theme.of(dialogContext).colorScheme.error,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Future<void> _completeAndAdvance({
     required bool timedOut,
     Duration delayBeforeCapture = Duration.zero,
@@ -699,12 +766,18 @@ class _TMTTest extends ConsumerState<TMTTest> {
             actionButtons: [
               BottomButton(
                 label: ref.watch(appStringsProvider).done,
-                onPressed: () {
+                onPressed: () async {
                   if (testComplete) {
+                    _completeAndAdvance(timedOut: false);
+                  } else if (remainingSeconds > 0) {
+                    // Test not complete but time remaining - show confirmation
+                    await _showFinishConfirmationDialog(context, ref);
+                  } else {
+                    // Time's up, complete the test
                     _completeAndAdvance(timedOut: false);
                   }
                 },
-                enabled: testComplete,
+                enabled: true, // Always enabled
                 type: BottomButtonType.filled,
                 icon: Icons.check_circle,
               ),

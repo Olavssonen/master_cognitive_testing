@@ -337,4 +337,16 @@ class EnglishStrings extends AppStrings {
 
   @override
   String get colorYellow => 'Yellow';
+
+  @override
+  String get tmtFinishEarlyTitle => 'Finish Now?';
+
+  @override
+  String get tmtFinishEarlyMessage => 'You still have time left. Are you sure you want to finish?';
+
+  @override
+  String get continueTest => 'Continue';
+
+  @override
+  String get quit => 'Quit';
 }

@@ -132,4 +132,8 @@ abstract class AppStrings {
   String get colorBlue;
   String get colorGreen;
   String get colorYellow;
+  String get tmtFinishEarlyTitle;
+  String get tmtFinishEarlyMessage;
+  String get continueTest;
+  String get quit;
 }
