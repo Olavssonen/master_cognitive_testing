@@ -141,7 +141,7 @@ class SwedishStrings extends AppStrings {
   String get time => 'Tid';
 
   @override
-  String get completed => 'SlutfÃ¶rt';
+  String get completed => 'Slutfört';
 
   @override
   String get incomplete => 'Ofullständigt';
@@ -207,7 +207,7 @@ class SwedishStrings extends AppStrings {
   String get wrongLabel => 'Fel';
 
   @override
-  String get correct_correct => 'rÃ¤tt';
+  String get correct_correct => 'rätt';
 
   @override
   String get wrong_label => 'fel';
@@ -228,16 +228,16 @@ class SwedishStrings extends AppStrings {
   String get numberStage => 'Siffror';
 
   @override
-  String get letterStage => 'BokstÃ¤ver';
+  String get letterStage => 'Bokstäver';
 
   @override
   String get tmtCirclesHit => 'Cirklar träffade';
 
   @override
-  String get miniCogScore => 'Mini-Cog-poÃ¤ng';
+  String get miniCogScore => 'Mini-Cog-poäng';
 
   @override
-  String get wordRecall => 'OrdÃ¥terkallelse';
+  String get wordRecall => 'Ordåterkallelse';
 
   @override
   String get clockNumbers => 'Klockan Siffror';

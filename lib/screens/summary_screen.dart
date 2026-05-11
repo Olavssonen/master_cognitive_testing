@@ -63,7 +63,7 @@ class SummaryScreen extends ConsumerWidget {
                         Text(
                           strings.points,
                           style: TextStyle(
-                            fontSize: 18,
+                            fontSize: 26,
                             fontWeight: FontWeight.w500,
                             color: Theme.of(context).colorScheme.primary,
                           ),
@@ -92,14 +92,14 @@ class SummaryScreen extends ConsumerWidget {
                                     Text(
                                       _getLocalizedResultTitle(s.results[i].testId, strings),
                                       style: TextStyle(
-                                        fontSize: 16,
+                                        fontSize: 22,
                                         color: Theme.of(context).colorScheme.primary,
                                       ),
                                     ),
                                     Text(
                                       '${s.results[i].summary['pointsEarned']} pts',
                                       style: TextStyle(
-                                        fontSize: 16,
+                                        fontSize: 22,
                                         fontWeight: FontWeight.bold,
                                         color: Theme.of(context).colorScheme.secondary,
                                       ),
@@ -176,7 +176,7 @@ class SummaryScreen extends ConsumerWidget {
               Text(
                 strings.cogTest,
                 style: TextStyle(
-                  fontSize: 18,
+                  fontSize: 26,
                   fontWeight: FontWeight.w500,
                   color: Theme.of(context).colorScheme.primary,
                 ),
@@ -197,7 +197,7 @@ class SummaryScreen extends ConsumerWidget {
                 child: Text(
                   strings.wordRecall,
                   style: TextStyle(
-                    fontSize: 14,
+                    fontSize: 20,
                     fontWeight: FontWeight.bold,
                     color: Theme.of(context).colorScheme.primary,
                   ),
@@ -214,14 +214,14 @@ class SummaryScreen extends ConsumerWidget {
                     Text(
                       strings.wordsRemembered,
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 22,
                         color: Theme.of(context).colorScheme.primary,
                       ),
                     ),
                     Text(
                       '$wordRecallCorrect/$wordRecallTotal',
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 22,
                         fontWeight: FontWeight.bold,
                         color: Theme.of(context).colorScheme.secondary,
                       ),
@@ -236,7 +236,7 @@ class SummaryScreen extends ConsumerWidget {
                 child: Text(
                   strings.clockDrawing,
                   style: TextStyle(
-                    fontSize: 14,
+                    fontSize: 20,
                     fontWeight: FontWeight.bold,
                     color: Theme.of(context).colorScheme.primary,
                   ),
@@ -254,14 +254,14 @@ class SummaryScreen extends ConsumerWidget {
                       Text(
                         strings.clockNumbers,
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 22,
                           color: Theme.of(context).colorScheme.primary,
                         ),
                       ),
                       Text(
                         '$correctNumbers/$totalNumbers',
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 22,
                           fontWeight: FontWeight.bold,
                           color: Theme.of(context).colorScheme.secondary,
                         ),
@@ -279,14 +279,14 @@ class SummaryScreen extends ConsumerWidget {
                       Text(
                         strings.hourHand.replaceAll(RegExp(r'\s*\(\d+\)'), ''),
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 22,
                           color: Theme.of(context).colorScheme.primary,
                         ),
                       ),
                       Text(
                         hourHandStatus,
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 22,
                           fontWeight: FontWeight.bold,
                           color: Theme.of(context).colorScheme.secondary,
                         ),
@@ -304,14 +304,14 @@ class SummaryScreen extends ConsumerWidget {
                       Text(
                         strings.minuteHand.replaceAll(RegExp(r'\s*\(\d+\)'), ''),
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 22,
                           color: Theme.of(context).colorScheme.primary,
                         ),
                       ),
                       Text(
                         minuteHandStatus,
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 22,
                           fontWeight: FontWeight.bold,
                           color: Theme.of(context).colorScheme.secondary,
                         ),
@@ -358,7 +358,7 @@ class SummaryScreen extends ConsumerWidget {
               Text(
                 strings.stroopTest,
                 style: TextStyle(
-                  fontSize: 18,
+                  fontSize: 26,
                   fontWeight: FontWeight.w500,
                   color: Theme.of(context).colorScheme.primary,
                 ),
@@ -383,14 +383,14 @@ class SummaryScreen extends ConsumerWidget {
                     Text(
                       strings.correct,
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 22,
                         color: Theme.of(context).colorScheme.primary,
                       ),
                     ),
                     Text(
                       '$correct',
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 22,
                         fontWeight: FontWeight.bold,
                         color: Theme.of(context).colorScheme.secondary,
                       ),
@@ -408,14 +408,14 @@ class SummaryScreen extends ConsumerWidget {
                     Text(
                       strings.wrong,
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 22,
                         color: Theme.of(context).colorScheme.primary,
                       ),
                     ),
                     Text(
                       '$wrong',
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 22,
                         fontWeight: FontWeight.bold,
                         color: Theme.of(context).colorScheme.secondary,
                       ),
@@ -433,14 +433,14 @@ class SummaryScreen extends ConsumerWidget {
                     Text(
                       strings.totalWordsLabel,
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 22,
                         color: Theme.of(context).colorScheme.primary,
                       ),
                     ),
                     Text(
                       '$totalWords',
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 22,
                         fontWeight: FontWeight.bold,
                         color: Theme.of(context).colorScheme.secondary,
                       ),
@@ -475,7 +475,7 @@ class SummaryScreen extends ConsumerWidget {
               Text(
                 strings.tmtTest,
                 style: TextStyle(
-                  fontSize: 18,
+                  fontSize: 26,
                   fontWeight: FontWeight.w500,
                   color: Theme.of(context).colorScheme.primary,
                 ),
@@ -487,7 +487,7 @@ class SummaryScreen extends ConsumerWidget {
                 child: Text(
                   strings.numberStage,
                   style: TextStyle(
-                    fontSize: 14,
+                    fontSize: 20,
                     fontWeight: FontWeight.bold,
                     color: Theme.of(context).colorScheme.primary,
                   ),
@@ -509,7 +509,7 @@ class SummaryScreen extends ConsumerWidget {
                 child: Text(
                   strings.letterStage,
                   style: TextStyle(
-                    fontSize: 14,
+                    fontSize: 20,
                     fontWeight: FontWeight.bold,
                     color: Theme.of(context).colorScheme.primary,
                   ),
@@ -582,14 +582,14 @@ class SummaryScreen extends ConsumerWidget {
             Text(
               strings.time,
               style: TextStyle(
-                fontSize: 16,
+                fontSize: 22,
                 color: Theme.of(context).colorScheme.primary,
               ),
             ),
             Text(
               timeText,
               style: TextStyle(
-                fontSize: 16,
+                fontSize: 22,
                 fontWeight: FontWeight.bold,
                 color: Theme.of(context).colorScheme.secondary,
               ),
@@ -607,14 +607,14 @@ class SummaryScreen extends ConsumerWidget {
             Text(
               strings.tmtCirclesHit,
               style: TextStyle(
-                fontSize: 16,
+                fontSize: 22,
                 color: Theme.of(context).colorScheme.primary,
               ),
             ),
             Text(
               '$circlesHit/$totalCircles',
               style: TextStyle(
-                fontSize: 16,
+                fontSize: 22,
                 fontWeight: FontWeight.bold,
                 color: Theme.of(context).colorScheme.secondary,
               ),
@@ -632,14 +632,14 @@ class SummaryScreen extends ConsumerWidget {
             Text(
               strings.mistakes,
               style: TextStyle(
-                fontSize: 16,
+                fontSize: 22,
                 color: Theme.of(context).colorScheme.primary,
               ),
             ),
             Text(
               '$mistakes',
               style: TextStyle(
-                fontSize: 16,
+                fontSize: 22,
                 fontWeight: FontWeight.bold,
                 color: Theme.of(context).colorScheme.secondary,
               ),
