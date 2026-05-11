@@ -342,11 +342,27 @@ class DrawAreaPainter extends CustomPainter {
       // Check if this circle has been correctly entered
       bool isEntered = circlesEntered.contains(circle.label);
 
-      // Check if this circle has active feedback animation
+      // Determine circle color based on animation state
+      Color circleColor;
+      
+      // Check if this is the required circle and pulse animation is active
+      final isAnimating = circle.label == requiredCircle &&
+          !testComplete &&
+          activePulseController != null &&
+          activePulseController!.isAnimating;
+      
+      if (isAnimating) {
+        // When animating: use secondary/tropical teal color
+        circleColor = AppColors.tropicalTeal.withValues(alpha: 0.8);
+      } else if (isEntered) {
+        // When cleared/entered: use grey
+        circleColor = AppColors.grey900.withValues(alpha: 0.2);
+      } else {
+        // When not yet reached: use primary color
+        circleColor = AppColors.crayolaBlue.withValues(alpha: 0.7);
+      }
+
       double scale = 1.0;
-      Color circleColor = isEntered
-          ? AppColors.grey900.withValues(alpha: 0.2) // Nearly transparent for entered
-          : AppColors.accent.withValues(alpha: 0.7);
 
       if (feedbackControllers.containsKey(circle.label)) {
         final controller = feedbackControllers[circle.label]!;
@@ -372,29 +388,17 @@ class DrawAreaPainter extends CustomPainter {
       final scaledRadius = circle.radius * scale;
 
       // Apply pulse effect if this is the required circle
-      if (circle.label == requiredCircle &&
-          !testComplete &&
-          activePulseController != null &&
-          activePulseController!.isAnimating) {
+      if (isAnimating) {
         final pulseValue = activePulseController!.value;
 
-        // Pulsing border
+        // Pulsing border in secondary color
         final borderWidth = 2.0 + (pulseValue * 3.0);
         final borderPaint = Paint()
-          ..color = AppColors.accent.withValues(alpha: 0.8 - (pulseValue * 0.4))
+          ..color = AppColors.tropicalTeal.withValues(alpha: 0.8 - (pulseValue * 0.3))
           ..style = PaintingStyle.stroke
           ..strokeWidth = borderWidth;
         canvas.drawCircle(
             circle.center, scaledRadius + (pulseValue * 8.0), borderPaint);
-
-        // Pulsing color tint
-        final originalColor = circleColor;
-        final tintedColor = Color.lerp(
-          originalColor,
-          AppColors.accent.withValues(alpha: 0.3),
-          (pulseValue * 0.5).clamp(0.0, 1.0),
-        )!;
-        circleColor = tintedColor;
       }
 
       // Circle fill
