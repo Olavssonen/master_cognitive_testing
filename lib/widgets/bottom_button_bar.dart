@@ -392,7 +392,7 @@ class BottomButtonBar extends ConsumerWidget {
       case BottomButtonType.outlined:
         buttonWidget = OutlinedButton(
           style: OutlinedButton.styleFrom(
-            side: BorderSide(color: colorSet.primaryButton, width: 2),
+            side: BorderSide.none,
             foregroundColor: colorSet.primaryButtonText,
             backgroundColor: colorSet.primaryButton,
             disabledBackgroundColor: colorSet.primaryButtonDisabled.withValues(alpha: 0.4),
