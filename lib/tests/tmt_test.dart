@@ -647,8 +647,15 @@ class _TMTTest extends ConsumerState<TMTTest> {
       if (pointsSystemEnabled) {
         int awardedPoints = _calculatePointsForCircle(_mistakeSinceLastCorrect);
         ref.read(sessionPointsProvider.notifier).addPoints(awardedPoints);
-        _showPointsAnimation(circleLabel, awardedPoints);
+        // If this correct circle yields positive points, show the animation here.
+        // If awardedPoints == 0 it means there was a prior mistake; we already show
+        // the zero-point animation at the moment the wrong circle was hit, so
+        // suppress showing the zero animation on the subsequent correct hit.
+        if (awardedPoints > 0) {
+          _showPointsAnimation(circleLabel, awardedPoints);
+        }
       } else {
+        // Points system disabled: keep existing behavior (show zero animation)
         _showPointsAnimation(circleLabel, 0);
       }
       // Reset mistake flag after reaching a correct circle
@@ -663,6 +670,14 @@ class _TMTTest extends ConsumerState<TMTTest> {
       });
       // Set flag to indicate a mistake occurred since the last correct circle
       _mistakeSinceLastCorrect = true;
+
+      // Show immediate zero-point animation at the wrong circle so users see
+      // the consequence at the moment of the mistake instead of when they
+      // later hit the next correct circle.
+      final pointsSystemEnabled = ref.watch(pointsSystemEnabledProvider);
+      if (pointsSystemEnabled) {
+        _showPointsAnimation(circleLabel, 0);
+      }
     }
   }
 
