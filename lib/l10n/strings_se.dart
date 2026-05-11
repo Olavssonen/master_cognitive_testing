@@ -349,4 +349,16 @@ class SwedishStrings extends AppStrings {
 
   @override
   String get quit => 'Avsluta';
+
+  @override
+  String get tmtInstructionTitle => 'Tegning';
+
+  @override
+  String get tmtInstructionSubtitle => 'Tegn mellan cirklarna i stigande ordning';
+
+  @override
+    String get tmtMixedInstructionSubtitle => 'Rita mellan siffrorna och bokstäverna';
+
+    @override
+  String get tmtInstructionNote => 'Du kan lyfta din finger eller penna mellan cirklarna och dina linjer kan korsa varandra';
 }

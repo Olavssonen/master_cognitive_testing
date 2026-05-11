@@ -22,7 +22,7 @@ final tmtTest = TestDefinition(
   build: (context, run) => TMTTestFlowProgression(run: run),
 );
 
-/// Manages the progression: Numbers Tutorial → Numbers Test → Mixed Tutorial → Mixed Test
+/// Manages the progression: Instruction → Numbers Tutorial → Numbers Test → Mixed Instruction → Mixed Tutorial → Mixed Test
 class TMTTestFlowProgression extends ConsumerStatefulWidget {
   final TestRunContext run;
   const TMTTestFlowProgression({super.key, required this.run});
@@ -32,7 +32,7 @@ class TMTTestFlowProgression extends ConsumerStatefulWidget {
 }
 
 class _TMTTestFlowProgressionState extends ConsumerState<TMTTestFlowProgression> {
-  int stage = 0; // 0: Numbers tut, 1: Numbers test, 2: Mixed tut, 3: Mixed test
+  int stage = -1; // -1: First instruction, 0: Numbers tut, 1: Numbers test, 2: Mixed instruction, 3: Mixed tut, 4: Mixed test
   final Map<String, dynamic> stageResults = {}; // Store results from each stage
 
   void _saveTestResult(
@@ -50,8 +50,19 @@ class _TMTTestFlowProgressionState extends ConsumerState<TMTTestFlowProgression>
   @override
   Widget build(BuildContext context) {
     final isDebugMode = ref.watch(debugModeProvider);
+    final strings = ref.watch(appStringsProvider);
     
     switch (stage) {
+      case -1:
+        return TMTInstructionScreen(
+          title: strings.tmtInstructionTitle,
+          subtitle: strings.round1,
+          bodyText: strings.tmtInstructionSubtitle,
+          exampleLabels: const ['1', '2', '3'],
+          onComplete: () {
+            setState(() => stage = 0);
+          },
+        );
       case 0:
         return TMTTutorial(
           mode: CircleMode.numbersOnly,
@@ -73,14 +84,24 @@ class _TMTTestFlowProgressionState extends ConsumerState<TMTTestFlowProgression>
           },
         );
       case 2:
-        return TMTTutorial(
-          mode: CircleMode.mixed,
+        return TMTInstructionScreen(
+          title: strings.tmtInstructionTitle,
+          subtitle: strings.round2,
+          bodyText: strings.tmtMixedInstructionSubtitle,
+          exampleLabels: const ['1', 'A', '2', 'B'],
           onComplete: () {
             setState(() => stage = 3);
           },
-          onAbort: isDebugMode ? () => widget.run.abort('User aborted') : null,
         );
       case 3:
+        return TMTTutorial(
+          mode: CircleMode.mixed,
+          onComplete: () {
+            setState(() => stage = 4);
+          },
+          onAbort: isDebugMode ? () => widget.run.abort('User aborted') : null,
+        );
+      case 4:
         return TMTTest(
           run: widget.run,
           mode: CircleMode.mixed,
@@ -148,6 +169,207 @@ class _TMTTestFlowState extends ConsumerState<TMTTestFlow> {
 
     return TMTTest(run: widget.run, mode: CircleMode.numbersOnly);
   }
+}
+
+/// Instruction screen for TMT showing how to draw between circles
+class TMTInstructionScreen extends ConsumerWidget {
+  final String title;
+  final String subtitle;
+  final String? bodyText;
+  final List<String> exampleLabels;
+  final VoidCallback onComplete;
+
+  const TMTInstructionScreen({
+    super.key,
+    required this.title,
+    required this.subtitle,
+    required this.exampleLabels,
+    required this.onComplete,
+    this.bodyText,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final strings = ref.watch(appStringsProvider);
+    final primaryColor = Theme.of(context).colorScheme.primary;
+
+    final exampleSize = exampleLabels.length >= 4
+        ? const Size(520, 160)
+        : const Size(400, 160);
+
+    return TestShell(
+      child: Column(
+        children: [
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        title,
+                        style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: primaryColor,
+                              fontSize: 80,
+                            ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        subtitle,
+                        style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: primaryColor,
+                              fontSize: 56,
+                            ),
+                        textAlign: TextAlign.center,
+                      ),
+                      if (bodyText != null) ...[
+                        const SizedBox(height: 24),
+                        Text(
+                          bodyText!,
+                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                fontWeight: FontWeight.w500,
+                                color: primaryColor,
+                                fontSize: 40,
+                              ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ],
+                  ),
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      CustomPaint(
+                        painter: TMTInstructionPainter(
+                          primaryColor: primaryColor,
+                          labels: exampleLabels,
+                        ),
+                        size: exampleSize,
+                      ),
+                    ],
+                  ),
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        strings.tmtInstructionNote,
+                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                              fontWeight: FontWeight.w500,
+                              color: primaryColor,
+                              fontSize: 36,
+                            ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+          BottomButtonBar(
+            primaryButton: BottomButton(
+              label: strings.start,
+              icon: Icons.play_arrow,
+              onPressed: onComplete,
+            ),
+            colorSet: BottomBarColorSet.secondary,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Custom painter for TMT instruction example circles with arrow icons
+class TMTInstructionPainter extends CustomPainter {
+  final Color primaryColor;
+  final List<String> labels;
+
+  TMTInstructionPainter({
+    required this.primaryColor,
+    required this.labels,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    const circleRadius = 45.0;
+    final centerY = size.height / 2;
+    final left = circleRadius + 20;
+    final right = size.width - circleRadius - 20;
+    final step = labels.length > 1 ? (right - left) / (labels.length - 1) : 0.0;
+
+    final centers = List<Offset>.generate(
+      labels.length,
+      (index) => Offset(left + step * index, centerY),
+    );
+
+    final circlePaint = Paint()
+      ..color = primaryColor.withValues(alpha: 0.7)
+      ..style = PaintingStyle.fill;
+
+    for (final center in centers) {
+      canvas.drawCircle(center, circleRadius, circlePaint);
+    }
+
+    for (var index = 0; index < labels.length; index++) {
+      _drawLabel(canvas, centers[index], labels[index]);
+    }
+
+    for (var index = 0; index < centers.length - 1; index++) {
+      _drawArrowIcon(canvas, centers[index], centers[index + 1]);
+    }
+  }
+
+  void _drawLabel(Canvas canvas, Offset center, String label) {
+    final textPainter = TextPainter(
+      text: TextSpan(
+        text: label,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 28,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    );
+    textPainter.layout();
+    textPainter.paint(
+      canvas,
+      center - Offset(textPainter.width / 2, textPainter.height / 2),
+    );
+  }
+
+  void _drawArrowIcon(Canvas canvas, Offset start, Offset end) {
+    final arrowPos = Offset((start.dx + end.dx) / 2, start.dy - 10);
+
+    final textPainter = TextPainter(
+      text: TextSpan(
+        text: '→',
+        style: TextStyle(
+          color: primaryColor,
+          fontSize: 48,
+          fontWeight: FontWeight.bold,
+          fontFamily: Icons.arrow_forward.fontFamily,
+          package: Icons.arrow_forward.fontPackage,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    );
+    textPainter.layout();
+    textPainter.paint(
+      canvas,
+      arrowPos - Offset(textPainter.width / 2, textPainter.height / 2),
+    );
+  }
+
+  @override
+  bool shouldRepaint(TMTInstructionPainter oldDelegate) => false;
 }
 
 class TMTTest extends ConsumerStatefulWidget {

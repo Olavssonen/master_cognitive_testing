@@ -136,4 +136,8 @@ abstract class AppStrings {
   String get tmtFinishEarlyMessage;
   String get continueTest;
   String get quit;
+  String get tmtInstructionTitle;
+  String get tmtInstructionSubtitle;
+  String get tmtMixedInstructionSubtitle;
+  String get tmtInstructionNote;
 }

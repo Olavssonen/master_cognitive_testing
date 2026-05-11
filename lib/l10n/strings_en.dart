@@ -349,4 +349,16 @@ class EnglishStrings extends AppStrings {
 
   @override
   String get quit => 'Quit';
+
+  @override
+  String get tmtInstructionTitle => 'Drawing';
+
+  @override
+  String get tmtInstructionSubtitle => 'Draw between the circles in ascending order';
+
+  @override
+    String get tmtMixedInstructionSubtitle => 'Draw between the numbers and letters';
+
+    @override
+  String get tmtInstructionNote => 'You can lift your finger or pen between circles and your lines can cross';
 }

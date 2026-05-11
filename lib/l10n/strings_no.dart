@@ -349,4 +349,16 @@ class NorwegianStrings extends AppStrings {
 
   @override
   String get quit => 'Avslutt';
+
+  @override
+  String get tmtInstructionTitle => 'Tegning';
+
+  @override
+  String get tmtInstructionSubtitle => 'Tegn mellom sirklene i stigende rekkefølge';
+
+  @override
+    String get tmtMixedInstructionSubtitle => 'Tegn mellom tallene og bokstavene';
+
+    @override
+  String get tmtInstructionNote => 'Du kan løfte fingeren eller pennen din mellom sirklene og linjene dine kan krysses';
 }

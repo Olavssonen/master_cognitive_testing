@@ -349,4 +349,16 @@ class SpanishStrings extends AppStrings {
 
   @override
   String get quit => 'Salir';
+
+  @override
+  String get tmtInstructionTitle => 'Dibujo';
+
+  @override
+  String get tmtInstructionSubtitle => 'Dibuja entre los círculos en orden ascendente';
+
+  @override
+    String get tmtMixedInstructionSubtitle => 'Dibuja entre los números y las letras';
+
+    @override
+  String get tmtInstructionNote => 'Puedes levantar tu dedo o bolígrafo entre los círculos y tus líneas pueden cruzarse';
 }
